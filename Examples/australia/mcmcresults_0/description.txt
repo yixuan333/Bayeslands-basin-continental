@@ -1,0 +1,17 @@
+
+	samples: 1000
+	step_rain: 0.09
+	step_erod: 1.2e-07
+	step_m: 0.002
+	step_n: 0.002
+	step_eta_elev: 0.238928486523
+	step_eta_erdp: 0.238797359764
+	step_eta_erdp_pts: 0.0730584229105
+	Initial_proposed_rain: 0.0422215529735
+	Initial_proposed_erod: 6.47732524143e-06
+	Initial_proposed_m: 0.5
+	Initial_proposed_n: 1.0
+	erod_limits: [3e-06, 7e-06]
+	rain_limits: [0.0, 3.0]
+	m_limit: [0.4, 0.6]
+	n_limit: [0.9, 1.1]

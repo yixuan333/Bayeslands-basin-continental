@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: pyBadlands
+Version: 0.1
+Summary: Python interface to Badlands
+Home-page: UNKNOWN
+Author: Tristan Salles
+Author-email: UNKNOWN
+License: UNKNOWN
+Description-Content-Type: UNKNOWN
+Description: # Bayeslands-basin-continental
+        Bayeslands for basin and continental landscape evolution
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha

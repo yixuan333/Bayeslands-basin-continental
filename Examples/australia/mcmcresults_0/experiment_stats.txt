@@ -1,0 +1,8 @@
+MSEelev: 28720.9204922
+MSEerdp: 28278.1790361
+MSEerdp_pts: 38.6743170085
+Time:(s) 42760.9786942
+Time:(mins) 712.682978237
+Accept ratio: 0.8 %
+Samples accepted : 8 out of 1000
+ Count List : [0, 0, 27, 36, 39, 395, 683, 829] Time Elapsed: (s) 42760.9786942 , (mins): 712.682978237
