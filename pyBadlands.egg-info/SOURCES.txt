@@ -1,4 +1,5 @@
 README.md
+setup.py
 pyBadlands/__init__.py
 pyBadlands/model.py
 pyBadlands/remote.py

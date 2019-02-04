@@ -181,34 +181,34 @@ def topoGenerator(directory, inputname, rain, erodibility, m, n, simtime, erdp_c
 	for k, v in elev_vec.items():
 		if k == sim_interval[0]:
 			np.savetxt('%s/data/initial_elev.txt' %directory,  elev_vec[k],fmt='%.5f')
-			# viewGrid(directory,'initial_elev', 'N/A', rain, erodibility, zData=elev_vec[k], title='Export Slope Grid')
+			viewGrid(directory,'initial_elev', 'N/A', rain, erodibility, zData=elev_vec[k], title='Export Slope Grid')
 		
 		elif k == sim_interval[-1]:
 			np.savetxt('%s/data/final_elev.txt' %directory, elev_vec[k],fmt='%.5f')
-			# viewGrid(directory,'final_elev', 'N/A', rain, erodibility, zData=elev_vec[k], title='Export Slope Grid')
+			viewGrid(directory,'final_elev', 'N/A', rain, erodibility, zData=elev_vec[k], title='Export Slope Grid')
 		
 
 	for k, v in erdp_vec.items():
-		# if k == sim_interval[0]:
+		if k == sim_interval[0]:
 			# np.savetxt('%s/data/initial_erdp.txt' %directory,  erdp_vec[k],fmt='%.5f')
-			# viewMap(directory,'initial_erdp', 'N/A', rain, erodibility, zData=erdp_vec[k], title='Export Slope Grid')
+			viewMap(directory,'initial_erdp', 'N/A', rain, erodibility, zData=erdp_vec[k], title='Export Slope Grid')
 		
 		if k == sim_interval[-1]:
 			np.savetxt('%s/data/final_erdp.txt' %directory, erdp_vec[k],fmt='%.5f')
-			# viewMap(directory,'final_erdp', 'N/A', rain, erodibility, zData=erdp_vec[k], title='Export Slope Grid')
+			viewMap(directory,'final_erdp', 'N/A', rain, erodibility, zData=erdp_vec[k], title='Export Slope Grid')
 
 	erdp_pts_arr = np.zeros((sim_interval.size, erdp_pts_mat.size))
 	count = 0
 	for k, v in erdp_pts_vec.items():
 		erdp_pts_arr[count] = v
 		count +=1
-		# if k == sim_interval[0]:
+		if k == sim_interval[0]:
 			# np.savetxt('%s/data/initial_erdp_pts.txt' %directory,  erdp_pts_vec[k],fmt='%.5f')
-			# viewBar(directory,'initial_erdp_pts', 'N/A', rain, erodibility, xData = erdp_coords, yData=erdp_pts_mat, title='Export Slope Grid')
+			viewBar(directory,'initial_erdp_pts', 'N/A', rain, erodibility, xData = erdp_coords, yData=erdp_pts_mat, title='Export Slope Grid')
 		
 		if k == sim_interval[-1]:
 			np.savetxt('%s/data/final_erdp_pts.txt' %directory,erdp_pts_arr,fmt='%.5f')
-			# viewBar(directory,'final_erdp_pts', 'N/A', rain, erodibility, xData = erdp_coords ,yData=erdp_pts_arr[-1], title='Export Slope Grid')
+			viewBar(directory,'final_erdp_pts', 'N/A', rain, erodibility, xData = erdp_coords ,yData=erdp_pts_arr[-1], title='Export Slope Grid')
 
 	return
 
@@ -469,7 +469,7 @@ def main():
 
 		tstart = time.clock()
 		directory = 'Examples/australia'
-		topoGenerator(directory,'%s/australia.xml' %(directory), 1.5 , 1.e-6, 0.5, 1, 10000000, erdp_coords_australia,final_noise)
+		topoGenerator(directory,'%s/australia.xml' %(directory), 1.5 , 5.e-7, 0.5, 1, 10000000, erdp_coords_australia,final_noise)
 		print 'TopoGen for australia completed in (s):',time.clock()-tstart
 
 if __name__ == "__main__": main()

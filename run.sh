@@ -2,16 +2,13 @@
 #!/bin/sh 
 echo Running all 	
 
-# python ptBayeslands_sedvec.py -p 3 -s 600 -r 10 -b 0.05 -pt 0.5
 
-  
- 
 for x in  1
 	do
-		for prob in 6
+		for prob in 7
 		do
 			
-			python ptBayeslands_sedvec.py -p $prob -s 50000 -r 20 -t 10 -swap 0.01 -b 0.25 -pt 0.5
+			python ptBayeslands_sedvec.py -p $prob -s 1000 -r 10 -t 10 -swap 0.01 -b 0.25 -pt 0.5
  
  
 		done

@@ -1526,7 +1526,7 @@ def main():
     elif problem == 7:
         problemfolder = 'Examples/australia/'
         xmlinput = problemfolder + 'australia.xml'
-        simtime = 1000000
+        simtime = 10000000
         resolu_factor = 1
 
         true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
@@ -1542,8 +1542,8 @@ def main():
         real_caerial = 8.e-1 
         real_cmarine = 5.e-1 # Marine diffusion coefficient [m2/a] -->
 
-        maxlimits_vec = [3.0,7.e-6, 2, 2,  1.0, 0.7]  # [rain, erod] this can be made into larger vector, with region based rainfall, or addition of other parameters
-        minlimits_vec = [0.0 ,3.e-6, 0, 0, 0.6, 0.3 ]   # hence, for 4 regions of rain and erod[rain_reg1, rain_reg2, rain_reg3, rain_reg4, erod_reg1, erod_reg2, erod_reg3, erod_reg4 ]
+        maxlimits_vec = [3.0,2.e-6, 2, 2,  1.0, 0.7]  # [rain, erod] this can be made into larger vector, with region based rainfall, or addition of other parameters
+        minlimits_vec = [0.0 ,5.e-7, 0, 0, 0.6, 0.3 ]   # hence, for 4 regions of rain and erod[rain_reg1, rain_reg2, rain_reg3, rain_reg4, erod_reg1, erod_reg2, erod_reg3, erod_reg4 ]
                                     ## hence, for 4 regions of rain and 1 erod, plus other free parameters (p1, p2) [rain_reg1, rain_reg2, rain_reg3, rain_reg4, erod, p1, p2 ]
 
                                     #if you want to freeze a parameter, keep max and min limits the same
