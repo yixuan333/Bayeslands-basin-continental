@@ -22,4 +22,4 @@ cd $PBS_O_WORKDIR
 cd /project/BGH/danial/paralleltemp_Bayeslands
 
 #Now run some commands #python ptBayeslands_sedvec.py Problem Samples NumChain
-python ptBayeslands_sedvec.py 7 1000 10
+python ptBayeslands_sedvec.py -p 7 -s 1000 -r 10
