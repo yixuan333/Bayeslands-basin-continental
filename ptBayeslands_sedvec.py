@@ -77,7 +77,7 @@ pt_samples = samples*args.pt_samples
 
 
 class ptReplica(multiprocessing.Process):
-    def __init__(self,  num_param, vec_parameters, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
+    def __init__(self,  num_param, vec_parameters, minlimits_vec, maxlimits_vec, stepratio_vec, check_likelihood_sed, swap_interval, sim_interval, simtime, samples, real_elev, real_erodep_pts, erodep_coords, filename, xmlinput, run_nb, tempr, parameter_queue, event, main_proc, burn_in, true_elev, true_erodep):
 
         multiprocessing.Process.__init__(self)
         self.processID = tempr      
@@ -207,18 +207,20 @@ class ptReplica(multiprocessing.Process):
 
         return elev_vec, erodep_vec, erodep_pts_vec
 
-
     def likelihood_func(self,input_vector ):
         #print("Running likelihood function: ", input_vector)
         
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = self.run_badlands(input_vector )
-        tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
+        tau_elev = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_erodep =  np.zeros(self.sim_interval.size) 
         #print(self.sim_interval.size, self.real_erodep_pts.shape)
-        for i in range(  self.sim_interval.size):
+        for i in range(self.sim_interval.size):
             tau_erodep[i]  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
-
-        likelihood_elev = - 0.5 * np.log(2 * math.pi * tausq) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq 
+            tau_elev[i] = np.sum(np.square(pred_elev_vec[self.sim_interval[i]] - self.true_elev[i]))/self.true_elev.shape[1]
+        
+        for i in range(1, self.sim_interval.size):
+            likelihood_elev += np.sum(- 0.5 * np.log(2 * math.pi * tau_elev) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tau_elev) 
+        
         likelihood_erodep = 0 
         
         if self.check_likelihood_sed  == True: 
@@ -231,14 +233,11 @@ class ptReplica(multiprocessing.Process):
         else:
             likelihood = np.sum(likelihood_elev)
 
-        rmse_elev = np.sqrt(tausq)
+        rmse_elev = np.sqrt(tau_elev)
         rmse_erodep = np.sqrt(tau_erodep) 
         avg_rmse_er = np.average(rmse_erodep)
 
         return [likelihood *(1.0/self.adapttemp), pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev, avg_rmse_er]
-
-
-
 
     def run(self):
 
@@ -494,10 +493,9 @@ class ptReplica(multiprocessing.Process):
 
         self.signal_main.set()
 
-
 class ParallelTempering:
 
-    def __init__(self, vec_parameters, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param,  real_elev, erodep_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml):
+    def __init__(self, vec_parameters, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param,  real_elev, erodep_pts, erodep_coords, simtime, sim_interval, resolu_factor, run_nb, inputxml, true_elev, true_erodep):
 
 
         self.swap_interval = swap_interval
@@ -512,11 +510,13 @@ class ParallelTempering:
         self.show_fulluncertainity = False # needed in cases when you reall want to see full prediction of 5th and 95th percentile of topo. takes more space 
         self.real_erodep_pts  = erodep_pts
         self.real_elev = real_elev
+        self.true_elev = true_elev
+        self.true_erodep = true_erodep
         self.resolu_factor =  resolu_factor
         self.num_param = num_param
         self.erodep_coords = erodep_coords
         self.simtime = simtime
-        self.sim_interval = siminterval
+        self.sim_interval = sim_interval
         self.run_nb =run_nb 
         self.xmlinput = inputxml
         self.vec_parameters = vec_parameters
@@ -534,7 +534,6 @@ class ParallelTempering:
 
         self.geometric =  True
         self.total_swap_proposals = 0
-
 
     def default_beta_ladder(self, ndim, ntemps, Tmax): #https://github.com/konqr/ptemcee/blob/master/ptemcee/sampler.py
         """
@@ -611,7 +610,6 @@ class ParallelTempering:
 
         return betas
         
-        
     def assign_temperatures(self):
         # #Linear Spacing
         # temp = 2
@@ -635,17 +633,14 @@ class ParallelTempering:
                 self.temperatures.append(temp)
                 temp += tmpr_rate
                 print(self.temperatures[i])
-
-
     
     def initialize_chains (self,     minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed,   burn_in):
         self.burn_in = burn_in
-        self.vec_parameters =   np.random.uniform(minlimits_vec, maxlimits_vec) # will begin from diff position in each replica (comment if not needed)
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica( self.num_param, self.vec_parameters, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in))
-            
+            self.vec_parameters =   np.random.uniform(minlimits_vec, maxlimits_vec) # will begin from diff position in each replica (comment if not needed)
+            self.chains.append(ptReplica( self.num_param, self.vec_parameters, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev, self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i], burn_in, self.true_elev, self.true_erodep))
             
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
         #print (parameter_queue_2, ", param1:",parameter_queue_1)
@@ -680,7 +675,6 @@ class ParallelTempering:
         else:
             self.total_swap_proposals += 1
             return
-    
 
     def run_chains (self ):
         
@@ -882,7 +876,6 @@ class ParallelTempering:
 
         plt.clf()
 
-
     # Merge different MCMC chains y stacking them on top of each other
     def show_results(self, filename):
 
@@ -979,7 +972,6 @@ class ParallelTempering:
 
         return posterior, likelihood_vec.T, accept_list, combined_topo,   timespan_erodep, accept, pred_topofinal, xslice, yslice, rmse_elev, rmse_erodep
 
-
     def find_nearest(self, array,value): # just to find nearest value of a percentile (5th or 9th from pos likelihood)
         idx = (np.abs(array-value)).argmin()
         return array[idx], idx
@@ -999,7 +991,6 @@ class ParallelTempering:
         para_95thperc = pos_param[:, index_95th] 
 
         return optimal_para, para_5thperc, para_95thperc
-
 
     # this is same method in Replica class - copied here to get error uncertainity in topo pred
     def run_badlands(self, input_vector):
@@ -1066,7 +1057,6 @@ class ParallelTempering:
 
         return elev_vec, erodep_vec, erodep_pts_vec
 
-
     def interpolateArray(self, coords=None, z=None, dz=None):
         """
         Interpolate the irregular spaced dataset from badlands on a regular grid.
@@ -1102,15 +1092,11 @@ class ParallelTempering:
         dzreg = np.reshape(dzi,(ny,nx))
         return zreg,dzreg
 
-
-
     def plot_figure(self, list, title, real_value ): 
 
         list_points =  list
         fname = self.folder
          
-
-
         size = 22
 
         plt.tick_params(labelsize=size)
@@ -1146,9 +1132,6 @@ class ParallelTempering:
 
         #---------------------------------------
         
-
-
-
     def viewGrid(self, width=1000, height=1000, zmin=None, zmax=None, zData=None, title='Predicted Topography', time_frame=None, filename=None):
 
         if zmin == None:
@@ -1196,9 +1179,7 @@ class ParallelTempering:
         plt.savefig(fname )
         plt.clf()
 
-
 # class  above this line -------------------------------------------------------------------------------------------------------
-
 
 def mean_sqerror(  pred_erodep, pred_elev,  real_elev,  real_erodep_pts):
         
@@ -1207,16 +1188,13 @@ def mean_sqerror(  pred_erodep, pred_elev,  real_elev,  real_erodep_pts):
 
         return elev + sed, sed
 
-
 def make_directory (directory): 
     if not os.path.exists(directory):
         os.makedirs(directory)
 
 def plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts, sim_interval, fname):
 
-
     size = 22
-
     plt.tick_params(labelsize=size)
     params = {'legend.fontsize': size, 'legend.handlelength': 2}
     plt.rcParams.update(params)
@@ -1256,13 +1234,9 @@ def plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts, sim_inte
     plt.savefig(fname +'/pos_erodep_'+str( sim_interval) +'_.png')
     plt.clf()    
 
-
-
 def main():
 
     random.seed(time.time()) 
-
-    #problem = input("Which problem do you want to choose 1. crater-fast, 2. crater  3. etopo-fast 4. etopo 5. island ")
 
     if problem == 1:
         problemfolder = 'Examples/crater_fast/'
@@ -1386,7 +1360,6 @@ def main():
             
             return 
 
-
     elif problem == 4:
         problemfolder = 'Examples/etopo/'
         xmlinput = problemfolder + 'etopo.xml'
@@ -1425,7 +1398,6 @@ def main():
             print( 'make sure that this is updated in case when you intro more parameters. should have as many rows as parameters ') 
             
             return
-
 
     elif problem == 5:
         problemfolder = 'Examples/tasmania/'
@@ -1522,7 +1494,6 @@ def main():
             
             return
 
-
     elif problem == 7:
         problemfolder = 'Examples/australia/'
         xmlinput = problemfolder + 'australia.xml'
@@ -1563,13 +1534,28 @@ def main():
             print( 'make sure that this is updated in case when you intro more parameters. should have as many rows as parameters ') 
             
             return
+    
     else:
         print('choose some problem  ')
 
-    datapath = problemfolder + 'data/final_elev.txt'
-    groundtruth_elev = np.loadtxt(datapath)
+    sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography   
+    print ('Simulation time interval', sim_interval)
+    groundtruth_elev = np.loadtxt(problemfolder + 'data/final_elev.txt')
     groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
     groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
+
+
+    true_elev = true_erodep = []
+
+    for i in range(sim_interval.size):
+        print ('i',i)
+        true_elev.append(np.loadtxt(problemfolder + 'data/elev_%s.txt' %int(sim_interval[i])))
+        true_erodep.append(np.loadtxt(problemfolder + 'data/erdp_%s.txt' %int(sim_interval[i])))
+
+    true_elev = np.asarray(true_elev)
+    true_erodep = np.asarray(true_erodep)
+    # print ('true_elev size', true_elev.shape,'true_erodep size', true_erodep.shape)
+    # print ('true_elev[1] shape', true_elev[0,:,:].shape)
 
     fname = ""
     run_nb = 0
@@ -1607,18 +1593,17 @@ def main():
 
     timer_start = time.time()
 
-    sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
-    print("Simulation time interval", sim_interval)
+    
 
 
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
     #-------------------------------------------------------------------------------------
-    pt = ParallelTempering(  vec_parameters, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput)
+    pt = ParallelTempering(  vec_parameters, num_chains, maxtemp, samples, swap_interval, fname, true_parameter_vec, num_param,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, true_elev, true_erodep)
     
     #-------------------------------------------------------------------------------------
     # intialize the MCMC chains
-    #-------------------------------------------------------------------------------------
+    #--------------------sim_interval-----------------------------------------------------------------
     pt.initialize_chains(    minlimits_vec, maxlimits_vec, stepratio_vec, likelihood_sediment,   burn_in)
 
     #-------------------------------------------------------------------------------------
