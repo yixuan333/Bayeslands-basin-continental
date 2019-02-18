@@ -11,6 +11,7 @@ libUtils/WaveComp/SwanSrc/*.o
 *.xmf
 *.xdmf
 *.directory
+*.swp
 .ipynb_checkpoints
 build/
 output_*
