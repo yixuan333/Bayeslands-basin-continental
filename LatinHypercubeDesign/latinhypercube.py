@@ -2,10 +2,16 @@
 
 from pyDOE import *
 from scipy.stats.distributions import norm
+ 
 
-#lhs(n, [samples, criterion, iterations])
+x = lhs(4, samples=40, criterion='center')
 
-lhd = lhs(2, samples=5)
-lhd = norm(loc=0, scale=1).ppf(lhd)  # this applies to both factors here
+#print(x)
 
-lhs(4, samples=10, criterion='center')
+design = lhs(4, samples=10)
+means = [1.5, 0.0005, 3, 4]
+stdvs = [0.5, 0.00005, 1, 0.25]
+for i in xrange(4):
+	design[:, i] = norm(loc=means[i], scale=stdvs[i]).ppf(design[:, i])
+
+print(design)
