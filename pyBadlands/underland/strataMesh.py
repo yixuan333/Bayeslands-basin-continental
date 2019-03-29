@@ -338,7 +338,7 @@ class strataMesh():
 
         self.oldload = numpy.copy(cumdiff)
 
-    def buildStrata(self, elev, cumdiff, sea, rank, write=0, outstep=0):
+    def buildStrata(self, muted, elev, cumdiff, sea, rank, write=0, outstep=0):
         """
         Build the stratigraphic layer on the regular grid.
 
@@ -402,7 +402,8 @@ class strataMesh():
 
         if write>0:
             self.layerMesh(selev[self.ids])
-            self.write_hdf5_stratal(outstep,rank)
+            if not muted:
+                self.write_hdf5_stratal(outstep,rank)
 
         self.step += 1
 

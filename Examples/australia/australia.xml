@@ -4,44 +4,236 @@
     <!-- Regular grid structure -->
     <grid>
         <!-- Digital elevation model file path -->
+        <!-- <demfile>Examples/australia/data/australia_5k.csv</demfile> -->
         <demfile>Examples/australia/data/australia_5k.csv</demfile>
         <!-- Optional parameter (integer) used to decrease TIN resolution.
              The default value is set to 1. Increasing the factor
              value will multiply the digital elevation model resolution
              accordingly.  -->
+        <boundary>slope</boundary>
         <resfactor>4</resfactor>
     </grid>
 
     <!-- Simulation time structure -->
     <time>
         <!-- Simulation start time [a] -->
-        <start>0.</start>
+        <start>-1.49E+08</start>
         <!-- Simulation end time [a] -->
-        <end>10000000.</end>
+        <end>0</end>
         <!-- Display interval [a] -->
-        <display>10000.</display>
+        <display>1.00E+06</display>
     </time>
+
+    <!-- Simulation stratigraphic structure -->
+    <strata>
+        <!-- Stratal grid resolution [m] -->
+        <stratdx>50000.</stratdx>
+        <!-- Stratal layer interval [a] -->
+        <laytime>1.00E+06</laytime>
+        <!-- Surface porosity -->
+        <poro0>0.52</poro0>
+        <!-- characteristic constant for Athy's porosity law [/km] -->
+        <poroC>0.47</poroC>
+    </strata>
 
     <!-- Sea-level structure -->
     <sea>
         <!-- Relative sea-level position [m] -->
         <position>0.</position>
         <!-- Sea-level curve - (optional) -->
-        <curve>Examples/australia/data/sealevel.csv</curve>
+        <curve>Examples/australia/data/Sea_level/Haq_87_M.csv</curve>
     </sea>
+
+    <!--  Tectonic structure  -->
+    <tectonic>
+        <!--
+         Is 3D displacements on ? (1:on - 0:off). Default is 0.
+         -->
+        <disp3d>0</disp3d>
+        <!--  Number of tectonic events  -->
+        <events>17</events>
+        <!--  Displacement definition  -->
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-149.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-139.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_139-149_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-139.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-129.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_129-139_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-129.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-119.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_119-129_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-119.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-109.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_109-119_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-109.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-99.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_99-109_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-99.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-89.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_89-99_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-89.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-79.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_79-89_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-79.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-69.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_69-79_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-69.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-59.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_59-69_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-59.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-49.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_49-59_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-49.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-39.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_39-49_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-39.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-29.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_29-39_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-29.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-19.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_19-29_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-19.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-14.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_14-19_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-14.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-9.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_9-14_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-9.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-4.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_4-9_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-4.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-0.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/australia/data/gld115_total_diff_0-4_Ma_50km.csv</dfile>
+        </disp>
+    </tectonic>
 
     <!-- Precipitation structure -->
     <precipitation>
-        <!-- Number of precipitation events -->
-        <climates>1</climates>
-        <!-- Precipitation definition -->
+        <!--  Number of precipitation events  -->
+        <climates>4</climates>
+        <!--  Precipitation definition  -->
+        <!-- Linear orographic precipitation model definition -->
         <rain>
-            <!-- Rain start time [a] -->
-            <rstart>0.</rstart>
-            <!-- Rain end time [a] -->
-            <rend>10000000.</rend>
-            <!-- Precipitation value [m/a] - (optional) -->
-            <rval>1.</rval>
+          <!-- Rain start time [a] -->
+          <rstart>-150.e6</rstart>
+          <!-- Rain end time [a] -->
+          <rend>-40.e6</rend>
+          <!-- Precipitation map [m/a] -->
+          <rval>1.16</rval>
+        </rain>
+        <rain>
+        <!-- Rain start time [a] -->
+          <rstart>-40.e6</rstart>
+          <!-- Rain end time [a] -->
+          <rend>-20.e6</rend>
+          <!-- Precipitation map [m/a] -->
+          <rval>0.9</rval>
+        </rain>
+        <rain>
+          <!-- Rain start time [a] -->
+          <rstart>-20.e6</rstart>
+          <!-- Rain end time [a] -->
+          <rend>-10.e6</rend>
+          <!-- Precipitation map [m/a] -->
+          <rval>1.092</rval>
+        </rain>
+        <rain>
+          <!-- Rain start time [a] -->
+          <rstart>-10.e6</rstart>
+          <!-- Rain end time [a] -->
+          <rend>0.</rend>
+          <!-- Rain computation time step [a] -->
+          <ortime>100000.</ortime>
+          <!-- Minimal precipitation value [m/a] -->
+          <rmin>1.</rmin>
+          <!-- Maximal precipitation value [m/a] -->
+          <rmax>5.</rmax>
+          <!-- Maximal elevation for computing linear trend [m] -->
+          <rzmax>4000.</rzmax>
         </rain>
     </precipitation>
 
@@ -51,36 +243,81 @@
          to be equal to the local carrying capacity, which is itself a function of
          boundary shear stress. -->
     <sp_law>
-        <!-- Values of m and n indicate how the incision rate scales
-             with bed shear stress for constant value of sediment flux
-             and sediment transport capacity.
-             Generally, m and n are both positive, and their ratio
-             (m/n) is considered to be close to 0.5 -->
+        <!-- Critical slope used to force aerial deposition for alluvial plain,
+        in [m/m] (optional). -->
+        <slp_cr>0.001</slp_cr>
+        <!-- Maximum percentage of deposition at any given time interval from rivers
+             sedimentary load in alluvial plain. Value ranges between [0,1] (optional). -->
+        <perc_dep>0.5</perc_dep>
+        <!--
+         Planchon & Darboux filling thickness limit [m]. This parameter is used
+         to defined maximum accumulation thickness in depression area per time
+         step. Default value is set to 1.
+         -->
+        <!--fillmax>1.</fillmax-->
+        <!--
+         Values of m and n indicate how the incision rate scales
+         with bed shear stress for constant value of sediment flux
+         and sediment transport capacity.
+         Generally, m and n are both positive, and their ratio
+         (m/n) is considered to be close to 0.5
+         -->
         <m>0.5</m>
-        <n>1.0</n>
-        <!-- The erodibility coefficient is scale-dependent and its value depend
-              on lithology and mean precipitation rate, channel width, flood
-              frequency, channel hydraulics. -->
-        <erodibility>2.5e-6</erodibility>
+        <n>1</n>
+        <!--
+         The erodibility coefficient is scale-dependent and its value depend
+         on lithology and mean precipitation rate, channel width, flood
+         frequency, channel hydraulics.
+        -->
+        <erodibility>5.00E-07</erodibility>
         <!-- Number of steps used to distribute marine deposit.
              Default value is 5 (integer). -->
-        <diffnb>10</diffnb>
+        <diffnb>5</diffnb>
         <!-- Proportion of marine sediment deposited on downstream nodes. It needs
              to be set between ]0,1[. Default value is 0.9 (optional). -->
-        <diffprop>0.05</diffprop>
+        <diffprop>0.005</diffprop>
     </sp_law>
 
-    <!-- Linear slope diffusion parameters:
-         Parameterisation of the sediment transport includes the simple creep transport
-         law which states that transport rate depends linearly on topographic gradient. -->
+    <erocoeff>
+        <!-- Number of erosion layers. -->
+        <erolayers>3</erolayers>
+        <!-- The layering is defined from top to bottom, with:
+            - either a constant erodibility value for the entire layer or with an erodibility map
+            - either a constant thickness for the entire layer or with a thickness map -->
+        <!-- Variable erodibilities and constant layer thickness -->
+        <erolay>
+            <!-- Variable erodibilities for the considered layer. -->
+            <eromap>Examples/australia/data/Erodibility_UFH_50km.csv</eromap>
+            <!-- Uniform thickness value for the considered layer [m]. -->
+            <thcst>0.2</thcst>
+        </erolay>
+        <erolay>
+            <!-- Variable erodibilities for the considered layer. -->
+            <eromap>Examples/australia/data/Erodibility_TasLine_UFH_50km.csv</eromap>
+            <!-- Uniform thickness value for the considered layer [m]. -->
+            <thcst>5000</thcst>
+        </erolay>
+        <erolay>
+            <!-- Variable erodibilities for the considered layer. -->
+            <eromap>Examples/australia/data/Erodibility_UFH_50km.csv</eromap>
+            <!-- Uniform thickness value for the considered layer [m]. -->
+            <thcst>10000</thcst>
+        </erolay>
+    </erocoeff>
+
+    <!--
+     Linear slope diffusion parameters:
+     Parameterisation of the sediment transport includes the simple creep transport
+     law which states that transport rate depends linearly on topographic gradient.
+     -->
     <creep>
-        <!-- Surface diffusion coefficient [m2/a] -->
-        <caerial>8.e-1</caerial>
-        <!-- Marine diffusion coefficient [m2/a] -->
-        <cmarine>5.e-1</cmarine>
+        <!--  Surface diffusion coefficient [m2/a]  -->
+        <caerial>0.001</caerial>
+        <!--  Marine diffusion coefficient [m2/a]  -->
+        <cmarine>0.005</cmarine>
         <!-- River transported sediment diffusion
              coefficient in marine realm [m2/a] -->
-        <criver>10.</criver>
+        <criver>5</criver>
     </creep>
 
     <!-- Output folder path -->

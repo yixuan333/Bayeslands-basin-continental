@@ -21,7 +21,7 @@ class xmlParser:
     This class defines XmL input file variables.
     """
 
-    def __init__(self, run_nb, muted = False, inputfile = None, makeUniqueOutputDir=True):
+    def __init__(self, run_nb, muted = True, inputfile = None, makeUniqueOutputDir=True):
         """
         If makeUniqueOutputDir is set, we create a uniquely-named directory for
         the output. If it's clear, we blindly accept what's in the XML file.
@@ -223,7 +223,7 @@ class xmlParser:
             if element is not None:
                 self.demfile = element.text
                 if not os.path.isfile(self.demfile):
-                    raise ValueError('DEM file is missing or the given path is incorrect.')
+                    raise ValueError('DEM file is missing or the given path is incorrect.', self.demfile)
             element = None
             element = grid.find('boundary')
             if element is not None:

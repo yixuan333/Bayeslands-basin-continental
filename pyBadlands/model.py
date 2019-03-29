@@ -43,7 +43,7 @@ class Model(object):
         self.opt_erod = []
         self.opt_rain = []
 
-    def load_xml(self, run_nb, filename, verbose=False, muted = False):
+    def load_xml(self, run_nb, filename, verbose=False, muted = True):
         """
         Load an XML configuration file.
 
@@ -404,7 +404,7 @@ class Model(object):
                 if self.straTIN is not None:
                     self.straTIN.step += 1
                 if self.strata:
-                    self.strata.buildStrata(self.elevation, self.cumdiff, self.force.sealevel,
+                    self.strata.buildStrata(muted, self.elevation, self.cumdiff, self.force.sealevel,
                         self._rank, outStrata, self.outputStep-1)
                 outStrata = 0
 
@@ -501,7 +501,7 @@ class Model(object):
         # Update next stratal layer time
         if self.tNow >= self.force.next_layer:
             self.force.next_layer += self.input.laytime
-            self.strata.buildStrata(self.elevation, self.cumdiff, self.force.sealevel,
+            self.strata.buildStrata(muted, self.elevation, self.cumdiff, self.force.sealevel,
                                     self._rank, 1, self.outputStep-1)
 
         # Finalise SWAN model run
