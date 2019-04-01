@@ -25,6 +25,7 @@ tags
 doc/env/
 npm-debug.log
 Examples/*/results_*
+Examples/*/*results_*
 Examples/*/images
 Examples/*/*_liklsurf*
 Examples/*/*.zip
