@@ -5,7 +5,7 @@ echo Running all
  
 for t in 4
 	do
-		for x in 200 
+		for x in 200
 
 		do
  
