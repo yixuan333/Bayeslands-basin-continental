@@ -263,13 +263,10 @@ class ptReplica(multiprocessing.Process):
 
             inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() 
 
-
+        elif method ==3:
+            inittopo_vec = ()
 
         scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid)
-
-
-
-          
 
         v_ =   scale_factor  
 
@@ -282,7 +279,6 @@ class ptReplica(multiprocessing.Process):
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
  
-
 
         width = reconstructed_topo.shape[0]
         length = reconstructed_topo.shape[1]
@@ -300,27 +296,12 @@ class ptReplica(multiprocessing.Process):
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         groundtruth_topo[m][n]   +=  v_[l][w]
 
- 
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
-
- 
-   
 
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
                     groundtruth_topo[m][n]   = inside[m][n]
- 
- 
- 
-  
- 
-
-
-
-          
-
-
         self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
  
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
@@ -348,7 +329,7 @@ class ptReplica(multiprocessing.Process):
         # Load the XmL input file
         model.load_xml(str(self.run_nb), self.input, muted=True)
 
-        if  problem==1 or problem==2 or problem==7: # when you have initial topo (problem is global variable)
+        if  problem==1 or problem==2: #or problem==7: # when you have initial topo (problem is global variable)
             init = False
         else:
             init = True # when you need to estimate initial topo
@@ -2236,7 +2217,9 @@ def main():
         simtime = 1.e+06
         resolu_factor = 1
 
-        datapath = problemfolder + 'data/final_elev.txt'
+        # datapath = problemfolder + 'data/final_elev.txt'
+        datapath = problemfolder + 'data/initial_elev.txt'
+        
         groundtruth_elev = np.loadtxt(datapath)
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
