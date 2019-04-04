@@ -350,8 +350,8 @@ class Model(object):
                 self.cumflex += self.tinFlex
                 # Update next flexure time
                 self.force.next_flexure += self.input.ftime
-                if self._rank == 0:
-                    print "   - Compute flexural isostasy ", time.clock() - flextime
+                # if self._rank == 0:
+                #     print "   - Compute flexural isostasy ", time.clock() - flextime
 
             # Update wave parameters
             if self.input.waveOn:
@@ -477,8 +477,8 @@ class Model(object):
             self.cumflex += self.tinFlex
             # Update next flexure time
             self.force.next_flexure += self.input.ftime
-            if self._rank == 0:
-                print "   - Compute flexural isostasy ", time.clock() - flextime
+            # if self._rank == 0:
+            #     print "   - Compute flexural isostasy ", time.clock() - flextime
 
         # Create checkpoint files and write HDF5 output
         if self.input.udw == 0 or self.tNow == self.input.tEnd or self.tNow == self.force.next_display:
