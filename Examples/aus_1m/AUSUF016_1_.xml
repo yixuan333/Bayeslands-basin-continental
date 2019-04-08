@@ -88,39 +88,39 @@
         <!-- Linear orographic precipitation model definition -->
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-150.e6</rstart>
+          <rstart>-1.E4</rstart>
           <!-- Rain end time [a] -->
-          <rend>-40.e6</rend>
+          <rend>-8.E3</rend>
           <!-- Precipitation map [m/a] -->
-          <rval>1.16</rval>
+          <rval>1.2</rval>
         </rain>
         <rain>
         <!-- Rain start time [a] -->
-          <rstart>-40.e6</rstart>
+          <rstart>-8.E3</rstart>
           <!-- Rain end time [a] -->
-          <rend>-20.e6</rend>
+          <rend>-6.E3</rend>
           <!-- Precipitation map [m/a] -->
-          <rval>0.9</rval>
+          <rval>1.2</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-20.e6</rstart>
+          <rstart>-6.E3</rstart>
           <!-- Rain end time [a] -->
-          <rend>-10.e6</rend>
+          <rend>-4.E3</rend>
           <!-- Precipitation map [m/a] -->
-          <rval>1.092</rval>
+          <rval>1.2</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-10.e6</rstart>
+          <rstart>-4.E3</rstart>
           <!-- Rain end time [a] -->
           <rend>0.</rend>
           <!-- Rain computation time step [a] -->
           <ortime>100000.</ortime>
           <!-- Minimal precipitation value [m/a] -->
-          <rmin>1.</rmin>
+          <rmin>1.2</rmin>
           <!-- Maximal precipitation value [m/a] -->
-          <rmax>5.</rmax>
+          <rmax>1.2</rmax>
           <!-- Maximal elevation for computing linear trend [m] -->
           <rzmax>4000.</rzmax>
         </rain>

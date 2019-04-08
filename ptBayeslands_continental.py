@@ -87,7 +87,7 @@ burn_in=args.burn_in
 #maxtemp = int(num_chains * 5)/args.mt_val
 maxtemp =   args.mt_val 
 swap_interval = int(swap_ratio * (samples/num_chains)) #how ofen you swap neighbours
-num_successive_topo = 4
+num_successive_topo = 10
 pt_samples = args.pt_samples
 epsilon = args.epsilon
 rain_intervals = args.rain_intervals
@@ -225,9 +225,6 @@ class ptReplica(multiprocessing.Process):
         ax.plot_trisurf(xx, yy, zData.flatten(), linewidth=0.2, antialiased=True)  
         fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
         '''
-         
- 
-
 
      
     def process_inittopo(self, inittopo_vec):
@@ -235,15 +232,11 @@ class ptReplica(multiprocessing.Process):
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
 
-
         #len_grid = int(groundtruth_elev.shape[0]/inittopo_gridlen)  # take care of left over
         #wid_grid = int(groundtruth_elev.shape[1]/inittopo_gridwidth)   # take care of left over
 
- 
-
         len_grid = self.len_grid
         wid_grid = self.wid_grid
-
         
         sub_gridlen = int(length/len_grid)
         sub_gridwidth = int(width/wid_grid) 
@@ -251,8 +244,6 @@ class ptReplica(multiprocessing.Process):
         new_width =wid_grid *  sub_gridwidth
 
         reconstructed_topo  = self.real_elev.copy()  # to define the size
-
-
         #reconstructed_topo = reconstructed_topo_.tolist()
         groundtruth_topo = self.real_elev.copy()
 
@@ -1729,7 +1720,7 @@ def main():
     if problem == 1: #this will have region and time rainfall of Problem 1
         problemfolder = 'Examples/aus_1m/'
         xmlinput = problemfolder + 'AUSUF016_1.xml'
-        simtime = 1.e+04
+        simtime = -1.e+04
         resolu_factor = 1
 
         datapath = problemfolder + 'data/final_elev.txt'
@@ -1980,7 +1971,8 @@ def main():
 
     timer_start = time.time()
 
-    sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    sim_interval = np.arange(0,  simtime+(simtime/num_successive_topo), simtime/num_successive_topo) # for generating successive topography
+    sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
 
