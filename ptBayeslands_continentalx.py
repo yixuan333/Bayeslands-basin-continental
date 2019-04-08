@@ -446,7 +446,7 @@ class ptReplica(multiprocessing.Process):
 
         print(self.sim_interval.size, self.real_erodep_pts.shape)
 
-        for i in range(  1, self.sim_interval.size -1):
+        for i in range(  1, self.sim_interval.size ):
             tau_erodep[i]  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
 
         likelihood_elev = - 0.5 * np.log(2 * math.pi * tausq) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq 
@@ -454,7 +454,7 @@ class ptReplica(multiprocessing.Process):
         
         if self.check_likelihood_sed  == True: 
 
-            for i in range(1, self.sim_interval.size-1):
+            for i in range(1, self.sim_interval.size):
                 likelihood_erodep  += np.sum(-0.5 * np.log(2 * math.pi * tau_erodep[i]) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]) / tau_erodep[i]) # only considers point or core of erodep
         
             likelihood = np.sum(likelihood_elev) +  (likelihood_erodep * self.sedscalingfactor)

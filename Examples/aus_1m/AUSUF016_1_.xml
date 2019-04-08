@@ -88,31 +88,31 @@
         <!-- Linear orographic precipitation model definition -->
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-150.e4</rstart>
+          <rstart>-150.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-40.e4</rend>
+          <rend>-40.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>1.16</rval>
         </rain>
         <rain>
         <!-- Rain start time [a] -->
-          <rstart>-40.e4</rstart>
+          <rstart>-40.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-20.e4</rend>
+          <rend>-20.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>0.9</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-20.e4</rstart>
+          <rstart>-20.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-10.e4</rend>
+          <rend>-10.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>1.092</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-10.e4</rstart>
+          <rstart>-10.e6</rstart>
           <!-- Rain end time [a] -->
           <rend>0.</rend>
           <!-- Rain computation time step [a] -->
