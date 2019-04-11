@@ -113,8 +113,12 @@ def topoGenerator(directory, inputname, rain, erodibility, m, n, simtime, erdp_c
 	variable: title
 
 	"""
-	sim_interval = np.arange(0, simtime+1, simtime/2)
-	
+	num_successive_topo = 4
+	sim_interval = np.arange(0,  simtime+(simtime/num_successive_topo), simtime/num_successive_topo) # for generating successive topography
+	if simtime < 0:
+		sim_interval = sim_interval[::-1]
+	print("Simulation time interval", sim_interval)
+
 	model = badlandsModel()
 	model.load_xml(str(simtime), inputname, verbose = False, muted = False)
 	model.input.SPLero = erodibility
@@ -536,7 +540,7 @@ def main():
 		tstart = time.clock()
 		directory = 'Examples/aus_1m'
 		print '%s/AUSUF016_1.xml' %(directory)
-		topoGenerator(directory,'%s/AUSUF016_1.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, 1.e06, erdp_coords_crater, elev_coords_crater, final_noise)
+		topoGenerator(directory,'%s/AUSUF016_1.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, -1.e06, erdp_coords_crater, elev_coords_crater, final_noise)
 		print 'TopoGen for AUSUF016 1 million completed in (s):',time.clock()-tstart
 
 if __name__ == "__main__": main()

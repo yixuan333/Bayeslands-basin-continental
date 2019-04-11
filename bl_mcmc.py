@@ -16,6 +16,7 @@ Badlands is used as a "black box" model for bayesian methods.
 import os
 import sys
 import numpy as np
+import argparse
 import random
 import time
 import math
@@ -46,6 +47,16 @@ from scipy.stats import multivariate_normal
 from plotly.graph_objs import *
 from plotly.offline.offline import _plot_html
 plotly.offline.init_notebook_mode()
+
+
+parser=argparse.ArgumentParser(description='PTBayeslands modelling')
+
+parser.add_argument('-p','--problem', help='Problem Number 1-crater-fast,2-crater,3-etopo-fast,4-etopo,5-null,6-mountain', required=True, dest="problem",type=int)
+parser.add_argument('-s','--samples', help='Number of samples', default=10000, dest="samples",type=int)
+
+args = parser.parse_args()
+problem = args.problem
+samples = args.samples
 
 class bayeslands_mcmc():
 	"""
@@ -122,7 +133,9 @@ class bayeslands_mcmc():
 		model.flow.erodibility.fill(erodibility)
 
 		# Adjust precipitation values based on given parameter
+		print ('rain value from xml', model.force.rainVal)
 		model.force.rainVal[:] = rain
+		print ('rain value after update', model.force.rainVal)
 
 		#Adjust m and n values
 		model.input.SPLm = m
@@ -643,8 +656,8 @@ class bayeslands_mcmc():
 				pos_tau_erdp[i + 1,] = tau_erdp_pro
 				pos_tau_erdp_pts[i + 1,] = tau_erdp_pts_pro
 
-				list_yslicepred[i+1,:] =  final_predtopo[:, ymid] # slice taken at mid of topography along y axis  
-				list_xslicepred[i+1,:]=   final_predtopo[xmid, :]  # slice taken at mid of topography along x axis 
+				# list_yslicepred[i+1,:] =  final_predtopo[:, ymid[0]] # slice taken at mid of topography along y axis  
+				# list_xslicepred[i+1,:]=   final_predtopo[xmid[0], :]  # slice taken at mid of topography along x axis 
 
 				pos_likl[i + 1,] = likelihood
 				
@@ -756,12 +769,7 @@ def main():
 	erdp_coords_etopo = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])
 	erdp_coords_etopo_fast = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[68,40],[72,44]])
 
-	#choice = input("Please choose a Badlands example to run the MCMC algorithm on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
-	choice = int(sys.argv[1])
-	samples = int(sys.argv[2])
-	#samples = input("Please enter number of samples : \n")
-
-	if choice == 1:
+	if problem == 1:
 		directory = 'Examples/crater_fast'
 		xmlinput = '%s/crater.xml' %(directory)
 		simtime = 15000
@@ -774,7 +782,7 @@ def main():
 		likl_sed = True
 		erdp_coords = erdp_coords_crater_fast
 
-	elif choice == 2:
+	elif problem == 2:
 		directory = 'Examples/crater'
 		xmlinput = '%s/crater.xml' %(directory)
 		simtime = 50000
@@ -787,7 +795,7 @@ def main():
 		likl_sed = True
 		erdp_coords = erdp_coords_crater
 
-	elif choice == 3:
+	elif problem == 3:
 		directory = 'Examples/etopo_fast'
 		xmlinput = '%s/etopo.xml' %(directory)
 		simtime = 500000
@@ -800,7 +808,7 @@ def main():
 		likl_sed = True
 		erdp_coords = erdp_coords_etopo_fast
 
-	elif choice == 4:
+	elif problem == 4:
 		directory = 'Examples/etopo'
 		xmlinput = '%s/etopo.xml' %(directory)
 		simtime = 1000000
@@ -813,17 +821,17 @@ def main():
 		likl_sed = True
 		erdp_coords = erdp_coords_etopo
 
-	elif choice == 5:
-		directory = 'Examples/tasmania'
-		xmlinput = '%s/tasmania.xml' %(directory)
-		simtime = 1000000
+	elif problem == 5:
+		directory = 'Examples/aus_1m'
+		xmlinput = '%s/AUSUF016_1.xml' %(directory)
+		simtime = -1.e+04
 		rainlimits = [0.0, 3.0]
-		erodlimits = [3.e-6, 7.e-6]
+		erodlimits = [3.e-7, 7.e-7]
 		mlimit = [0.4, 0.6]
 		nlimit = [0.9, 1.1]
 		true_rain = 1.5
-		true_erod = 5.e-6
-		likl_sed = False
+		true_erod = 5.e-7
+		likl_sed = True
 		erdp_coords = erdp_coords_etopo
 	else:
 		print('Invalid selection, please choose a problem from the list ')

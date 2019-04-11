@@ -18,11 +18,11 @@
     <!-- Simulation time structure -->
     <time>
         <!-- Simulation start time [a] -->
-        <start>-1.E+04</start>
+        <start>-1.E+06</start>
         <!-- Simulation end time [a] -->
         <end>0</end>
         <!-- Display interval [a] -->
-        <display>1.00E+03</display>
+        <display>1.00E+05</display>
     </time>
 
     <!-- Simulation stratigraphic structure -->
@@ -30,7 +30,7 @@
         <!-- Stratal grid resolution [m] -->
         <stratdx>50000.</stratdx>
         <!-- Stratal layer interval [a] -->
-        <laytime>1.00E+03</laytime>
+        <laytime>1.00E+05</laytime>
         <!-- Surface porosity -->
         <poro0>0.52</poro0>
         <!-- characteristic constant for Athy's porosity law [/km] -->
@@ -56,7 +56,7 @@
         <!--  Displacement definition  -->
         <disp>
             <!--  Displacement start time [a]  -->
-            <dstart>-1.E4</dstart>
+            <dstart>-1.E6</dstart>
             <!--  Displacement end time [a]  -->
             <dend>0</dend>
             <!--  Displacement map [m]  -->
@@ -88,31 +88,31 @@
         <!-- Linear orographic precipitation model definition -->
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-150.e4</rstart>
+          <rstart>-150.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-40.e4</rend>
+          <rend>-40.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>1.16</rval>
         </rain>
         <rain>
         <!-- Rain start time [a] -->
-          <rstart>-40.e4</rstart>
+          <rstart>-40.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-20.e4</rend>
+          <rend>-20.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>0.9</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-20.e4</rstart>
+          <rstart>-20.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-10.e4</rend>
+          <rend>-10.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>1.092</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-10.e4</rstart>
+          <rstart>-10.e6</rstart>
           <!-- Rain end time [a] -->
           <rend>0.</rend>
           <!-- Rain computation time step [a] -->
@@ -216,7 +216,7 @@
     </creep>
     <flexure>
         <!--  Time step used to compute the isostatic flexure.  -->
-        <ftime>1.E3</ftime>
+        <ftime>1.E5</ftime>
         <!--
          Definition of the flexural grid:
          It is possible to setup a flexural grid at a resolution higher than the one used
