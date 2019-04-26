@@ -29,7 +29,6 @@ from PIL import Image
 from io import StringIO
 from cycler import cycler
 import os
-import shutil
 import sys
 import matplotlib.mlab as mlab
 from matplotlib.patches import Polygon
@@ -48,33 +47,17 @@ from plotly.offline.offline import _plot_html
 import pandas
 import argparse
 
-import pandas as pd
-import seaborn as sns
-
-
-  
-from scipy.ndimage import filters 
-
-import scipy.ndimage as ndimage
-
-from scipy.ndimage import gaussian_filter
 
 #Initialise and parse inputs
 parser=argparse.ArgumentParser(description='PTBayeslands modelling')
 
-parser.add_argument('-p','--problem', help='Problem Number 1-crater-fast,2-crater,3-etopo-fast,4-etopo,5-null,6-mountain', required=True,   dest="problem",type=int)
+parser.add_argument('-p','--problem', help='Problem Number 1-crater-fast,2-crater,3-etopo-fast,4-etopo,5-null,6-mountain', required=True, dest="problem",type=int)
 parser.add_argument('-s','--samples', help='Number of samples', default=10000, dest="samples",type=int)
 parser.add_argument('-r','--replicas', help='Number of chains/replicas, best to have one per availble core/cpu', default=10,dest="num_chains",type=int)
 parser.add_argument('-t','--temperature', help='Demoninator to determine Max Temperature of chains (MT=no.chains*t) ', default=10,dest="mt_val",type=int)
 parser.add_argument('-swap','--swap', help='Swap Ratio', dest="swap_ratio",default=0.02,type=float)
 parser.add_argument('-b','--burn', help='How many samples to discard before determing posteriors', dest="burn_in",default=0.25,type=float)
-parser.add_argument('-pt','--ptsamples', help='Ratio of PT vs straight MCMC samples to run', dest="pt_samples",default=0.5,type=float)  
-parser.add_argument('-rain_intervals','--rain_intervals', help='rain_intervals', dest="rain_intervals",default=4,type=int)
-
-
-parser.add_argument('-epsilon','--epsilon', help='epsilon for inital topo', dest="epsilon",default=0.5,type=float)
-
-
+parser.add_argument('-pt','--ptsamples', help='Ratio of PT vs straight MCMC samples to run', dest="pt_samples",default=0.5,type=float)
 
 args = parser.parse_args()
     
@@ -85,20 +68,16 @@ num_chains = args.num_chains
 swap_ratio = args.swap_ratio
 burn_in=args.burn_in
 #maxtemp = int(num_chains * 5)/args.mt_val
-maxtemp =   args.mt_val 
+maxtemp =  num_chains*args.mt_val 
 swap_interval = int(swap_ratio * (samples/num_chains)) #how ofen you swap neighbours
 num_successive_topo = 4
-pt_samples = args.pt_samples
-epsilon = args.epsilon
-rain_intervals = args.rain_intervals
-
-method = 2 # type of formaltion for inittopo construction
+pt_samples = samples*args.pt_samples
 
 
 
 
 class ptReplica(multiprocessing.Process):
-    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
+    def __init__(self,  num_param, vec_parameters, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
 
         multiprocessing.Process.__init__(self)
         self.processID = tempr      
@@ -107,7 +86,7 @@ class ptReplica(multiprocessing.Process):
         self.signal_main = main_proc
         self.temperature = tempr
         self.swap_interval = swap_interval
-        self.folder = filename
+        self.filename = filename
         self.input = xmlinput  
         self.simtime = simtime
         self.samples = samples
@@ -128,14 +107,6 @@ class ptReplica(multiprocessing.Process):
         self.sim_interval = sim_interval
         self.sedscalingfactor = 50 # this is to ensure that the sediment likelihood is given more emphasis as it considers fewer points (dozens of points) when compared to elev liklihood (thousands of points)
         self.adapttemp =  self.temperature
-
-        self.rain_region = rain_region 
-        self.rain_time = rain_time 
-
-
-        self.len_grid = len_grid 
-        self.wid_grid  = wid_grid# for initial topo grid size 
-        self.inittopo_expertknow =  inittopo_expertknow 
 
     def interpolateArray(self, coords=None, z=None, dz=None):
         """
@@ -171,231 +142,37 @@ class ptReplica(multiprocessing.Process):
         zreg = np.reshape(zi,(ny,nx))
         dzreg = np.reshape(dzi,(ny,nx))
         return zreg,dzreg
- 
-
-
-    def plot3d_plotly(self, zData, fname):
-
-     
-        zmin =  zData.min() 
-        zmax =  zData.max()
-
-        tickvals= [0,50,75,-50]
-        height=1000
-        width=1000
-        title='Topography'
-        resolu_factor = 1
-
-        xx = (np.linspace(0, zData.shape[0]* resolu_factor, num=zData.shape[0]/10 )) 
-        yy = (np.linspace(0, zData.shape[1] * resolu_factor, num=zData.shape[1]/10 )) 
-
-        xx = np.around(xx, decimals=0)
-        yy = np.around(yy, decimals=0)
-        print (xx,' xx')
-        print (yy,' yy')
-
-        # range = [0,zData.shape[0]* self.resolu_factor]
-        #range = [0,zData.shape[1]* self.resolu_factor],
-
-        data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YIGnBu')])
-
-        layout = Layout(title='Predicted Topography' , autosize=True, width=width, height=height,scene=Scene(
-                    zaxis=ZAxis(title = ' Elev.(m) ', range=[zmin,zmax], autorange=False, nticks=6, gridcolor='rgb(255, 255, 255)',
-                                gridwidth=2, zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
-                    xaxis=XAxis(title = ' x ',  tickvals= xx,      gridcolor='rgb(255, 255, 255)', gridwidth=2,
-                                zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
-                    yaxis=YAxis(title = ' y ', tickvals= yy,    gridcolor='rgb(255, 255, 255)', gridwidth=2,
-                                zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
-                    bgcolor="rgb(244, 244, 248)"
-                )
-            )
-
-        fig = Figure(data=data, layout=layout) 
-
-
-        graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.html', validate=False)
-
-        plt.imshow(zData, cmap='hot', interpolation='nearest')
-        fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
-        plt.savefig(fname)
-
-
-        '''fig = plt.figure()
-        ax = fig.gca(projection='3d') 
-        ax.plot_trisurf(xx, yy, zData.flatten(), linewidth=0.2, antialiased=True)  
-        fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
-        '''
-         
- 
-
-
-     
-    def process_inittopo(self, inittopo_vec):
-
-        length = self.real_elev.shape[0]
-        width = self.real_elev.shape[1]
-
-
-        #len_grid = int(groundtruth_elev.shape[0]/inittopo_gridlen)  # take care of left over
-        #wid_grid = int(groundtruth_elev.shape[1]/inittopo_gridwidth)   # take care of left over
-
- 
-
-        len_grid = self.len_grid
-        wid_grid = self.wid_grid
-
-        
-        sub_gridlen = int(length/len_grid)
-        sub_gridwidth = int(width/wid_grid) 
-        new_length =len_grid * sub_gridlen 
-        new_width =wid_grid *  sub_gridwidth
-
-        reconstructed_topo  = self.real_elev.copy()  # to define the size
-
-
-        #reconstructed_topo = reconstructed_topo_.tolist()
-        groundtruth_topo = self.real_elev.copy()
-
-        #print(inittopo_vec, '   inittopo_vec') 
-
-
-        if method == 1: 
-
-            inittopo_vec = inittopo_vec * self.inittopo_expertknow.flatten() 
-
-        elif method ==2:
-
-            inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() 
-
-        elif method ==3:
-            inittopo_vec = ()
-
-        scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid)
-
-        v_ =   scale_factor  
-
-        #v_ =  np.multiply(self.inittopo_expertknow.copy(), scale_factor.copy())   #+ x_
-
-      
-        for l in range(0,sub_gridlen-1):
-            for w in range(0,sub_gridwidth-1): 
-                for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
- 
-
-        width = reconstructed_topo.shape[0]
-        length = reconstructed_topo.shape[1]
- 
-        for l in range(0,sub_gridlen -1 ):  
-            w = sub_gridwidth-1
-            for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid,  length):  
-                        groundtruth_topo[m][n]   +=  v_[l][w] 
-
-        for w in range(0,sub_gridwidth -1): 
-
-            l = sub_gridlen-1  
-            for m in range(l * len_grid,width):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        groundtruth_topo[m][n]   +=  v_[l][w]
-
-
-        inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
-
-        for m in range(0 , inside.shape[0]):  
-            for n in range(0 ,   inside.shape[1]):  
-                    groundtruth_topo[m][n]   = inside[m][n]
-        self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
- 
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
-
-
-        #self.plot3d_plotly(reconstructed_topo, 'smooth_')
-
-
-
-        return groundtruth_topo
- 
-
-
 
     def run_badlands(self, input_vector):
         #Runs a badlands model with the specified inputs
- 
-        rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time 
 
         #Create a badlands model instance
         model = badlandsModel()
 
-        #----------------------------------------------------------------
-
         # Load the XmL input file
         model.load_xml(str(self.run_nb), self.input, muted=True)
 
-        if  problem==1 or problem==2: #or problem==7: # when you have initial topo (problem is global variable)
-            init = False
-        else:
-            init = True # when you need to estimate initial topo
-
-
-        if init == True:
-
-            geoparam  = rain_regiontime+10  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
-
-            inittopo_vec = input_vector[geoparam:]
-
-            filename=self.input.split("/")
-            problem_folder=filename[0]+"/"+filename[1]+"/"
-      
-            #Update the initial topography
-            #Use the coordinates from the original dem file
-            xi=int(np.shape(model.recGrid.rectX)[0]/model.recGrid.nx)
-            yi=int(np.shape(model.recGrid.rectY)[0]/model.recGrid.ny)
-            #And put the demfile on a grid we can manipulate easily
-            elev=np.reshape(model.recGrid.rectZ,(xi,yi)) 
-
-            inittopo_estimate = self.process_inittopo(inittopo_vec)  
-
-
-            inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  # bug fix but not good fix - temp @ 
-        
-            #Put it back into 'Badlands' format and then re-load the model
-            filename=problem_folder+str(self.run_nb)+'/demfile_'+ str(int(self.temperature*10)) +'_demfile.csv' 
-
-            elev_framex = np.vstack((model.recGrid.rectX,model.recGrid.rectY,inittopo_estimate.flatten()))
- 
-            np.savetxt(filename, elev_framex.T, fmt='%1.2f' ) 
-
-         
-            model.input.demfile=filename 
- 
-            model.build_mesh(model.input.demfile, verbose=False)
-        
+        # Adjust erodibility based on given parameter
+        model.input.SPLero = input_vector[1] 
+        model.flow.erodibility.fill(input_vector[1] )
 
         # Adjust precipitation values based on given parameter
-        #print(input_vector[0:rain_regiontime] )
-        model.force.rainVal  = input_vector[0:rain_regiontime] 
-
-
-        # Adjust erodibility based on given parameter
-        model.input.SPLero = input_vector[rain_regiontime]  
-        model.flow.erodibility.fill(input_vector[rain_regiontime ] )
+        model.force.rainVal[:] = input_vector[0] 
 
         # Adjust m and n values
-        model.input.SPLm = input_vector[rain_regiontime+1]  
-        model.input.SPLn = input_vector[rain_regiontime+2] 
+        model.input.SPLm = input_vector[2] 
+        model.input.SPLn = input_vector[3] 
 
         #Check if it is the etopo extended problem
-        #if problem == 4 or problem == 3:  # will work for more parameters
-        model.input.CDm = input_vector[rain_regiontime+3] # submarine diffusion
-        model.input.CDa = input_vector[rain_regiontime+4] # aerial diffusion
+        if problem == 6 or problem == 7:  # will work for more parameters
+            model.input.CDm = input_vector[4] # submarine diffusion
+            model.input.CDa = input_vector[5] # aerial diffusion
 
 
         #Check if it is the mountain problem
-        if problem==4: # needs to be updated
+        if problem==6:
             #Round the input vector 
-            k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
+            k=round(input_vector[4],1) #to closest 0.1
 
             #Load the current tectonic uplift parameters
             tectonicValues=pandas.read_csv(str(model.input.tectFile[0]),sep=r'\s+',header=None,dtype=np.float).values
@@ -428,10 +205,6 @@ class ptReplica(multiprocessing.Process):
             erodep_vec[self.simtime] = erodep
             erodep_pts_vec[self.simtime] = erodep_pts
 
-
-        self.plot3d_plotly(elev_vec[self.simtime], 'smooth_')
-
-
         return elev_vec, erodep_vec, erodep_pts_vec
 
 
@@ -441,12 +214,8 @@ class ptReplica(multiprocessing.Process):
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = self.run_badlands(input_vector )
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_erodep =  np.zeros(self.sim_interval.size) 
-
-
-
-        print(self.sim_interval.size, self.real_erodep_pts.shape)
-
-        for i in range(  1, self.sim_interval.size ):
+        #print(self.sim_interval.size, self.real_erodep_pts.shape)
+        for i in range(  self.sim_interval.size):
             tau_erodep[i]  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
 
         likelihood_elev = - 0.5 * np.log(2 * math.pi * tausq) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq 
@@ -536,7 +305,7 @@ class ptReplica(multiprocessing.Process):
 
         #save
 
-        with file(('%s/experiment_setting.txt' % (self.folder)),'a') as outfile:
+        with file(('%s/experiment_setting.txt' % (self.filename)),'a') as outfile:
             outfile.write('\nsamples_per_chain:,{0}'.format(self.samples))
             outfile.write('\nburnin:,{0}'.format(self.burn_in))
             outfile.write('\nnum params:,{0}'.format(self.num_param))
@@ -604,8 +373,6 @@ class ptReplica(multiprocessing.Process):
                 rmse_elev[i+1,] = avg_rmse_el
                 rmse_erodep[i+1,] = avg_rmse_er
 
-                print(self.temperature, i, likelihood , avg_rmse_el, avg_rmse_er, '   --------- ')
-
                 for x in range(self.sim_interval.size): 
                     list_erodep_time[i+1,x, :] = pred_erodep_pts[self.sim_interval[x]]
 
@@ -666,7 +433,7 @@ class ptReplica(multiprocessing.Process):
                         print ('error')
 
                 else:
-                    print("empty  ")
+                    print(" . ")
                     
                 self.event.clear()
 
@@ -686,33 +453,33 @@ class ptReplica(multiprocessing.Process):
         self.parameter_queue.put(param)
 
         #Save out the data for each chain
-        file_name = self.folder+'/posterior/pos_parameters/chain_'+ str(self.temperature)+ '.txt'
+        file_name = self.filename+'/posterior/pos_parameters/chain_'+ str(self.temperature)+ '.txt'
         np.savetxt(file_name,pos_param ) 
 
-        file_name = self.folder+'/posterior/predicted_topo/chain_xslice_'+ str(self.temperature)+ '.txt'
+        file_name = self.filename+'/posterior/predicted_topo/chain_xslice_'+ str(self.temperature)+ '.txt'
         np.savetxt(file_name, list_xslicepred )
 
-        file_name = self.folder+'/posterior/predicted_topo/chain_yslice_'+ str(self.temperature)+ '.txt'
+        file_name = self.filename+'/posterior/predicted_topo/chain_yslice_'+ str(self.temperature)+ '.txt'
         np.savetxt(file_name, list_yslicepred )
 
-        file_name = self.folder+'/posterior/pos_likelihood/chain_'+ str(self.temperature)+ '.txt'
+        file_name = self.filename+'/posterior/pos_likelihood/chain_'+ str(self.temperature)+ '.txt'
         np.savetxt(file_name,likeh_list, fmt='%1.2f')
 
-        file_name = self.folder + '/posterior/accept_list/chain_' + str(self.temperature) + '_accept.txt'
+        file_name = self.filename + '/posterior/accept_list/chain_' + str(self.temperature) + '_accept.txt'
         np.savetxt(file_name, [accept_ratio], fmt='%1.2f')
 
-        file_name = self.folder+ '/posterior/accept_list/chain_' + str(self.temperature) + '.txt'
+        file_name = self.filename + '/posterior/accept_list/chain_' + str(self.temperature) + '.txt'
         np.savetxt(file_name, accept_list, fmt='%1.2f') 
 
-        file_name = self.folder+'/posterior/rmse_elev_chain_'+ str(self.temperature)+ '.txt'
+        file_name = self.filename+'/posterior/rmse_elev_chain_'+ str(self.temperature)+ '.txt'
         np.savetxt(file_name, rmse_elev, fmt='%1.2f')       
     
-        file_name = self.folder+'/posterior/rmse_erodep_chain_'+ str(self.temperature)+ '.txt'
+        file_name = self.filename+'/posterior/rmse_erodep_chain_'+ str(self.temperature)+ '.txt'
         np.savetxt(file_name, rmse_erodep, fmt='%1.2f')
 
 
         for s in range(self.sim_interval.size):  
-            file_name = self.folder + '/posterior/predicted_erodep/chain_' + str(self.sim_interval[s]) + '_' + str(self.temperature) + '.txt'
+            file_name = self.filename + '/posterior/predicted_erodep/chain_' + str(self.sim_interval[s]) + '_' + str(self.temperature) + '.txt'
             np.savetxt(file_name, list_erodep_time[:,s, :] , fmt='%.2f') 
 
         for k, v in sum_elev.items():
@@ -722,7 +489,7 @@ class ptReplica(multiprocessing.Process):
             sum_erodep_pts[k] = np.divide(sum_erodep_pts[k], num_div)
             mean_pred_erodep_pnts = sum_erodep_pts[k]
 
-            file_name = self.folder + '/posterior/predicted_topo/chain_' + str(k) + '_' + str(self.temperature) + '.txt'
+            file_name = self.filename + '/posterior/predicted_topo/chain_' + str(k) + '_' + str(self.temperature) + '.txt'
             np.savetxt(file_name, mean_pred_elevation, fmt='%.2f')
 
         self.signal_main.set()
@@ -730,7 +497,7 @@ class ptReplica(multiprocessing.Process):
 
 class ParallelTempering:
 
-    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param,  real_elev, erodep_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml):
+    def __init__(self, vec_parameters, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param,  real_elev, erodep_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml):
 
 
         self.swap_interval = swap_interval
@@ -767,12 +534,6 @@ class ParallelTempering:
 
         self.geometric =  True
         self.total_swap_proposals = 0
-
-        self.rain_region = rain_region  
-        self.rain_time = rain_time
-        self.len_grid = len_grid
-        self.wid_grid = wid_grid
-        self.inittopo_expertknow =  inittopo_expertknow 
 
 
     def default_beta_ladder(self, ndim, ntemps, Tmax): #https://github.com/konqr/ptemcee/blob/master/ptemcee/sampler.py
@@ -883,9 +644,8 @@ class ParallelTempering:
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in))
-                                     #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
-
+            self.chains.append(ptReplica( self.num_param, self.vec_parameters, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in))
+            
             
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
         #print (parameter_queue_2, ", param1:",parameter_queue_1)
@@ -957,15 +717,15 @@ class ParallelTempering:
             for index in range(self.num_chains):
                 if not self.chains[index].is_alive():
                     count+=1
-                    #print(str(self.chains[index].temperature) +" Dead")
+                    print(str(self.chains[index].temperature) +" Dead")
 
             if count == self.num_chains:
                 break
-            #print("Waiting for chains to finish...")
+            print("Waiting for chains to finish...")
             timeout_count = 0
             for index in range(0,self.num_chains):
-                #print("Waiting for chain: {}".format(index+1))
-                flag = self.wait_chain[index].wait(timeout=500)
+                print("Waiting for chain: {}".format(index+1))
+                flag = self.wait_chain[index].wait(timeout=5)
                 if flag:
                     print("Signal from chain: {}".format(index+1))
                     timeout_count += 1
@@ -1008,12 +768,23 @@ class ParallelTempering:
 
 
         for s in range(self.num_param):  
-            self.plot_figure(pos_param[s,:], 'pos_distri_'+str(s) ) 
+            self.plot_figure(pos_param[s,:], 'pos_distri_'+str(s), self.realvalues[s]  ) 
+
+
 
 
         for i in range(self.sim_interval.size):
 
             self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_topo[i,:,:], title='Predicted Topography ', time_frame=self.sim_interval[i],  filename= 'mean')
+
+        self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=  self.real_elev , title='Ground truth Topography', time_frame= self.simtime, filename = 'ground_truth')
+        residual_elev = self.real_elev - pred_topo[self.sim_interval.size-1,:,:] 
+        self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=  residual_elev , title='Residual Topography', time_frame= self.simtime, filename = 'residual_elev')
+        #self.plot_figure(residual_elev.flatten(), 'residual_elev', []  ) 
+
+
+
+
 
         if self.show_fulluncertainity == True: # this to be used when you need output of the topo predictions - 5th and 95th percentiles
 
@@ -1029,222 +800,15 @@ class ParallelTempering:
         
             self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elevoptimal[self.simtime], title='Pred. Topo. - Optimal', time_frame= self.simtime, filename = 'optimal')
 
-            self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=  self.real_elev , title='Ground truth Topography', time_frame= self.simtime, filename = 'ground_truth')
-
+            
     
 
         swap_perc = self.num_swap*100/self.total_swap_proposals  
+            
 
-        rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time  
-        geoparam  = rain_regiontime+10  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
-
-        print(pos_param.shape, ' pos_param shape')
-        mean_pos = pos_param.mean(axis=1) 
-
-        percentile_95th = np.percentile(pos_param, 95, axis=1) 
-
-        percentile_5th = np.percentile(pos_param, 5, axis=1) 
-
-
-
-       
-
-        if problem==1 or problem==2 : # problem is global variable
-            init = False
-        else:
-            init = True # when you need to estimate initial topo
-
-        if init == True: 
-            init_topo_mean = self.process_inittopo(mean_pos[geoparam:])
-            init_topo_95th = self.process_inittopo(percentile_95th[geoparam:])
-            init_topo_5th = self.process_inittopo(percentile_5th[geoparam:])
-
-            self.plot3d_plotly(init_topo_mean, 'mean_init')
-            self.plot3d_plotly(init_topo_95th, 'percentile95_init')
-            self.plot3d_plotly(init_topo_5th, 'percentile5_init')
-
-
-        #   cut the slice in the middle to show cross section of init topo with uncertainity
-            synthetic_initopo = self.get_synthetic_initopo()
-
-
-            init_topo_mean = init_topo_mean[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
-            init_topo_95th = init_topo_95th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
-            init_topo_5th = init_topo_5th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
-
-            xmid = int(synthetic_initopo.shape[0]/2) 
-            inittopo_real = synthetic_initopo[xmid, :]  # ground-truth init topo mid (synthetic) 
-
-
-            lower_mid = init_topo_5th[xmid, :]
-            higher_mid = init_topo_95th[xmid, :]
-            mean_mid = init_topo_mean[xmid, :]
-            x = np.linspace(0, synthetic_initopo.shape[1] * self.resolu_factor, num= synthetic_initopo.shape[1])
-            rmse_full_init = np.sqrt(np.sum(np.square(init_topo_mean  -  synthetic_initopo))  / (init_topo_mean.shape[0] * init_topo_mean.shape[1]))   # will not be needed in Australia problem
-            rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
-
-        else:
-
-            rmse_full_init = 0
-            rmse_slice_init =  0
-
-
-
-        return (pos_param,likelihood_rep, accept_list,   combined_erodep,  pred_topofinal, swap_perc, accept,  rmse_elev, rmse_erodep, rmse_slice_init, rmse_full_init)
-
-
-    def plot3d_plotly(self, zData, fname): # same method from previous class - ptReplica
+        return (pos_param,likelihood_rep, accept_list,   combined_erodep,  pred_topofinal, swap_perc, accept,  rmse_elev, rmse_erodep)
 
      
-        zmin =  zData.min() 
-        zmax =  zData.max()
-
-        tickvals= [0,50,75,-50]
-        height=1000
-        width=1000
-        #title='Topography'
-        resolu_factor = 1
-
-        xx = (np.linspace(0, zData.shape[0]* resolu_factor, num=zData.shape[0]/10 )) 
-        yy = (np.linspace(0, zData.shape[1] * resolu_factor, num=zData.shape[1]/10 )) 
-
-        xx = np.around(xx, decimals=0)
-        yy = np.around(yy, decimals=0)
-         
-        # range = [0,zData.shape[0]* self.resolu_factor]
-        #range = [0,zData.shape[1]* self.resolu_factor],
-
-        data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YIGnBu')])
-
-        layout = Layout(title='' , autosize=True, width=width, height=height,scene=Scene(
-                    zaxis=ZAxis(title = ' Elev.(m) ', range=[zmin,zmax], autorange=False, nticks=6, gridcolor='rgb(255, 255, 255)',
-                                gridwidth=2, zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
-                    xaxis=XAxis(title = ' x ',  tickvals= xx,      gridcolor='rgb(255, 255, 255)', gridwidth=2,
-                                zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
-                    yaxis=YAxis(title = ' y ', tickvals= yy,    gridcolor='rgb(255, 255, 255)', gridwidth=2,
-                                zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
-                    bgcolor="rgb(244, 244, 248)"
-                )
-            )
-
-        fig = Figure(data=data, layout=layout) 
-        graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+'_.html', validate=False)
-        np.savetxt(self.folder +  '/recons_initialtopo/'+fname+'_.txt', zData,  fmt='%1.2f' )
-
-
-     
-     
-
-
- 
-    def process_inittopo(self, inittopo_vec):
-
-        length = self.real_elev.shape[0]
-        width = self.real_elev.shape[1]
-
-
-        #len_grid = int(groundtruth_elev.shape[0]/inittopo_gridlen)  # take care of left over
-        #wid_grid = int(groundtruth_elev.shape[1]/inittopo_gridwidth)   # take care of left over
-
- 
-
-        len_grid = self.len_grid
-        wid_grid = self.wid_grid
-
-        
-        sub_gridlen = int(length/len_grid)
-        sub_gridwidth = int(width/wid_grid) 
-        new_length =len_grid * sub_gridlen 
-        new_width =wid_grid *  sub_gridwidth
-
-        reconstructed_topo  = self.real_elev.copy()  # to define the size
-
-
-        #reconstructed_topo = reconstructed_topo_.tolist()
-        groundtruth_topo = self.real_elev.copy()
-
-        #print(inittopo_vec, '   inittopo_vec')  
-
-
-
-
-        if method == 1: 
-
-            inittopo_vec = inittopo_vec * self.inittopo_expertknow.flatten() 
-
-        elif method ==2:
-
-            inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() 
-
-       
-        scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid)
-
-
-
-          
-
-        v_ =   scale_factor  
-
-        #v_ =  np.multiply(self.inittopo_expertknow.copy(), scale_factor.copy())   #+ x_
-
-      
-        for l in range(0,sub_gridlen-1):
-            for w in range(0,sub_gridwidth-1): 
-                for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
- 
-
-
-        width = reconstructed_topo.shape[0]
-        length = reconstructed_topo.shape[1]
- 
-        for l in range(0,sub_gridlen -1 ):  
-            w = sub_gridwidth-1
-            for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid,  length):  
-                        groundtruth_topo[m][n]   +=  v_[l][w] 
-
-        for w in range(0,sub_gridwidth -1): 
-
-            l = sub_gridlen-1  
-            for m in range(l * len_grid,width):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        groundtruth_topo[m][n]   +=  v_[l][w] 
-
- 
-
-        inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
-
- 
-   
-
-        for m in range(0 , inside.shape[0]):  
-            for n in range(0 ,   inside.shape[1]):  
-                    groundtruth_topo[m][n]   = inside[m][n] 
- 
- 
- 
-  
- 
-
-
-
-          
-
-
-        self.plot3d_plotly(groundtruth_topo, 'initrecon_')
- 
-        groundtruth_topo = gaussian_filter(groundtruth_topo, sigma=1) # change sigma to higher values if needed 
-
- 
- 
-        self.plot3d_plotly(groundtruth_topo, 'smooth_')
-
-
-
-        return reconstructed_topo
-
 
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
         print ('list_xslice', list_xslice.shape)
@@ -1282,7 +846,8 @@ class ParallelTempering:
         self.cross_section(x_, y_xmid_mean, y_xmid_real, y_xmid_5th, y_xmid_95th, 'y_xmid_cross')
 
 
-     
+       
+
     def cross_section(self, x, pred, real, lower, higher, fname):
 
         size = 15
@@ -1310,22 +875,6 @@ class ParallelTempering:
         plt.clf()
 
         return rmse_init
-
-
-
-    def get_synthetic_initopo(self):
-
-        model = badlandsModel() 
-        # Load the XmL input file
-        model.load_xml(str(self.run_nb), self.xmlinput, muted=True) 
-        #Update the initial topography
-        #Use the coordinates from the original dem file
-        xi=int(np.shape(model.recGrid.rectX)[0]/model.recGrid.nx)
-        yi=int(np.shape(model.recGrid.rectY)[0]/model.recGrid.ny)
-        #And put the demfile on a grid we can manipulate easily
-        elev=np.reshape(model.recGrid.rectZ,(xi,yi))
-
-        return elev
 
 
     # Merge different MCMC chains y stacking them on top of each other
@@ -1494,9 +1043,9 @@ class ParallelTempering:
         erodep_pts_vec = collections.OrderedDict()
 
         for x in range(len(self.sim_interval)):
-            simtime = self.sim_interval[x]
+            self.simtime = self.sim_interval[x]
             
-            model.run_to_time(simtime, muted=True)
+            model.run_to_time(self.simtime, muted=True)
 
             elev, erodep = self.interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
 
@@ -1505,9 +1054,9 @@ class ParallelTempering:
             for count, val in enumerate(self.erodep_coords):
                 erodep_pts[count] = erodep[val[0], val[1]]
 
-            elev_vec[simtime] = elev
-            erodep_vec[simtime] = erodep
-            erodep_pts_vec[simtime] = erodep_pts
+            elev_vec[self.simtime] = elev
+            erodep_vec[self.simtime] = erodep
+            erodep_pts_vec[self.simtime] = erodep_pts
 
         return elev_vec, erodep_vec, erodep_pts_vec
 
@@ -1549,7 +1098,7 @@ class ParallelTempering:
 
 
 
-    def plot_figure(self, list, title): 
+    def plot_figure(self, list, title, real_value ): 
 
         list_points =  list
         fname = self.folder
@@ -1557,6 +1106,7 @@ class ParallelTempering:
 
 
         size = 15
+
 
         plt.tick_params(labelsize=size)
         params = {'legend.fontsize': size, 'legend.handlelength': 2}
@@ -1569,6 +1119,7 @@ class ParallelTempering:
         plt.title("Posterior distribution ", fontsize = size)
         plt.xlabel(' Parameter value  ', fontsize = size)
         plt.ylabel(' Frequency ', fontsize = size)
+        plt.axvline(x=real_value, linewidth=2, color='r')
         plt.tight_layout()  
         plt.savefig(fname + '/pos_plots/' + title  + '_posterior.pdf')
         plt.clf()
@@ -1595,8 +1146,6 @@ class ParallelTempering:
 
 
 
-    
-
     def viewGrid(self, width=1000, height=1000, zmin=None, zmax=None, zData=None, title='Predicted Topography', time_frame=None, filename=None):
 
         if zmin == None:
@@ -1614,8 +1163,6 @@ class ParallelTempering:
         yy = np.around(yy, decimals=0)
         print (xx,' xx')
         print (yy,' yy')
-
-        #test
 
         # range = [0,zData.shape[0]* self.resolu_factor]
         #range = [0,zData.shape[1]* self.resolu_factor],
@@ -1684,7 +1231,6 @@ def make_directory (directory):
 
 def plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts, sim_interval, fname):
 
-
     ticksize = 15
 
     fig = plt.figure()
@@ -1704,257 +1250,237 @@ def plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts, sim_inte
                 error_kw=dict(elinewidth=2,ecolor='red') )
  
 
+ 
+    ax.tick_params(labelsize=ticksize)
+    ax.grid(alpha=0.75)
+
+
     ax.set_ylabel('Height in meters', fontsize=ticksize)
     ax.set_xlabel('Location ID ', fontsize=ticksize)
     ax.set_title('Erosion/Deposition', fontsize=ticksize)
-    
-    ax.grid(alpha=0.75)
-
- 
-    ax.tick_params(labelsize=ticksize)
  
     plotlegend = ax.legend( (rects1[0], rects2[0]), ('Predicted  ', ' Ground-truth ') )
     
     plt.savefig(fname +'/pos_erodep_'+str( sim_interval) +'_.pdf')
     plt.clf()    
-
+  
 
 
 
 def main():
 
     random.seed(time.time()) 
-    
 
-    if problem == 1: #this will have region and time rainfall of Problem 1
-        problemfolder = 'Examples/aus_1m/'
-        xmlinput = problemfolder + 'AUSUF016_1.xml'
-        simtime = 1.e+04
-        resolu_factor = 1
-
-        datapath = problemfolder + 'data/final_elev.txt'
-        # datapath = problemfolder + 'data/initial_elev.txt'
-        
-        groundtruth_elev = np.loadtxt(datapath)
-        groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
-        inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruth.txt')
-
-        res_summaryfile = '/results_temporalrain.txt'
-        inittopo_expertknow = [] # no expert knowledge as simulated init topo
-
-        #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
-        likelihood_sediment = True
-
-        len_grid = 1  # ignore - this is in case if init topo is inferenced
-        wid_grid = 1   # ignore
-
-        real_rain = 3.0 #m/a
-        real_erod = 5.e-7 
-        m = 0.5  #Stream flow parameters
-        n = 1 #
-        real_cmarine = 0.005 # Marine diffusion coefficient [m2/a] -->
-        real_caerial = 0.001 #aerial diffusion
-
-        rain_min = 1.0
-        rain_max = 5.0 
-
-        # assume 4 regions and 4 time scales
-        rain_regiongrid = 1  # how many regions in grid format 
-        rain_timescale = 4  # to show climate change 
-        rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale) 
-        rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
-
-        #--------------------------------------------------------
-        minlimits_others = [4.e-6, 0, 0, 0,0, 0, 0, 0, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [6.e-6, 1, 2, 1,1, 1, 1, 1, 1, 1]
-
-        # minlimits_others = [real_erod, m, n, real_cmarine, real_caerial, 0, 0, 0, 0, 0]  # 
-        # maxlimits_others = [real_erod, m, n, real_cmarine, real_caerial, 1, 1, 1, 1, 1] # fix erod rain etc
-
-        # need to read file matrix of n x m that defines the course grid of initial topo. This is generated by final
-        # topo ground-truth assuming that the shape of the initial top is similar to final one. 
-
-        minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
-
-        maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
-
-        print(maxlimits_vec, ' maxlimits ')
-        print(minlimits_vec, ' maxlimits ')
-
-        vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
-        true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
-        stepsize_ratio  = 0.1 #   you can have different ratio values for different parameters depending on the problem. Its safe to use one value for now
-
-        stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
-        num_param = vec_parameters.size
-        print(vec_parameters) 
-
-        erodep_coords = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])  # need to hand pick given your problem
-    
-    if problem == 2: # 150 MILLION YEARS
-        problemfolder = 'Examples/aus_1m/'
-        xmlinput = problemfolder + 'AUSUF016_2.xml'
-        simtime = 1.49e08
-        resolu_factor = 1
-
-        datapath = problemfolder + 'data/final_elev.txt'
-        # datapath = problemfolder + 'data/initial_elev.txt'
-        
-        groundtruth_elev = np.loadtxt(datapath)
-        groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
-        inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruth.txt')
-
-        res_summaryfile = '/results_temporalrain.txt'
-        inittopo_expertknow = [] # no expert knowledge as simulated init topo
-
-        #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
-        likelihood_sediment = True
-
-        len_grid = 1  # ignore - this is in case if init topo is inferenced
-        wid_grid = 1   # ignore
-
-        real_rain = 3.0 #m/a
-        real_erod = 5.e-7 
-        m = 0.5  #Stream flow parameters
-        n = 1 #
-        real_cmarine = 0.005 # Marine diffusion coefficient [m2/a] -->
-        real_caerial = 0.001 #aerial diffusion
-
-        rain_min = 1.0
-        rain_max = 5.0 
-
-        # assume 4 regions and 4 time scales
-        rain_regiongrid = 1  # how many regions in grid format 
-        rain_timescale = 4  # to show climate change 
-        rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale) 
-        rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
-
-        #--------------------------------------------------------
-        minlimits_others = [4.e-6, 0, 0, 0,0, 0, 0, 0, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [6.e-6, 1, 2, 1,1, 1, 1, 1, 1, 1]
-
-        # minlimits_others = [real_erod, m, n, real_cmarine, real_caerial, 0, 0, 0, 0, 0]  # 
-        # maxlimits_others = [real_erod, m, n, real_cmarine, real_caerial, 1, 1, 1, 1, 1] # fix erod rain etc
-
-        # need to read file matrix of n x m that defines the course grid of initial topo. This is generated by final
-        # topo ground-truth assuming that the shape of the initial top is similar to final one. 
-
-        minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
-
-        maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
-
-        print(maxlimits_vec, ' maxlimits ')
-        print(minlimits_vec, ' maxlimits ')
-
-        vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
-        true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
-        stepsize_ratio  = 0.1 #   you can have different ratio values for different parameters depending on the problem. Its safe to use one value for now
-
-        stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
-        num_param = vec_parameters.size
-        print(vec_parameters) 
-
-        erodep_coords = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])  # need to hand pick given your problem
-    
-    elif problem == 7:
-        
-        problemfolder = 'Examples/aus_1m/'
-        xmlinput = problemfolder + 'AUSUF016.xml'
-        simtime = 1.e+06
-        resolu_factor = 1
-
-        # datapath = problemfolder + 'data/final_elev.txt'
-        datapath = problemfolder + 'data/initial_elev.txt'
-        
-        groundtruth_elev = np.loadtxt(datapath)
-        groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
-        inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruth.txt')
-
-        res_summaryfile = '/results_inittopo.txt'
-        inittopo_expertknow = inittopo_expertknow.T
-
-        #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
-        likelihood_sediment = True
-
-
-        real_rain = 3.0 #m/a
-        real_erod = 5.e-7 
-        m = 0.5  #Stream flow parameters
-        n = 1 #
-        real_cmarine = 0.005 # Marine diffusion coefficient [m2/a] -->
-        real_caerial = 0.001 #aerial diffusion
-
-        rain_min = 1.0
-        rain_max = 5.0 
-
-        # assume 4 regions and 4 time scales
-        rain_regiongrid = 1  # how many regions in grid format 
-        rain_timescale = 4  # to show climate change 
-        rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale) # fix 
-        rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) # fix
-
-        #----------------------------------------InitTOPO
-
-        inittopo_gridlen = 10  # should be of same format as @   inittopo_expertknow
-        inittopo_gridwidth = 10
-
-        len_grid = int(groundtruth_elev.shape[0]/inittopo_gridlen)  # take care of left over
-        wid_grid = int(groundtruth_elev.shape[1]/inittopo_gridwidth)   # take care of left over
-
-        inittopo_minlimits = np.repeat( 0 , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(epsilon , inittopo_gridlen*inittopo_gridwidth)
+    #problem = input("Which problem do you want to choose 1. crater-fast, 2. crater  3. etopo-fast 4. etopo 5. island ")
  
 
-        #--------------------------------------------------------
-        minlimits_others = [4.e-6, 0, 0, 0,0, 0, 0, 0, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [6.e-6, 1, 2, 1,1, 1, 1, 1, 1, 1]
+    if problem == 1:
+        problemfolder = 'Examples/crater/'
+        xmlinput = problemfolder + 'crater.xml'
+        simtime = 50000
+        resolu_factor =  0.002
 
-        # minlimits_others = [real_erod, m, n, real_cmarine, real_caerial, 0, 0, 0, 0, 0]  # 
-        # maxlimits_others = [real_erod, m, n, real_cmarine, real_caerial, 1, 1, 1, 1, 1] # fix erod rain etc
+        true_parameter_vec = np.loadtxt(problemfolder + 'data/true_value.txt') 
 
-        # need to read file matrix of n x m that defines the course grid of initial topo. This is generated by final
-        # topo ground-truth assuming that the shape of the initial top is similar to final one. 
+        print(true_parameter_vec, ' true_parameter_vec')
 
-        temp_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
-        minlimits_vec = np.append(temp_vec, inittopo_minlimits)
+        m = 0.5 # used to be constants  
+        n = 1
 
-        temp_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
-        maxlimits_vec = np.append(temp_vec, inittopo_maxlimits)
+        real_rain = 1.5
+        real_erod = 5.e-5 
+
+        likelihood_sediment = True
+
+        #Rainfall, erodibility, m, n
+        #maxlimits_vec = [3.0,7.e-5, 2, 2] 
+        #minlimits_vec = [0.0 ,3.e-5, 0, 0]  
+
+        maxlimits_vec = [3.0,7.e-5, m, n] # setting to real values means its now fixed, not free parameter
+        minlimits_vec = [0.0 ,3.e-5, m, n]  
+        vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) 
+        
+        stepsize_ratio  = 0.02
+        
+        stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
+        num_param = vec_parameters.size 
+
+        erodep_coords =  np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]]) # need to hand pick given your problem
+
+        if (true_parameter_vec.shape[0] != vec_parameters.size ) :
+            print( 'vec_params != true_values.txt ',true_parameter_vec.shape,vec_parameters.size)
+            print( 'make sure that this is updated in case when you intro more parameters. should have as many rows as parameters ') 
+            
+            return
+
+     
+
+    elif problem == 2:
+        problemfolder = 'Examples/etopo/'
+        xmlinput = problemfolder + 'etopo.xml'
+        simtime = 1000000
+        resolu_factor = 1
+
+        true_parameter_vec = np.loadtxt(problemfolder + 'data/true_value.txt')
+        likelihood_sediment = True
 
 
-        print(maxlimits_vec, ' maxlimits ')
+        real_rain = 1.5 #m/a
+        real_erod = 5.e-6 
+        m = 0.5  #Stream flow parameters
+        n = 1 #
+        real_cmarine = 5.e-1 # Marine diffusion coefficient [m2/a] -->
+        real_caerial = 8.e-1 #aerial diffusion
 
-        print(minlimits_vec, ' maxlimits ')
+        #Rainfall, erodibility, m, n, marine, aerial
+        #minlimits_vec = [0.0, 3.e-6, 0, 0, 0.6, 0.3]
+        #maxlimits_vec = [3.0, 7.e-6, 2, 2, 1.0, 0.7]
+
+
+        minlimits_vec = [0.0, real_erod, m, n, real_cmarine, real_caerial]  # setting to real values means its now fixed, not free parameter
+        maxlimits_vec = [3.0, real_erod, m, n,real_cmarine, real_caerial]
+   
         vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
-        true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
+    
         stepsize_ratio  = 0.1 #   you can have different ratio values for different parameters depending on the problem. Its safe to use one value for now
 
         stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
         num_param = vec_parameters.size
+
         print(vec_parameters) 
 
         erodep_coords = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])  # need to hand pick given your problem
-    
+
+        if (true_parameter_vec.shape[0] != vec_parameters.size ) :
+            print( 'vec_params != true_values.txt ',true_parameter_vec.shape,vec_parameters.size)
+            print( 'make sure that this is updated in case when you intro more parameters. should have as many rows as parameters ') 
+            
+            return
+
+ 
+
+    elif problem == 3:
+        problemfolder = 'Examples/mountain/'
+        xmlinput = problemfolder + 'mountain.xml'
+        simtime = 1000000
+        resolu_factor = 1
+        true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
+        likelihood_sediment = True
+
+        #Set variables
+        m = 0.5
+        m_min = 0.
+        m_max = 2
+        
+        n = 1.
+        n_min = 0.
+        n_max = 2.
+
+        rain_real = 1.5
+        rain_min = 0.
+        rain_max = 3.
+
+        erod_real = 5.e-6
+        erod_min = 3.e-6
+        erod_max = 7.e-6
+                
+        #uplift_real = 50000
+        uplift_min = 0.1 # X uplift_real
+        uplift_max = 5.0 # X uplift_real
+                
+        #Rainfall, erodibility, m, n, uplift
+        minlimits_vec=[rain_min,erod_min,m_min,n_min,uplift_min]
+        maxlimits_vec=[rain_max,erod_max,m_max,n_max,uplift_max]
+                 
+                
+        vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
+
+        stepsize_ratio  = 0.02 #   you can have different ratio values for different parameters depending on the problem. Its safe to use one value for now
+
+        stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
+        stepratio_vec = [stepsize_ratio, stepsize_ratio, stepsize_ratio, stepsize_ratio, 0.02] 
+        stepratio_vec = [0.1, 0.1, 0.1, 0.1, 0.1]
+        print("steps: ", stepratio_vec)
+        num_param = vec_parameters.size
+        erodep_coords=np.array([[5,5],[10,10],[20,20],[30,30],[40,40],[50,50],[25,25],[37,30],[44,27],[46,10]])
+        
+
+        if (true_parameter_vec.shape[0] != vec_parameters.size ) :
+            print( 'vec_params != true_values.txt ',true_parameter_vec.shape,vec_parameters.size)
+            print( 'make sure that this is updated in case when you intro more parameters. should have as many rows as parameters ') 
+            
+            return
+
+    elif problem == 4:
+        problemfolder = 'Examples/aus_1m/'
+        xmlinput = problemfolder + 'AUSUF016_1.xml'
+        simtime = -1.e+07
+        resolu_factor = 1
+        true_parameter_vec = np.loadtxt(problemfolder + 'data/true_value.txt')
+        likelihood_sediment = True
+
+        #Set variables
+        m = 0.5
+        m_min = 0.
+        m_max = 2
+        
+        n = 1.
+        n_min = 0.
+        n_max = 2.
+
+        rain_real = 3.0
+        rain_min = 0.
+        rain_max = 5.
+
+        erod_real = 5.e-7
+        erod_min = 3.e-7
+        erod_max = 7.e-7
+                
+        #uplift_real = 50000
+        uplift_min = 0.1 # X uplift_real
+        uplift_max = 5.0 # X uplift_real
+                
+        #Rainfall, erodibility, m, n, uplift
+        minlimits_vec=[rain_min,erod_min,m_min,n_min,uplift_min]
+        maxlimits_vec=[rain_max,erod_max,m_max,n_max,uplift_max]
+                
+        vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
+
+        stepsize_ratio  = 0.02 #   you can have different ratio values for different parameters depending on the problem. Its safe to use one value for now
+
+        stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
+        stepratio_vec = [stepsize_ratio, stepsize_ratio, stepsize_ratio, stepsize_ratio, 0.02] 
+        stepratio_vec = [0.1, 0.1, 0.1, 0.1, 0.1]
+        print("steps: ", stepratio_vec)
+        num_param = vec_parameters.size
+        erodep_coords=np.array([[5,5],[10,10],[20,20],[30,30],[40,40],[50,50],[25,25],[37,30],[44,27],[46,10]])
+        
+
+        # if (true_parameter_vec.shape[0] != vec_parameters.size ) :
+        #     print( 'vec_params != true_values.txt ',true_parameter_vec.shape,vec_parameters.size)
+        #     print( 'make sure that this is updated in case when you intro more parameters. should have as many rows as parameters ') 
+            
+        #     return
+
     else:
         print('choose some problem  ')
 
+    datapath = problemfolder + 'data/final_elev.txt'
+    groundtruth_elev = np.loadtxt(datapath)
+    groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
+    groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
 
     fname = ""
     run_nb = 0
-    while os.path.exists(problemfolder +str(problem)+'results_%s' % (run_nb)):
+    while os.path.exists(problemfolder +'results_%s' % (run_nb)):
         run_nb += 1
-    if not os.path.exists(problemfolder +str(problem)+'results_%s' % (run_nb)):
-        os.makedirs(problemfolder +str(problem)+'results_%s' % (run_nb))
-        fname = (problemfolder +str(problem)+'results_%s' % (run_nb))
+    if not os.path.exists(problemfolder +'results_%s' % (run_nb)):
+        os.makedirs(problemfolder +'results_%s' % (run_nb))
+        fname = (problemfolder +'results_%s' % (run_nb))
 
     #fname = ('sampleresults')
 
     make_directory((fname + '/posterior/pos_parameters')) 
-
-    make_directory((fname + '/recons_initialtopo')) 
 
     make_directory((fname + '/pos_plots')) 
     make_directory((fname + '/posterior/predicted_topo'))
@@ -1964,7 +1490,7 @@ def main():
 
     make_directory((fname + '/pred_plots'))
 
-    run_nb_str = str(problem)+'results_' + str(run_nb)
+    run_nb_str = 'results_' + str(run_nb)
 
     #-------------------------------------------------------------------------------------
     # Number of chains of MCMC required to be run
@@ -1980,14 +1506,18 @@ def main():
 
     timer_start = time.time()
 
-    sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    
+    sim_interval = np.arange(0,  simtime+(simtime/num_successive_topo), simtime/num_successive_topo) # for generating successive topography
+    if simtime< 0:
+        sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
 
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
     #-------------------------------------------------------------------------------------
-    pt = ParallelTempering(  vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput)
+    pt = ParallelTempering(  vec_parameters, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput)
     
     #-------------------------------------------------------------------------------------
     # intialize the MCMC chains
@@ -1997,7 +1527,7 @@ def main():
     #-------------------------------------------------------------------------------------
     #run the chains in a sequence in ascending order
     #-------------------------------------------------------------------------------------
-    pos_param,likehood_rep, accept_list,   combined_erodep, pred_elev,  swap_perc, accept_per,  rmse_elev, rmse_erodep, rmse_slice_init, rmse_full_init  = pt.run_chains()
+    pos_param,likehood_rep, accept_list,   combined_erodep, pred_elev,  swap_perc, accept_per,  rmse_elev, rmse_erodep  = pt.run_chains()
 
 
     print('sucessfully sampled') 
@@ -2008,7 +1538,6 @@ def main():
     plt.plot(likelihood.T)
     plt.savefig( fname+'/likelihood.pdf')
     plt.clf()
-
     size = 15 
 
     plt.tick_params(labelsize=size)
@@ -2018,10 +1547,10 @@ def main():
     plt.title("Replica Acceptance ", fontsize = size)
     plt.xlabel(' Number of Samples  ', fontsize = size)
     plt.ylabel(' Number Accepted ', fontsize = size)
+    plt.grid(alpha=0.75)
     plt.tight_layout()
     plt.savefig( fname+'/accept_list.pdf' )
     plt.clf()
-
 
 
     for i in range(sim_interval.size):
@@ -2053,7 +1582,6 @@ def main():
     mpl_fig = plt.figure()
     ax = mpl_fig.add_subplot(111)
 
-    
     size = 15
 
     ax.tick_params(labelsize=size)
@@ -2084,12 +1612,12 @@ def main():
     time_total = (timer_end-timer_start)/60
 
 
-    resultingfile_db = open(problemfolder+res_summaryfile,'a+')  
+    resultingfile_db = open(problemfolder+'/master_result_file.txt','a+')  
     #outres_db = open(problemfolder+'/result.txt', "a+")
 
     allres =  np.asarray([ problem, num_chains, maxtemp, samples,swap_interval,  rmse_el, 
                         rmse_er, rmse_el_std, rmse_er_std, rmse_el_min, 
-                        rmse_er_min, rmse, rmse_sed, swap_perc, accept_per,  time_total, rmse_slice_init, rmse_full_init, epsilon]) 
+                        rmse_er_min,  swap_perc, accept_per, time_total]) 
     print(allres, '  result')
         
     #np.savetxt(outres_db,  allres   , fmt='%1.4f', newline=' '  )   
@@ -2105,11 +1633,14 @@ def main():
     print("NumChains, problem, folder, time, RMSE_sed, RMSE,samples,swap,maxtemp,burn")
     print (num_chains, problemfolder, run_nb_str, (timer_end-timer_start)/60, rmse_sed, rmse,samples, swap_ratio,maxtemp,burn_in)
 
+
     dir_name = fname + '/posterior'
-    fname_remove = fname +'/pos_param.txt'
     print(dir_name)
     if os.path.isdir(dir_name):
         shutil.rmtree(dir_name)
+
+
+    fname_remove = fname +'/pos_param.txt'
 
     if os.path.exists(fname_remove):  # comment if you wish to keep pos file
         os.remove(fname_remove)

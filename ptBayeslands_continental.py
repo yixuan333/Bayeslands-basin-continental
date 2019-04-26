@@ -70,8 +70,6 @@ parser.add_argument('-swap','--swap', help='Swap Ratio', dest="swap_ratio",defau
 parser.add_argument('-b','--burn', help='How many samples to discard before determing posteriors', dest="burn_in",default=0.25,type=float)
 parser.add_argument('-pt','--ptsamples', help='Ratio of PT vs straight MCMC samples to run', dest="pt_samples",default=0.5,type=float)  
 parser.add_argument('-rain_intervals','--rain_intervals', help='rain_intervals', dest="rain_intervals",default=4,type=int)
-
-
 parser.add_argument('-epsilon','--epsilon', help='epsilon for inital topo', dest="epsilon",default=0.5,type=float)
 
 
@@ -87,7 +85,7 @@ burn_in=args.burn_in
 #maxtemp = int(num_chains * 5)/args.mt_val
 maxtemp =   args.mt_val 
 swap_interval = int(swap_ratio * (samples/num_chains)) #how ofen you swap neighbours
-num_successive_topo = 10
+num_successive_topo = 4
 pt_samples = args.pt_samples
 epsilon = args.epsilon
 rain_intervals = args.rain_intervals
