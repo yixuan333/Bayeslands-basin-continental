@@ -33,3 +33,5 @@ Examples/*/.idea/
 Examples/*/*.ipynb
 pyBadlands/*
 doc/*
+
+pyBadlands/

@@ -121,11 +121,11 @@ def topoGenerator(directory, inputname, rain, erodibility, m, n, simtime, erdp_c
 
 	model = badlandsModel()
 	model.load_xml(str(simtime), inputname, verbose = False, muted = False)
-	model.input.SPLero = erodibility
-	model.flow.erodibility.fill(erodibility)
-	model.force.rainVal[:] = rain
-	model.input.SPLm = m
-	model.input.SPLn = n
+	# model.input.SPLero = erodibility
+	# model.flow.erodibility.fill(erodibility)
+	# model.force.rainVal[:] = rain
+	# model.input.SPLm = m
+	# model.input.SPLn = n
 
 	elev_vec = collections.OrderedDict()
 	erdp_vec = collections.OrderedDict()
@@ -439,108 +439,26 @@ def main():
 	
 	"""
 	uplift_verified = False
-	choice = input("Please choose a Badlands example to create an Initial and Final Topography for:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n 5) mountain\n 6) tasmania\n 7) australia\n 8) aus\n 9) aus_1m\n")
+	choice = input("Please choose a Badlands example to create an Initial and Final Topography for:\n 1) aus_short\n 2) aus\n")
 	directory = ""
 
-	erdp_coords_crater = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
-	elev_coords_crater = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
-
-	erdp_coords_crater_fast = np.array([[60,60],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69],[79,91],[96,77],[42,49]])
-	elev_coords_crater_fast = np.array([[60,60],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69],[79,91],[96,77],[42,49]])
-
-	erdp_coords_etopo = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])
-	elev_coords_etopo = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])
-
-	erdp_coords_etopo_fast = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[68,40],[72,44]])
-	elev_coords_etopo_fast = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[68,40],[72,44]])
-
-	erdp_coords_mountain = np.array([[5,5],[10,10],[20,20],[30,30],[40,40],[50,50],[25,25],[37,30],[44,27],[46,10]])
-	elev_coords_mountain = np.array([[5,5],[10,10],[20,20],[30,30],[40,40],[50,50],[25,25],[37,30],[44,27],[46,10]])
-
-	erdp_coords_tasmania = np.array([[260,320],[400,350],[270,180],[290,50],[500,120],[500,195],[44,200],[5,315],[450,50],[95,260]])  # need to hand pick given your problem
-	elev_coords_tasmania = np.array([[260,320],[400,350],[270,180],[290,50],[500,120],[500,195],[44,200],[5,315],[450,50],[95,260]])  # need to hand pick given your problem
-	
-	erdp_coords_australia = np.array([[260,320],[400,350],[270,180],[290,50],[500,120],[500,195],[44,200],[5,315],[450,50],[95,260]])  # need to hand pick given your problem
-	elev_coords_australia = np.array([[260,320],[400,350],[270,180],[290,50],[500,120],[500,195],[44,200],[5,315],[450,50],[95,260]])  # need to hand pick given your problem
+	erdp_coords_australia = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+	elev_coords_australia = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
 
 	final_noise = True
 
 	if choice == 1:
-		
 		tstart = time.clock()
-		directory = 'Examples/crater_fast'
-		topoGenerator(directory,'%s/crater.xml' %(directory), 1.5 , 5.e-5, 0.5, 1, 15000, erdp_coords_crater,elev_coords_crater,final_noise)
-		
-		print 'TopoGen for crater_fast completed in (s):',time.clock()-tstart
-		
+		directory = 'Examples/aus_short'
+		print '%s/aus_short.xml' %(directory)
+		topoGenerator(directory,'%s/aus_short.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, -1.E+06, erdp_coords_australia, elev_coords_australia, final_noise)
+		print 'TopoGen for aus_short completed in (s):',time.clock()-tstart
+
 	elif choice == 2:
-		
 		tstart = time.clock()
-		directory = 'Examples/crater'
-		topoGenerator(directory,'%s/crater.xml' %(directory), 1.5 , 5.e-5, 0.5, 1, 50000, erdp_coords_crater,elev_coords_crater,final_noise)
-		
-		print 'TopoGen for crater completed in (s):',time.clock()-tstart
-
-	elif choice == 3:
-
-		tstart = time.clock()
-		directory = 'Examples/etopo_fast'
-		topoGenerator(directory,'%s/etopo.xml' %(directory), 1.5 , 5.e-6, 0.5, 1, 500000, erdp_coords_etopo,elev_coords_crater,final_noise)
-		
-		print 'TopoGen for etopo fast completed in (s):',time.clock()-tstart
-
-	elif choice == 4:
-
-		tstart = time.clock()
-		directory = 'Examples/etopo'
-		topoGenerator(directory,'%s/etopo.xml' %(directory), 1.5 , 5.e-6, 0.5, 1, 1000000, erdp_coords_etopo,elev_coords_crater,final_noise)
-		
-		print 'TopoGen for etopo completed in (s):',time.clock()-tstart
-
-	elif choice == 5:
-
-		tstart = time.clock()
-		directory = 'Examples/mountain'
-		uplift_verified = checkUplift(directory, '/data/uplift', '/data/nodes')
-		# uplift_verified = True
-		if uplift_verified:
-			topoGenerator(directory,'%s/mountain.xml' %(directory), 1.5 , 5.e-6, 0.5, 1, 50000000, erdp_coords_mountain,elev_coords_crater,final_noise)
-		print 'TopoGen for mountain completed in (s):',time.clock()-tstart
-
-	elif choice == 6:
-
-		tstart = time.clock()
-		directory = 'Examples/tasmania'
-		topoGenerator(directory,'%s/tasmania.xml' %(directory), 1.5 , 5.e-6, 0.5, 1, 1000000, erdp_coords_tasmania,elev_coords_crater,final_noise)
-		print 'TopoGen for tasmania completed in (s):',time.clock()-tstart
-
-	elif choice == 7:
-
-		tstart = time.clock()
-		directory = 'Examples/australia'
-		topoGenerator(directory,'%s/australia.xml' %(directory), 1.5 , 5.e-7, 0.5, 1, 10000000, erdp_coords_australia, elev_coords_australia, final_noise)
-		print 'TopoGen for australia completed in (s):',time.clock()-tstart
-
-	elif choice == 8:
-
-		tstart = time.clock()
-		directory = 'Examples/carmen_australia/'
-		print '%s/AUSUF016.xml' %(directory)
-		topoGenerator(directory,'%s/AUSUF016.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, 1.49E+08, erdp_coords_crater, elev_coords_crater, final_noise)
-		print 'TopoGen for AUSUF016 completed in (s):',time.clock()-tstart
-
-	elif choice == 9:
-		tstart = time.clock()
-		directory = 'Examples/aus_1m'
-		print '%s/AUSUF016_2.xml' %(directory)
-		topoGenerator(directory,'%s/AUSUF016_2.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, 1.49E+08, erdp_coords_crater, elev_coords_crater, final_noise)
-		print 'TopoGen for AUSUF016 150 million completed in (s):',time.clock()-tstart
-
-	elif choice == 10:
-		tstart = time.clock()
-		directory = 'Examples/aus_1m'
-		print '%s/AUSUF016_1.xml' %(directory)
-		topoGenerator(directory,'%s/AUSUF016_1.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, -1.e06, erdp_coords_crater, elev_coords_crater, final_noise)
-		print 'TopoGen for AUSUF016 1 million completed in (s):',time.clock()-tstart
+		directory = 'Examples/aus'
+		print '%s/aus.xml' %(directory)
+		topoGenerator(directory,'%s/aus.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, -1.49E08, erdp_coords_australia, elev_coords_australia, final_noise)
+		print 'TopoGen for aus completed in (s):',time.clock()-tstart
 
 if __name__ == "__main__": main()
