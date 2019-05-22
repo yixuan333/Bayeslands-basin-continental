@@ -18,7 +18,7 @@
     <!-- Simulation time structure -->
     <time>
         <!-- Simulation start time [a] -->
-        <start>-1.E+06</start>
+        <start>-5.E+06</start>
         <!-- Simulation end time [a] -->
         <end>0</end>
         <!-- Display interval [a] -->
@@ -56,7 +56,7 @@
         <!--  Displacement definition  -->
         <disp>
             <!--  Displacement start time [a]  -->
-            <dstart>-1.E6</dstart>
+            <dstart>-5.E6</dstart>
             <!--  Displacement end time [a]  -->
             <dend>0</dend>
             <!--  Displacement map [m]  -->
@@ -85,44 +85,39 @@
         <!--  Number of precipitation events  -->
         <climates>4</climates>
         <!--  Precipitation definition  -->
-        <!-- Linear orographic precipitation model definition -->
+        <!-- Linear orog
+        raphic precipitation model definition -->
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-150.e6</rstart>
+          <rstart>-5.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-40.e6</rend>
+          <rend>-4.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>1.16</rval>
         </rain>
         <rain>
         <!-- Rain start time [a] -->
-          <rstart>-40.e6</rstart>
+          <rstart>-4.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-20.e6</rend>
+          <rend>-3.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>0.9</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-20.e6</rstart>
+          <rstart>-3.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-10.e6</rend>
+          <rend>-2.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>1.092</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-10.e6</rstart>
+          <rstart>-2.e6</rstart>
           <!-- Rain end time [a] -->
           <rend>0.</rend>
-          <!-- Rain computation time step [a] -->
-          <ortime>100000.</ortime>
-          <!-- Minimal precipitation value [m/a] -->
-          <rmin>1.</rmin>
-          <!-- Maximal precipitation value [m/a] -->
-          <rmax>5.</rmax>
-          <!-- Maximal elevation for computing linear trend [m] -->
-          <rzmax>4000.</rzmax>
+          <!-- Precipitation map [m/a] -->
+          <rval>1.16</rval>
         </rain>
     </precipitation>
 
@@ -216,7 +211,7 @@
     </creep>
     <flexure>
         <!--  Time step used to compute the isostatic flexure.  -->
-        <ftime>1.E5</ftime>
+        <ftime>1.E4</ftime>
         <!--
          Definition of the flexural grid:
          It is possible to setup a flexural grid at a resolution higher than the one used

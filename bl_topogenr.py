@@ -121,11 +121,11 @@ def topoGenerator(directory, inputname, rain, erodibility, m, n, simtime, erdp_c
 
 	model = badlandsModel()
 	model.load_xml(str(simtime), inputname, verbose = False, muted = False)
-	# model.input.SPLero = erodibility
-	# model.flow.erodibility.fill(erodibility)
+	model.input.SPLero = erodibility
+	model.flow.erodibility.fill(erodibility)
 	# model.force.rainVal[:] = rain
-	# model.input.SPLm = m
-	# model.input.SPLn = n
+	model.input.SPLm = m
+	model.input.SPLn = n
 
 	elev_vec = collections.OrderedDict()
 	erdp_vec = collections.OrderedDict()
@@ -447,18 +447,19 @@ def main():
 
 	final_noise = True
 
+	tstart = time.time()
+
 	if choice == 1:
-		tstart = time.clock()
 		directory = 'Examples/aus_short'
 		print '%s/aus_short.xml' %(directory)
-		topoGenerator(directory,'%s/aus_short.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, -1.E+06, erdp_coords_australia, elev_coords_australia, final_noise)
-		print 'TopoGen for aus_short completed in (s):',time.clock()-tstart
+		topoGenerator(directory,'%s/aus_short.xml' %(directory), 1.0 , 5.e-7, 0.5, 1, -5.E+06, erdp_coords_australia, elev_coords_australia, final_noise)
 
 	elif choice == 2:
-		tstart = time.clock()
 		directory = 'Examples/aus'
 		print '%s/aus.xml' %(directory)
-		topoGenerator(directory,'%s/aus.xml' %(directory), 3.0 , 5.e-7, 0.5, 1, -1.49E08, erdp_coords_australia, elev_coords_australia, final_noise)
-		print 'TopoGen for aus completed in (s):',time.clock()-tstart
+		topoGenerator(directory,'%s/aus.xml' %(directory), 1.0 , 5.e-7, 0.5, 1, -1.49E08, erdp_coords_australia, elev_coords_australia, final_noise)
+
+	tend = time.time()
+	print 'TopoGen for aus completed in (s):',tend-tstart
 
 if __name__ == "__main__": main()

@@ -15,11 +15,9 @@ import random
 import time
 import operator
 import math
-import cmocean as cmo
 from pylab import rcParams
 import copy
 from copy import deepcopy
-import cmocean as cmo
 from pylab import rcParams
 import collections
 from scipy import special
@@ -59,37 +57,36 @@ import scipy.ndimage as ndimage
 
 from scipy.ndimage import gaussian_filter
 
-#Initialise and parse inputs
-parser=argparse.ArgumentParser(description='PTBayeslands modelling')
+# #Initialise and parse inputs
+# parser=argparse.ArgumentParser(description='PTBayeslands modelling')
 
-parser.add_argument('-p','--problem', help='Problem Number 1-crater-fast,2-crater,3-etopo-fast,4-etopo,5-null,6-mountain', required=True,   dest="problem",type=int)
-parser.add_argument('-s','--samples', help='Number of samples', default=10000, dest="samples",type=int)
-parser.add_argument('-r','--replicas', help='Number of chains/replicas, best to have one per availble core/cpu', default=10,dest="num_chains",type=int)
-parser.add_argument('-t','--temperature', help='Demoninator to determine Max Temperature of chains (MT=no.chains*t) ', default=10,dest="mt_val",type=int)
-parser.add_argument('-swap','--swap', help='Swap Ratio', dest="swap_ratio",default=0.02,type=float)
-parser.add_argument('-b','--burn', help='How many samples to discard before determing posteriors', dest="burn_in",default=0.25,type=float)
-parser.add_argument('-pt','--ptsamples', help='Ratio of PT vs straight MCMC samples to run', dest="pt_samples",default=0.5,type=float)  
-parser.add_argument('-rain_intervals','--rain_intervals', help='rain_intervals', dest="rain_intervals",default=4,type=int)
-parser.add_argument('-epsilon','--epsilon', help='epsilon for inital topo', dest="epsilon",default=0.5,type=float)
+# parser.add_argument('-p','--problem', help='Problem Number 1-crater-fast,2-crater,3-etopo-fast,4-etopo,5-null,6-mountain', required=True,   dest="problem",type=int)
+# parser.add_argument('-s','--samples', help='Number of samples', default=10000, dest="samples",type=int)
+# parser.add_argument('-r','--replicas', help='Number of chains/replicas, best to have one per availble core/cpu', default=10,dest="num_chains",type=int)
+# parser.add_argument('-t','--temperature', help='Demoninator to determine Max Temperature of chains (MT=no.chains*t) ', default=10,dest="mt_val",type=int)
+# parser.add_argument('-swap','--swap', help='Swap Ratio', dest="swap_ratio",default=0.02,type=float)
+# parser.add_argument('-b','--burn', help='How many samples to discard before determing posteriors', dest="burn_in",default=0.25,type=float)
+# parser.add_argument('-pt','--ptsamples', help='Ratio of PT vs straight MCMC samples to run', dest="pt_samples",default=0.5,type=float)  
+# parser.add_argument('-rain_intervals','--rain_intervals', help='rain_intervals', dest="rain_intervals",default=4,type=int)
+# parser.add_argument('-epsilon','--epsilon', help='epsilon for inital topo', dest="epsilon",default=0.5,type=float)
 
 
 
-args = parser.parse_args()
+# args = parser.parse_args()
     
 #parameters for Parallel Tempering
-problem = args.problem
-samples = args.samples #10000  # total number of samples by all the chains (replicas) in parallel tempering
-num_chains = args.num_chains
-swap_ratio = args.swap_ratio
-burn_in=args.burn_in
+problem = 1 #args.problem
+samples = 1000 #args.samples #10000  # total number of samples by all the chains (replicas) in parallel tempering
+num_chains = 10 #args.num_chains
+swap_ratio = 0.01 #args.swap_ratio
+burn_in= 0.25 #args.burn_in
 #maxtemp = int(num_chains * 5)/args.mt_val
-maxtemp =   args.mt_val 
+maxtemp =   10# args.mt_val 
 swap_interval = 5 #int(swap_ratio * (samples/num_chains)) #how ofen you swap neighbours
 num_successive_topo = 4
-pt_samples = args.pt_samples
-epsilon = args.epsilon
-rain_intervals = args.rain_intervals
-
+pt_samples = 0.5 #args.pt_samples
+epsilon = 0.5 #args.epsilon
+rain_intervals = 4 #args.rain_intervals
 method = 2 # type of formaltion for inittopo construction
 
 
@@ -940,7 +937,7 @@ class ParallelTempering:
             timeout_count = 0
             for index in range(0,self.num_chains):
                 #print("Waiting for chain: {}".format(index+1))
-                flag = self.wait_chain[index].wait(timeout=300)
+                flag = self.wait_chain[index].wait(timeout=5)
                 if flag:
                     print("Signal from chain: {}".format(index+1))
                     timeout_count += 1
@@ -1683,7 +1680,7 @@ def main():
     if problem == 1: #this will have region and time rainfall of Problem 1
         problemfolder = 'Examples/aus_short/'
         xmlinput = problemfolder + 'aus_short.xml'
-        simtime = -5.E+06 #-1.E+05
+        simtime = -1.E+05
         resolu_factor = 1
 
         datapath = problemfolder + 'data/final_elev.txt'
