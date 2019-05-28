@@ -4,8 +4,8 @@
     <!-- Regular grid structure -->
     <grid>
         <!-- Digital elevation model file path -->
-        <demfile>Examples/aus_short/data/Paleotopo/Paleotopo_UFL_50km_prec2.csv</demfile>
-        <!-- <demfile>Examples/aus_short/data/Paleotopo/australia_5k.csv</demfile> -->
+        <demfile>Examples/aus/data/Paleotopo/master_present.csv</demfile>
+        <!-- <demfile>Examples/aus/data/Paleotopo/australia_5k.csv</demfile> -->
         <!-- Boundary type: flat, slope or wall -->
         <boundary>slope</boundary>
         <!-- Optional parameter (integer) used to decrease TIN resolution.
@@ -18,11 +18,11 @@
     <!-- Simulation time structure -->
     <time>
         <!-- Simulation start time [a] -->
-        <start>-1.E+06</start>
+        <start>-200</start>
         <!-- Simulation end time [a] -->
         <end>0</end>
         <!-- Display interval [a] -->
-        <display>1.00E+05</display>
+        <display>1.00E+06</display>
     </time>
 
     <!-- Simulation stratigraphic structure -->
@@ -30,7 +30,7 @@
         <!-- Stratal grid resolution [m] -->
         <stratdx>50000.</stratdx>
         <!-- Stratal layer interval [a] -->
-        <laytime>1.00E+05</laytime>
+        <laytime>1.00E+06</laytime>
         <!-- Surface porosity -->
         <poro0>0.52</poro0>
         <!-- characteristic constant for Athy's porosity law [/km] -->
@@ -42,7 +42,7 @@
         <!--  Relative sea-level position [m]  -->
         <position>0.</position>
         <!--  Sea-level curve - (optional)  -->
-        <curve>Examples/aus_short/data/Sea_level/Haq_87_M.csv</curve>
+        <curve>Examples/aus/data/Sea_level/Haq_87_M.csv</curve>
     </sea>
     
     <!--  Tectonic structure  -->
@@ -52,68 +52,179 @@
          -->
         <disp3d>0</disp3d>
         <!--  Number of tectonic events  -->
-        <events>1</events>
+        <events>17</events>
         <!--  Displacement definition  -->
         <disp>
             <!--  Displacement start time [a]  -->
-            <dstart>-1.E6</dstart>
+            <dstart>-149.e6</dstart>
             <!--  Displacement end time [a]  -->
-            <dend>0</dend>
+            <dend>-139.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>Examples/aus_short/data/Uplift/gld115_total_diff_0-4_Ma_50km.csv</dfile>
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_139-149_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-139.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-129.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_129-139_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-129.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-119.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_119-129_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-119.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-109.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_109-119_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-109.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-99.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_99-109_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-99.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-89.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_89-99_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-89.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-79.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_79-89_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-79.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-69.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_69-79_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-69.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-59.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_59-69_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-59.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-49.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_49-59_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-49.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-39.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_39-49_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-39.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-29.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_29-39_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-29.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-19.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_19-29_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-19.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-14.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_14-19_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-14.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-9.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_9-14_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-9.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-4.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_4-9_Ma_50km.csv</dfile>
+        </disp>
+        <disp>
+            <!--  Displacement start time [a]  -->
+            <dstart>-4.e6</dstart>
+            <!--  Displacement end time [a]  -->
+            <dend>-0.e6</dend>
+            <!--  Displacement map [m]  -->
+            <dfile>Examples/aus/data/Uplift/gld115_total_diff_0-4_Ma_50km.csv</dfile>
         </disp>
     </tectonic>
     
     <!--  Precipitation structure  -->
-    <!-- <precipitation> -->
-        <!--  Number of precipitation events  -->
-        <!-- <climates>1</climates> -->
-        <!--  Precipitation definition  -->
-        <!-- Linear orographic precipitation model definition -->
-        <!-- <rain> -->
-          <!-- Rain start time [a] -->
-          <!-- <rstart>-1.E5</rstart> -->
-          <!-- Rain end time [a] -->
-          <!-- <rend>0</rend> -->
-          <!-- Precipitation map [m/a] -->
-          <!-- <rval>3.00</rval> -->
-        <!-- </rain> -->
-        
-    <!-- </precipitation> -->
-    
     <precipitation>
         <!--  Number of precipitation events  -->
         <climates>4</climates>
         <!--  Precipitation definition  -->
-        <!-- Linear orog
-        raphic precipitation model definition -->
+        <!-- Linear orographic precipitation model definition -->
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-7.5e4</rstart>
+          <rstart>-150.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-5.e4</rend>
+          <rend>-40.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>1.16</rval>
         </rain>
         <rain>
         <!-- Rain start time [a] -->
-          <rstart>-5.e4</rstart>
+          <rstart>-40.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-3.e4</rend>
+          <rend>-20.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>0.9</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-3.e4</rstart>
+          <rstart>-20.e6</rstart>
           <!-- Rain end time [a] -->
-          <rend>-2.e4</rend>
+          <rend>-10.e6</rend>
           <!-- Precipitation map [m/a] -->
           <rval>1.092</rval>
         </rain>
         <rain>
           <!-- Rain start time [a] -->
-          <rstart>-2.e4</rstart>
+          <rstart>-10.e6</rstart>
           <!-- Rain end time [a] -->
           <rend>0.</rend>
           <!-- Precipitation map [m/a] -->
@@ -176,19 +287,19 @@
         <!-- Variable erodibilities and constant layer thickness -->
         <erolay>
             <!-- Variable erodibilities for the considered layer. -->
-            <eromap>Examples/aus_short/data/Erodibility/Erodibility_UFH_50km.csv</eromap>
+            <eromap>Examples/aus/data/Erodibility/Erodibility_UFH_50km.csv</eromap>
             <!-- Uniform thickness value for the considered layer [m]. -->
             <thcst>0.2</thcst>
         </erolay>
         <erolay>
             <!-- Variable erodibilities for the considered layer. -->
-            <eromap>Examples/aus_short/data/Erodibility/Erodibility_TasLine_UFH_50km.csv</eromap>
+            <eromap>Examples/aus/data/Erodibility/Erodibility_TasLine_UFH_50km.csv</eromap>
             <!-- Uniform thickness value for the considered layer [m]. -->
             <thcst>5000</thcst>
         </erolay>
         <erolay>
             <!-- Variable erodibilities for the considered layer. -->
-            <eromap>Examples/aus_short/data/Erodibility/Erodibility_UFH_50km.csv</eromap>
+            <eromap>Examples/aus/data/Erodibility/Erodibility_UFH_50km.csv</eromap>
             <!-- Uniform thickness value for the considered layer [m]. -->
             <thcst>10000</thcst>
         </erolay>
@@ -211,7 +322,7 @@
     </creep>
     <flexure>
         <!--  Time step used to compute the isostatic flexure.  -->
-        <ftime>1.E4</ftime>
+        <ftime>100000</ftime>
         <!--
          Definition of the flexural grid:
          It is possible to setup a flexural grid at a resolution higher than the one used

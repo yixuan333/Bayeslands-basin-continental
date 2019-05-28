@@ -1019,9 +1019,6 @@ class ParallelTempering:
         percentile_95th = np.percentile(pos_param, 95, axis=1) 
 
         percentile_5th = np.percentile(pos_param, 5, axis=1) 
-
-
-
        
 
         if problem==1 or problem==2 : # problem is global variable
