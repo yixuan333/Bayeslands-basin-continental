@@ -1,17 +1,28 @@
 
-#!/bin/sh 
+#!/bin/bash  
 echo Running all 	 
 
+problem=1
+replica=10
+swapint=2
+samples=100
+maxtemp=3
+burn=0.25
+pt_stage=0.5
+raintimeint=4
+initialtopoep=0.5
+
+echo $problem 
+
+
  
-for t in 4
+for t in 1 #4 8 16
 	do  
-		for x in 200
+ 
+			python ptBayeslands.py -p $problem -s $samples -r $replica -t $maxtemp -swap $swapint -b $burn -pt $pt_stage  -epsilon $initialtopoep -rain_intervals $raintimeint
+			python visualise.py -p $problem -s $samples -r $replica -t $maxtemp -swap $swapint -b $burn -pt $pt_stage  -epsilon $initialtopoep -rain_intervals $raintimeint
 
-		do
- 
-			python ptBayeslands_continental.py -p 2 -s $x -r 8 -t 10 -swap 0.9 -b 0.25 -pt 0.5 -epsilon 0.5 -rain_intervals $t #> log.txt
- 
-		done
+  
+  
 	done 
-
 
