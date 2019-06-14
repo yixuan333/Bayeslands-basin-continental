@@ -288,7 +288,8 @@ class ptReplica(multiprocessing.Process):
         try:
             pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = self.run_badlands(input_vector )
             temp_elev, temp_erodep, temp_erodep_pts = pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec
-        except RuntimeError as e:
+        except Exception as e:
+            print e
             print ('\n\n\n Error : ', e, '\n\n\n')
             pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = temp_elev, temp_erodep, temp_erodep_pts
         
