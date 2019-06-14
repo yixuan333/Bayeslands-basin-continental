@@ -50,7 +50,7 @@ import seaborn as sns
 from scipy.ndimage import filters 
 import scipy.ndimage as ndimage
 from scipy.ndimage import gaussian_filter
-
+from problem_setup import problem_setup
 from ptBayeslands import interpolateArray
 
 #Initialise and parse inputs
@@ -817,6 +817,17 @@ def main():
     groundtruth_erodep_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords) = problem_setup(problem)
+
+    rain_timescale = rain_intervals  # to show climate change 
+    rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
+    rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale)
+    minlimits_vec = np.append(rain_minlimits,minlimits_others)
+    maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
+    vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
+    true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
+    stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
+    num_param = vec_parameters.size
+
 
     with open ("foldername.txt", "r") as f:
         fname = f.read().splitlines() 
