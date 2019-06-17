@@ -193,8 +193,8 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
 
         #--------------------------------------------------------
-        minlimits_others = [4.e-7, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [6.e-7, 1, 2, 0.1, 0.1, 1, 1, 1, 1, 1]
+        minlimits_others = [4.e-7, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
+        maxlimits_others = [6.e-7, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
 
         # minlimits_others = [real_erod, m, n, real_cmarine, real_caerial, 0, 0, 0, 0, 0]  # 
         # maxlimits_others = [real_erod, m, n, real_cmarine, real_caerial, 1, 1, 1, 1, 1] # fix erod rain etc

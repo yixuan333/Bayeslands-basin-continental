@@ -191,7 +191,7 @@ class ptReplica(multiprocessing.Process):
 
         # prob = [0,1,2]
         # if  problem in prob: #problem==1 or problem==2 : # when you have initial topo (problem is global variable)
-        if problem == 0 or problem ==1 or problem ==2:
+        if problem == 0 or problem ==1 or problem ==2 or problem==3:
             init = False
         else:
             init = True # when you need to estimate initial topo
@@ -289,8 +289,7 @@ class ptReplica(multiprocessing.Process):
             pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = self.run_badlands(input_vector )
             temp_elev, temp_erodep, temp_erodep_pts = pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec
         except Exception as e:
-            print e
-            print ('\n\n\n Error : ', e, '\n\n\n')
+            print ('\n\n Error : ', e, '\n\n')
             pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = temp_elev, temp_erodep, temp_erodep_pts
         
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
@@ -524,7 +523,7 @@ class ptReplica(multiprocessing.Process):
                 np.savetxt(outfile,np.array([save_res]), fmt='%1.2f')  
 
             with file(('%s/performance/lhood/stream_res_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
-                np.savetxt(outfile,np.array([likeh_list[i + 1,1]]), fmt='%1.2f') 
+                np.savetxt(outfile,np.array([likeh_list[i + 1,0]]), fmt='%1.2f') 
 
             with file(('%s/performance/accept/stream_res_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile,np.array([accept_list[i+1]]), fmt='%1.2f')
