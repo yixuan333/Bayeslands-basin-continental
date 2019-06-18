@@ -277,10 +277,13 @@ class ptReplica(multiprocessing.Process):
             for count, val in enumerate(self.erodep_coords):
                 erodep_pts[count] = erodep[val[0], val[1]]
 
+            print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
             elev_vec[self.simtime] = elev
             erodep_vec[self.simtime] = erodep
             erodep_pts_vec[self.simtime] = erodep_pts
 
+
+        print ("returning from run_badlands ************************************", "Temperature: ", self.temperature)
         return elev_vec, erodep_vec, erodep_pts_vec
 
     def likelihood_func(self,input_vector ):
@@ -315,6 +318,7 @@ class ptReplica(multiprocessing.Process):
         rmse_erodep = np.sqrt(tau_erodep) 
         avg_rmse_er = np.average(rmse_erodep)
 
+        print ("returning from likelihood_func *********************************", "Temperature: ", self.temperature)
         return [likelihood *(1.0/self.adapttemp), pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev, avg_rmse_er]
 
     def run(self):
