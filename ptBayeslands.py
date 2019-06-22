@@ -282,8 +282,7 @@ class ptReplica(multiprocessing.Process):
             erodep_vec[self.simtime] = erodep
             erodep_pts_vec[self.simtime] = erodep_pts
 
-
-        print ("returning from run_badlands ************************************", "Temperature: ", self.temperature)
+ 
         return elev_vec, erodep_vec, erodep_pts_vec
 
     def likelihood_func(self,input_vector ):
@@ -317,8 +316,7 @@ class ptReplica(multiprocessing.Process):
         rmse_elev = np.sqrt(tausq)
         rmse_erodep = np.sqrt(tau_erodep) 
         avg_rmse_er = np.average(rmse_erodep)
-
-        print ("returning from likelihood_func *********************************", "Temperature: ", self.temperature)
+ 
         return [likelihood *(1.0/self.adapttemp), pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev, avg_rmse_er]
 
     def run(self):
@@ -794,7 +792,7 @@ class ParallelTempering:
             timeout_count = 0
             for index in range(0,self.num_chains):
                 #print("Waiting for chain: {}".format(index+1))
-                flag = self.wait_chain[index].wait(timeout=5)
+                flag = self.wait_chain[index].wait(timeout=5000)
                 if flag:
                     print("Signal from chain: {}".format(index+1))
                     timeout_count += 1
