@@ -135,6 +135,7 @@ class ptReplica(multiprocessing.Process):
         groundtruth_topo = self.inittopo_estimated.copy()
 
         if method == 1: 
+            print(self.inittopo_expertknow, ' expert ..')
             inittopo_vec = inittopo_vec * self.inittopo_expertknow.flatten() 
 
         elif method ==2:
@@ -248,7 +249,7 @@ class ptReplica(multiprocessing.Process):
         model.input.diffprop = input_vector[rain_regiontime+10]
 
         #Check if it is the mountain problem
-        if problem==4: # needs to be updated
+        if problem==10: # needs to be updated
             #Round the input vector 
             k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
 

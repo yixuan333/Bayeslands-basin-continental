@@ -315,7 +315,7 @@ class results_visualisation:
         model.input.CDa = input_vector[rain_regiontime+4] # aerial diffusion
 
         #Check if it is the mountain problem
-        if problem==4: # needs to be updated
+        if problem==10: # needs to be updated
             #Round the input vector 
             k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
 
