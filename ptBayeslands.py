@@ -82,7 +82,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class ptReplica(multiprocessing.Process):
     
-    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
+    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated):
 
         multiprocessing.Process.__init__(self)
         self.processID = tempr      
@@ -117,6 +117,7 @@ class ptReplica(multiprocessing.Process):
         self.len_grid = len_grid 
         self.wid_grid  = wid_grid# for initial topo grid size 
         self.inittopo_expertknow =  inittopo_expertknow 
+        self.inittopo_estimated = inittopo_estimated
    
     def process_inittopo(self, inittopo_vec):
 
@@ -129,9 +130,9 @@ class ptReplica(multiprocessing.Process):
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
-        reconstructed_topo  = self.real_elev.copy()  # to define the size
+        reconstructed_topo  = self.inittopo_estimated.copy()  # to define the size
         #reconstructed_topo = reconstructed_topo_.tolist()
-        groundtruth_topo = self.real_elev.copy()
+        groundtruth_topo = self.inittopo_estimated.copy()
 
         if method == 1: 
             inittopo_vec = inittopo_vec * self.inittopo_expertknow.flatten() 
@@ -174,7 +175,7 @@ class ptReplica(multiprocessing.Process):
 
         #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
-        #self.plot3d_plotly(reconstructed_topo, 'smooth_')
+        self.plot3d_plotly(reconstructed_topo, 'smooth_')
         return groundtruth_topo
 
     def run_badlands(self, input_vector):
@@ -569,7 +570,7 @@ class ptReplica(multiprocessing.Process):
 
 class ParallelTempering:
 
-    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param,  real_elev, erodep_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml):
+    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param,  real_elev, erodep_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated):
         self.swap_interval = swap_interval
         self.folder = fname
         self.maxtemp = maxtemp
@@ -609,6 +610,7 @@ class ParallelTempering:
         self.len_grid = len_grid
         self.wid_grid = wid_grid
         self.inittopo_expertknow =  inittopo_expertknow 
+        self.inittopo_estimated = inittopo_estimated
 
     def default_beta_ladder(self, ndim, ntemps, Tmax): #https://github.com/konqr/ptemcee/blob/master/ptemcee/sampler.py
         """
@@ -714,7 +716,7 @@ class ParallelTempering:
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in))
+            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated))
                                      #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
         #print (parameter_queue_2, ", param1:",parameter_queue_1)
@@ -974,14 +976,15 @@ def main():
     (problemfolder, xmlinput, simtime, resolu_factor, datapath, groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
-    maxlimits_others, stepsize_ratio, erodep_coords) = problem_setup(problem)
+    maxlimits_others, stepsize_ratio, erodep_coords,inittopo_estimated, vec_parameters, minlimits_vec, maxlimits_vec) = problem_setup(problem)
     
     rain_timescale = rain_intervals  # to show climate change 
-    rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
+
+    '''rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
     rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale)
     minlimits_vec = np.append(rain_minlimits,minlimits_others)
     maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
-    vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
+    vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec)''' #  draw intial values for each of the free parameters
     true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
     stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
     num_param = vec_parameters.size
@@ -1020,7 +1023,7 @@ def main():
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
     #-------------------------------------------------------------------------------------
-    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput)
+    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated)
     
     #-------------------------------------------------------------------------------------
     # intialize the MCMC chains
