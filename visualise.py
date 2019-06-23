@@ -174,7 +174,7 @@ class results_visualisation:
 
         percentile_5th = np.percentile(posterior, 5, axis=1) 
 
-        if problem==1 or problem==2 : # problem is global variable
+        if problem == 0 or problem ==1 or problem ==2 or problem==3: # problem is global variable
             init = False
         else:
             init = True # when you need to estimate initial topo
@@ -265,7 +265,7 @@ class results_visualisation:
         # Load the XmL input file
         model.load_xml(str(self.run_nb_str), self.input, muted=True)
 
-        if  problem==1 or problem==2 : # when you have initial topo (problem is global variable)
+        if  problem == 0 or problem ==1 or problem ==2 or problem==3: # when you have initial topo (problem is global variable)
             init = False
         else:
             init = True # when you need to estimate initial topo

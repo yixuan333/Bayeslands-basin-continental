@@ -47,7 +47,7 @@ def problem_setup(problem = 1):
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
         res_summaryfile = '/results_temporalrain.txt'
-        inittopo_expertknow = [] # no expert knowledge as simulated init topo
+        inittopo_expertknow = np.array([]) # no expert knowledge as simulated init topo
         len_grid = 1  # ignore - this is in case if init topo is inferenced
         wid_grid = 1   # ignore
         simtime = 1000000
@@ -104,7 +104,7 @@ def problem_setup(problem = 1):
         inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruth.txt')
 
         res_summaryfile = '/results_temporalrain.txt'
-        inittopo_expertknow = [] # no expert knowledge as simulated init topo
+        inittopo_expertknow =  np.array([]) # no expert knowledge as simulated init topo
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
@@ -168,7 +168,7 @@ def problem_setup(problem = 1):
         inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruth.txt')
 
         res_summaryfile = '/results_temporalrain.txt'
-        inittopo_expertknow = [] # no expert knowledge as simulated init topo
+        inittopo_expertknow = np.array([]) # no expert knowledge as simulated init topo
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
@@ -218,11 +218,11 @@ def problem_setup(problem = 1):
         erodep_coords = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
 
 
-    elif problem == 4: # 5 MILLION YEARS with INIT TOPO
+    elif problem == 0: # 5 MILLION YEARS with INIT TOPO
         problemfolder = 'Examples/aus_short_inittopo/'
         xmlinput = problemfolder + 'aus_short.xml'
 
-        inittopo_expertknow = [] # no expert knowledge as simulated init topo
+        inittopo_expertknow = np.array([0]) # no expert knowledge as simulated init topo
         len_grid = 1  # ignore - this is in case if init topo is inferenced
         wid_grid = 1   # ignore
         simtime = -5.E+06 #-1.E+05
@@ -236,7 +236,7 @@ def problem_setup(problem = 1):
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
 
-        
+
         inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruth.txt')
 
         res_summaryfile = '/results_temporalrain.txt'
