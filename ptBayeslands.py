@@ -118,6 +118,56 @@ class ptReplica(multiprocessing.Process):
         self.wid_grid  = wid_grid# for initial topo grid size 
         self.inittopo_expertknow =  inittopo_expertknow 
         self.inittopo_estimated = inittopo_estimated
+
+
+    def plot3d_plotly(self, zData, fname):
+
+     
+        zmin =  zData.min() 
+        zmax =  zData.max()
+
+        tickvals= [0,50,75,-50]
+        height=1000
+        width=1000
+        title='Topography'
+        resolu_factor = 1
+
+        xx = (np.linspace(0, zData.shape[0]* resolu_factor, num=zData.shape[0]/10 )) 
+        yy = (np.linspace(0, zData.shape[1] * resolu_factor, num=zData.shape[1]/10 )) 
+
+        xx = np.around(xx, decimals=0)
+        yy = np.around(yy, decimals=0) 
+
+
+        # range = [0,zData.shape[0]* self.resolu_factor]
+        #range = [0,zData.shape[1]* self.resolu_factor],
+
+        data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YIGnBu')])
+
+        layout = Layout(title='Predicted Topography' , autosize=True, width=width, height=height,scene=Scene(
+                    zaxis=ZAxis(title = ' Elev.(m) ', range=[zmin,zmax], autorange=False, nticks=6, gridcolor='rgb(255, 255, 255)',
+                                gridwidth=2, zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
+                    xaxis=XAxis(title = ' x ',  tickvals= xx,      gridcolor='rgb(255, 255, 255)', gridwidth=2,
+                                zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
+                    yaxis=YAxis(title = ' y ', tickvals= yy,    gridcolor='rgb(255, 255, 255)', gridwidth=2,
+                                zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2),
+                    bgcolor="rgb(244, 244, 248)"
+                )
+            )
+
+        fig = Figure(data=data, layout=layout) 
+
+
+        graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.html', validate=False)
+
+
+        '''fig = plt.figure()
+        ax = fig.gca(projection='3d') 
+        ax.plot_trisurf(xx, yy, zData.flatten(), linewidth=0.2, antialiased=True)  
+        fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
+        '''
+         
+ 
    
     def process_inittopo(self, inittopo_vec):
 
@@ -125,26 +175,29 @@ class ptReplica(multiprocessing.Process):
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
         wid_grid = self.wid_grid
-        sub_gridlen = int(length/len_grid)
-        sub_gridwidth = int(width/wid_grid) 
+        sub_gridlen = 20 #int(length/len_grid)  # 25
+        sub_gridwidth = 20 # int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
         reconstructed_topo  = self.inittopo_estimated.copy()  # to define the size
-        #reconstructed_topo = reconstructed_topo_.tolist()
+   
         groundtruth_topo = self.inittopo_estimated.copy()
 
-        if method == 1: 
-            print(self.inittopo_expertknow, ' expert ..')
-            inittopo_vec = inittopo_vec * self.inittopo_expertknow.flatten() 
+        '''if method == 1: 
+            #print(self.inittopo_expertknow, ' expert ..')
+            #print(sub_gridlen, sub_gridwidth, '  sub_gridlen, sub_gridwidth ')
+            #print(inittopo_vec.shape[0], ' inittopo_vec')
+            inittopo_vec = inittopo_vec #* self.inittopo_expertknow.flatten() 
 
         elif method ==2:
-            inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() 
+            inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() '''
+
+
 
         scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid)
 
-        v_ =   scale_factor  
-        #v_ =  np.multiply(self.inittopo_expertknow.copy(), scale_factor.copy())   #+ x_
+        v_ =   scale_factor    
       
         for l in range(0,sub_gridlen-1):
             for w in range(0,sub_gridwidth-1): 
@@ -173,9 +226,9 @@ class ptReplica(multiprocessing.Process):
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
                     groundtruth_topo[m][n]   = inside[m][n]
-
-        #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
+ 
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
+ 
         self.plot3d_plotly(reconstructed_topo, 'smooth_')
         return groundtruth_topo
 
@@ -201,7 +254,7 @@ class ptReplica(multiprocessing.Process):
 
         if init == True:
 
-            geoparam  = rain_regiontime+10  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
+            geoparam  = rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
             inittopo_vec = input_vector[geoparam:]
             filename=self.input.split("/")
             problem_folder=filename[0]+"/"+filename[1]+"/"
@@ -335,9 +388,7 @@ class ptReplica(multiprocessing.Process):
 
         v_proposal = self.vec_parameters # initial param values passed to badlands
         v_current = v_proposal # to give initial value of the chain
-
-        #  initial predictions from Badlands model
-        print("Intital parameter predictions: ", v_current)
+ 
         initial_predicted_elev, initial_predicted_erodep, init_pred_erodep_pts_vec = self.run_badlands(v_current)
         
         #calc initial likelihood with initial parameters
@@ -990,8 +1041,8 @@ def main():
     stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
     num_param = vec_parameters.size
 
-    print(maxlimits_vec, ' maxlimits ')
-    print(vec_parameters)
+    #print(maxlimits_vec, ' maxlimits ')
+    #print(vec_parameters)
 
     fname = ""
     run_nb = 0
