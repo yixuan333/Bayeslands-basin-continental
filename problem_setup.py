@@ -250,7 +250,7 @@ def problem_setup(problem = 1):
         res_summaryfile = '/results_temporalrain.txt'
 
 
-        inittopo_expertknow = inittopo_expertknow.T # no expert knowledge as simulated init topo
+        inittopo_expertknow = inittopo_expertknow # no expert knowledge as simulated init topo
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
@@ -355,7 +355,7 @@ def problem_setup(problem = 1):
         res_summaryfile = '/results_temporalrain.txt'
 
 
-        inittopo_expertknow = inittopo_expertknow.T # no expert knowledge as simulated init topo
+        inittopo_expertknow = inittopo_expertknow  # no expert knowledge as simulated init topo
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
