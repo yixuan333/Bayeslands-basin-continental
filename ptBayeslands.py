@@ -348,6 +348,9 @@ class ptReplica(multiprocessing.Process):
         except Exception as e:
             print ('\n\n Error : ', e, '\n\n')
             pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = temp_elev, temp_erodep, temp_erodep_pts
+
+        print(self.real_elev.shape, ' self.real_elev.shape')
+        print(pred_elev_vec[self.simtime].shape, ' pred_elev_vec.shape')
         
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_erodep =  np.zeros(self.sim_interval.size) 
