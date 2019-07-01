@@ -104,7 +104,7 @@ def problem_setup(problem = 1):
         
         groundtruth_elev = np.loadtxt(datapath)
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
+        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.csv')
         inittopo_expertknow = []
  
 
@@ -156,7 +156,9 @@ def problem_setup(problem = 1):
         num_param = vec_parameters.size
         print(vec_parameters) 
 
-        erodep_coords = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.loadtxt("Testing/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.array(erodep_coords, dtype = 'int')
+        # erodep_coords = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
     
     elif problem == 3: # 150 MILLION YEARS
         problemfolder = 'Examples/aus/'
@@ -169,7 +171,7 @@ def problem_setup(problem = 1):
         
         groundtruth_elev = np.loadtxt(datapath)
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
+        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.csv')
         inittopo_expertknow = []
 
         res_summaryfile = '/results_temporalrain.txt'
@@ -220,8 +222,8 @@ def problem_setup(problem = 1):
         num_param = vec_parameters.size
         print(vec_parameters) 
 
-        erodep_coords = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
-
+        erodep_coords = np.loadtxt("Testing/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.array(erodep_coords, dtype = 'int')
 
     elif problem == 4: # 5 MILLION YEARS with INIT TOPO
 

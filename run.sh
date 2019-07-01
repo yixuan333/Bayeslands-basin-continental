@@ -2,8 +2,8 @@
 #!/bin/bash  
 echo Running all 	 
 
-problem=4
-replica=8
+problem=2
+replica=4
 
 samples=800
 swapint=$samples

@@ -166,8 +166,6 @@ class ptReplica(multiprocessing.Process):
         ax.plot_trisurf(xx, yy, zData.flatten(), linewidth=0.2, antialiased=True)  
         fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
         '''
-         
- 
    
     def process_inittopo(self, inittopo_vec):
 
@@ -193,9 +191,7 @@ class ptReplica(multiprocessing.Process):
         elif method ==2:
             inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() '''
 
-
-
-        scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid)
+        scale_factor = np.reshape(inittopo_vec,(sub_gridlen, -1))#np.random.rand(len_grid,wid_grid)
 
         v_ =   scale_factor    
       
@@ -352,8 +348,13 @@ class ptReplica(multiprocessing.Process):
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_erodep =  np.zeros(self.sim_interval.size) 
         
-        for i in range(  self.sim_interval.size):
-            tau_erodep[i]  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
+        for i in range(self.sim_interval.size):
+            if i == (self.sim_interval.size-1):
+                # print ('\n\nIm here in the last one \n\n')
+                tau_erodep[i]  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
+            else:
+                # print ('\n\nIm actually in else\n\n')
+                tau_erodep[i] = 0 
 
         likelihood_elev = - 0.5 * np.log(2 * math.pi * tausq) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq 
         likelihood_erodep = 0 
