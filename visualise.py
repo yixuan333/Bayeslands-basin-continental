@@ -87,7 +87,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class results_visualisation:
 
-    def __init__(self, vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str ):
+    def __init__(self, vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str ):
 
    
         self.swap_interval = swap_interval
@@ -122,6 +122,7 @@ class results_visualisation:
         self.len_grid = len_grid
         self.wid_grid = wid_grid
         self.inittopo_expertknow =  inittopo_expertknow 
+        self.inittopo_estimated = inittopo_estimated
 
     def results_current (self ):
 
@@ -135,7 +136,8 @@ class results_visualisation:
         optimal_para, para_5thperc, para_95thperc = self.get_uncertainity(likelihood_vec, posterior)
         np.savetxt(self.folder+'/optimal_percentile_para.txt', np.array([optimal_para, para_5thperc, para_95thperc]) )
 
-        for s in range(self.num_param):  
+        #for s in range(self.num_param): 
+        for s in range(15): # change this if you want to see all pos plots
             self.plot_figure(posterior[s,:], 'pos_distri_'+str(s) ) 
 
         '''
@@ -166,7 +168,7 @@ class results_visualisation:
         swap_perc = self.num_swap*100/self.total_swap_proposals  '''
 
         rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time  
-        geoparam  = rain_regiontime+10  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall) 
+        geoparam  = rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall) 
  
         mean_pos = posterior.mean(axis=1) 
 
@@ -197,8 +199,10 @@ class results_visualisation:
             init_topo_95th = init_topo_95th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
             init_topo_5th = init_topo_5th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
 
-            xmid = int(synthetic_initopo.shape[0]/2) 
-            inittopo_real = synthetic_initopo[xmid, :]  # ground-truth init topo mid (synthetic) 
+            xmid = int(self.inittopo_estimated.shape[0]/2) 
+            inittopo_real = self.inittopo_estimated[xmid, :]  # ground-truth init topo mid (synthetic) 
+            #inittopo_real = self.inittopo_estimated[xmid, :]  # ground-truth init topo mid (synthetic) 
+
 
 
             lower_mid = init_topo_5th[xmid, :]
@@ -273,7 +277,7 @@ class results_visualisation:
 
         if init == True:
 
-            geoparam  = rain_regiontime+10  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
+            geoparam  = rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
             inittopo_vec = input_vector[geoparam:]
             filename=self.input.split("/")
             problem_folder=filename[0]+"/"+filename[1]+"/"
@@ -289,7 +293,7 @@ class results_visualisation:
             inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  # bug fix but not good fix - temp @ 
 
             #Put it back into 'Badlands' format and then re-load the model
-            filename=problem_folder+str(self.run_nb)+'/demfile_'+ str(int(self.temperature*10)) +'_demfile.csv' 
+            filename=problem_folder+'/demfile_temp_finalinittopo.csv' 
 
             elev_framex = np.vstack((model.recGrid.rectX,model.recGrid.rectY,inittopo_estimate.flatten()))
             np.savetxt(filename, elev_framex.T, fmt='%1.2f' ) 
@@ -353,40 +357,41 @@ class results_visualisation:
 
 
     def process_inittopo(self, inittopo_vec):
-
+ 
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
         wid_grid = self.wid_grid
-        
-        sub_gridlen = int(length/len_grid)
-        sub_gridwidth = int(width/wid_grid) 
+        sub_gridlen = 20 #int(length/len_grid)  # 25
+        sub_gridwidth = 20 # int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
-        reconstructed_topo  = self.real_elev.copy()  # to define the size
-        #reconstructed_topo = reconstructed_topo_.tolist()
-        groundtruth_topo = self.real_elev.copy()
+        reconstructed_topo  = self.inittopo_estimated.copy()  # to define the size
+   
+        groundtruth_topo = self.inittopo_estimated.copy()
 
-        if method == 1: 
-
-            inittopo_vec = inittopo_vec * self.inittopo_expertknow.flatten() 
+        '''if method == 1: 
+            #print(self.inittopo_expertknow, ' expert ..')
+            #print(sub_gridlen, sub_gridwidth, '  sub_gridlen, sub_gridwidth ')
+            #print(inittopo_vec.shape[0], ' inittopo_vec')
+            inittopo_vec = inittopo_vec #* self.inittopo_expertknow.flatten() 
 
         elif method ==2:
-
             inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() 
 
-       
+        '''
+ 
+
         scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid)
 
-        v_ =   scale_factor  
-
+        v_ =   scale_factor     
+      
         for l in range(0,sub_gridlen-1):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
- 
 
         width = reconstructed_topo.shape[0]
         length = reconstructed_topo.shape[1]
@@ -402,15 +407,15 @@ class results_visualisation:
             l = sub_gridlen-1  
             for m in range(l * len_grid,width):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        groundtruth_topo[m][n]   +=  v_[l][w] 
-
- 
+                        groundtruth_topo[m][n]   +=  v_[l][w]
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
 
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
-                    groundtruth_topo[m][n]   = inside[m][n] 
+                    groundtruth_topo[m][n]   = inside[m][n]
+ 
+        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
  
  
         self.plot3d_plotly(groundtruth_topo, 'initrecon_')
@@ -464,7 +469,7 @@ class results_visualisation:
         params = {'legend.fontsize': size, 'legend.handlelength': 2}
         plt.rcParams.update(params)
         plt.plot(x,  real, label='Ground Truth') 
-        plt.plot(x, pred, label='Badlands Pred.') 
+        plt.plot(x, pred, label='Estimated') 
         plt.grid(alpha=0.75)
 
         rmse_init = np.sqrt(np.sum(np.square(pred  -  real))  / real.size)   
@@ -838,7 +843,7 @@ def main():
     sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     print("Simulation time interval", sim_interval)
 
-    res = results_visualisation(  vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str)
+    res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str)
     pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init, rmse_full_init   = res.results_current()
 
     print('sucessfully sampled') 

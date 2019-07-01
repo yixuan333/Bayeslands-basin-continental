@@ -2,14 +2,14 @@
 #!/bin/bash  
 echo Running all 	 
 
-problem=2
+problem=5
 replica=4
 
-samples=800
+samples=400
 swapint=$samples
-maxtemp=3
+maxtemp=2
 burn=0.25
-pt_stage=0.5
+pt_stage=0.25
 raintimeint=4
 initialtopoep=0.5
 

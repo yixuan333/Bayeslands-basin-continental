@@ -52,6 +52,9 @@ def problem_setup(problem = 1):
  
         res_summaryfile = '/results_temporalrain.txt'
         inittopo_expertknow = [] # no expert knowledge as simulated init topo
+        inittopo_estimated = []
+
+        
         len_grid = 1  # ignore - this is in case if init topo is inferenced
         wid_grid = 1   # ignore
         simtime = 1000000
@@ -110,6 +113,9 @@ def problem_setup(problem = 1):
 
         res_summaryfile = '/results_temporalrain.txt'
         inittopo_expertknow =  np.array([]) # no expert knowledge as simulated init topo
+        inittopo_estimated = []
+
+
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
@@ -176,6 +182,7 @@ def problem_setup(problem = 1):
 
         res_summaryfile = '/results_temporalrain.txt'
         inittopo_expertknow = np.array([]) # no expert knowledge as simulated init topo
+        inittopo_estimated = []
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
@@ -252,7 +259,7 @@ def problem_setup(problem = 1):
         res_summaryfile = '/results_temporalrain.txt'
 
 
-        inittopo_expertknow = inittopo_expertknow.T # no expert knowledge as simulated init topo
+        inittopo_expertknow = inittopo_expertknow # no expert knowledge as simulated init topo
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
@@ -357,7 +364,7 @@ def problem_setup(problem = 1):
         res_summaryfile = '/results_temporalrain.txt'
 
 
-        inittopo_expertknow = inittopo_expertknow.T # no expert knowledge as simulated init topo
+        inittopo_expertknow = inittopo_expertknow  # no expert knowledge as simulated init topo
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
