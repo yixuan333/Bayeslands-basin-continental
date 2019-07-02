@@ -249,7 +249,7 @@ def problem_setup(problem = 1):
         
         groundtruth_elev = np.loadtxt(datapath)
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
+        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.csv')
 
 
 
@@ -333,10 +333,10 @@ def problem_setup(problem = 1):
         stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
         num_param = vec_parameters.size
         print(vec_parameters, 'vec_parameters') 
-
-        erodep_coords = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
-
-
+        
+        erodep_coords = np.loadtxt("Testing/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.array(erodep_coords, dtype = 'int')
+    
     elif problem == 5: # 5 MILLION YEARS with INIT TOPO
 
 
@@ -354,7 +354,7 @@ def problem_setup(problem = 1):
         
         groundtruth_elev = np.loadtxt(datapath)
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
+        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.csv')
 
 
 
@@ -439,7 +439,8 @@ def problem_setup(problem = 1):
         num_param = vec_parameters.size
         print(vec_parameters, 'vec_parameters') 
 
-        erodep_coords = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.loadtxt("Testing/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.array(erodep_coords, dtype = 'int')
 
     return (problemfolder, xmlinput, simtime, resolu_factor, datapath, groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 

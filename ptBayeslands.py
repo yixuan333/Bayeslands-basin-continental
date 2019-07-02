@@ -993,8 +993,8 @@ def interpolateArray(coords=None, z=None, dz=None):
     x, y = np.hsplit(coords, 2)
     dx = (x[1]-x[0])[0]
 
-    nx = int((x.max() - x.min())/dx+1)
-    ny = int((y.max() - y.min())/dx+1)
+    nx = int((x.max() - x.min())/dx+1 - 2)
+    ny = int((y.max() - y.min())/dx+1 - 2)
     xi = np.linspace(x.min(), x.max(), nx)
     yi = np.linspace(y.min(), y.max(), ny)
 
