@@ -105,9 +105,9 @@ def problem_setup(problem = 1):
         datapath = problemfolder + 'data/final_elev.txt'
         # datapath = problemfolder + 'data/initial_elev.txt'
         
-        groundtruth_elev = np.loadtxt(datapath)
-        groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.csv')
+        groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
+        groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
+        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
         inittopo_expertknow = []
  
 
@@ -175,9 +175,9 @@ def problem_setup(problem = 1):
         datapath = problemfolder + 'data/final_elev.txt'
         # datapath = problemfolder + 'data/initial_elev.txt'
         
-        groundtruth_elev = np.loadtxt(datapath)
-        groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.csv')
+        groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
+        groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
+        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
         inittopo_expertknow = []
 
         res_summaryfile = '/results_temporalrain.txt'
@@ -247,9 +247,9 @@ def problem_setup(problem = 1):
         datapath = problemfolder + 'data/final_elev.txt'
         # datapath = problemfolder + 'data/initial_elev.txt'
         
-        groundtruth_elev = np.loadtxt(datapath)
-        groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.csv')
+        groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
+        groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
+        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
 
 
 
@@ -352,9 +352,9 @@ def problem_setup(problem = 1):
         datapath = problemfolder + 'data/final_elev.txt'
         # datapath = problemfolder + 'data/initial_elev.txt'
         
-        groundtruth_elev = np.loadtxt(datapath)
-        groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
-        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.csv')
+        groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
+        groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
+        groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
 
 
 
