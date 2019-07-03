@@ -65,6 +65,7 @@ parser.add_argument('-b','--burn', help='How many samples to discard before dete
 parser.add_argument('-pt','--ptsamples', help='Ratio of PT vs straight MCMC samples to run', dest="pt_samples",default=0.5,type=float)  
 parser.add_argument('-rain_intervals','--rain_intervals', help='rain_intervals', dest="rain_intervals",default=4,type=int)
 parser.add_argument('-epsilon','--epsilon', help='epsilon for inital topo', dest="epsilon",default=0.5,type=float)
+parser.add_argument('-cov','--covariance', help='flag for covariance', dest="covariance",default=0,type=int)
 
 
 args = parser.parse_args()

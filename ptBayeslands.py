@@ -62,6 +62,7 @@ parser.add_argument('-b','--burn', help='How many samples to discard before dete
 parser.add_argument('-pt','--ptsamples', help='Ratio of PT vs straight MCMC samples to run', dest="pt_samples",default=0.5,type=float)  
 parser.add_argument('-rain_intervals','--rain_intervals', help='rain_intervals', dest="rain_intervals",default=4,type=int)
 parser.add_argument('-epsilon','--epsilon', help='epsilon for inital topo', dest="epsilon",default=0.5,type=float)
+parser.add_argument('-cov','--covariance', help='flag for covariance', dest="covariance",default=0,type=int)
 
 args = parser.parse_args()
     
@@ -77,12 +78,13 @@ num_successive_topo = 4
 pt_samples = args.pt_samples
 epsilon = args.epsilon
 rain_intervals = args.rain_intervals
+covariance = args.covariance
 
 method = 1 # type of formaltion for inittopo construction (Method 1 showed better results than Method 2)
 
 class ptReplica(multiprocessing.Process):
     
-    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated):
+    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance):
 
         multiprocessing.Process.__init__(self)
         self.processID = tempr      
@@ -118,7 +120,12 @@ class ptReplica(multiprocessing.Process):
         self.wid_grid  = wid_grid# for initial topo grid size 
         self.inittopo_expertknow =  inittopo_expertknow 
         self.inittopo_estimated = inittopo_estimated
-
+        self.adapt_cov = 50
+        self.cholesky = [] 
+        self.cov_init = False
+        self.use_cov = covariance
+        self.cov_counter = 0
+        self.repeated_proposal = False
 
     def plot3d_plotly(self, zData, fname):
 
@@ -227,6 +234,24 @@ class ptReplica(multiprocessing.Process):
  
         self.plot3d_plotly(reconstructed_topo, 'smooth_')
         return groundtruth_topo
+
+    def computeCovariance(self, i, pos_v):
+        cov_mat = np.cov(pos_v[:i,].T)
+        # np.savetxt('%s/cov_mat_%s.txt' %(self.filename,self.temperature), cov_mat )
+        # print ('\n step ratio vec', self.stepratio_vec)
+        # print ('step size vec', self.stepsize_vec, '\n')
+
+        cov_noise_old = (self.stepratio_vec * self.stepratio_vec)*np.identity(cov_mat.shape[0], dtype = float)
+        cov_noise = self.stepsize_vec*np.identity(cov_mat.shape[0], dtype = float)
+        
+        # print ('\ncov_noise_old', cov_noise_old)
+        # print ('cov_noise_new', cov_noise, '\n')
+
+        covariance = np.add(cov_mat, cov_noise)        
+        L = np.linalg.cholesky(covariance)
+        self.cholesky = L
+        self.cov_init = True
+        # self.cov_counter += 1 
 
     def run_badlands(self, input_vector):
         #Runs a badlands model with the specified inputs
@@ -458,8 +483,13 @@ class ptReplica(multiprocessing.Process):
                 [likelihood, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er] = self.likelihood_func(v_proposal) 
                 init_count = 1
 
-            # Update by perturbing all the  parameters via "random-walk" sampler and check limits
-            v_proposal =  np.random.normal(v_current,stepsize_vec)
+            if self.cov_init and self.use_cov==1:        
+                v_p = np.random.normal(size = v_current.shape)
+                v_proposal = v_current + np.dot(self.cholesky,v_p)
+                # v_proposal = v_current + np.dot(self.cholesky,v_proposal)
+            else:
+                # Update by perturbing all the  parameters via "random-walk" sampler and check limits
+                v_proposal =  np.random.normal(v_current,stepsize_vec)
 
             for j in range(v_current.size):
                 if v_proposal[j] > self.maxlimits_vec[j]:
@@ -539,6 +569,10 @@ class ptReplica(multiprocessing.Process):
                         sum_erodep_pts[k] += v
 
                     num_div += 1
+
+            if (i >= self.adapt_cov and i % self.adapt_cov == 0) :
+                print ('\ncov computed = i ',i, '\n')
+                self.computeCovariance(i,pos_param)
 
             if ( i % self.swap_interval == 0 ):
 
@@ -1032,7 +1066,8 @@ def main():
     (problemfolder, xmlinput, simtime, resolu_factor, datapath, groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
-    maxlimits_others, stepsize_ratio, erodep_coords,inittopo_estimated, vec_parameters, minlimits_vec, maxlimits_vec) = problem_setup(problem)
+    maxlimits_others, stepsize_ratio, erodep_coords,inittopo_estimated, vec_parameters, minlimits_vec,
+     maxlimits_vec) = problem_setup(problem)
     
     rain_timescale = rain_intervals  # to show climate change 
 
@@ -1079,7 +1114,7 @@ def main():
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
     #-------------------------------------------------------------------------------------
-    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated)
+    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance)
     
     #-------------------------------------------------------------------------------------
     # intialize the MCMC chains
