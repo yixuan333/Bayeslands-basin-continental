@@ -1,1 +1,1 @@
-Examples/aus/results_9
+Examples/aus_short/results_24

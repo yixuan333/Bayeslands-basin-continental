@@ -367,18 +367,19 @@ class ptReplica(multiprocessing.Process):
             pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = self.run_badlands(input_vector )
             temp_elev, temp_erodep, temp_erodep_pts = pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec
         except Exception as e:
-            print ('\n\n Error : ', e, '\n\n')
+            print ('\n Error : ', e, '\n')
             pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec = temp_elev, temp_erodep, temp_erodep_pts
 
-        print(self.real_elev.shape, ' self.real_elev.shape')
-        print(pred_elev_vec[self.simtime].shape, ' pred_elev_vec.shape')
+        # print(self.real_elev.shape, ' self.real_elev.shape')
+        # print(pred_elev_vec[self.simtime].shape, ' pred_elev_vec.shape')
         
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_erodep =  np.zeros(self.sim_interval.size) 
         
         for i in range(self.sim_interval.size):
             if i == (self.sim_interval.size-1):
-                # print ('\n\nIm here in the last one \n\n')
+                # print('\nself.real_erodep_pts.shape', self.real_erodep_pts.shape)               
+                # print('\nself.pred_erodep_pts.shape', pred_erodep_pts_vec[self.simtime])               
                 tau_erodep[i]  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
             else:
                 # print ('\n\nIm actually in else\n\n')
@@ -660,7 +661,7 @@ class ptReplica(multiprocessing.Process):
 
 class ParallelTempering:
 
-    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param,  real_elev, erodep_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated):
+    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param,  real_elev, erodep_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance):
         self.swap_interval = swap_interval
         self.folder = fname
         self.maxtemp = maxtemp
@@ -702,6 +703,7 @@ class ParallelTempering:
         self.inittopo_expertknow =  inittopo_expertknow 
         self.inittopo_estimated = inittopo_estimated
 
+        self.covariance = covariance
     def default_beta_ladder(self, ndim, ntemps, Tmax): #https://github.com/konqr/ptemcee/blob/master/ptemcee/sampler.py
         """
         Returns a ladder of :math:`\beta \equiv 1/T` under a geometric spacing that is determined by the
@@ -806,7 +808,7 @@ class ParallelTempering:
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated))
+            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance))
                                      #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
         #print (parameter_queue_2, ", param1:",parameter_queue_1)
