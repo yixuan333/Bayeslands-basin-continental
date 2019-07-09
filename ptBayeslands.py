@@ -354,7 +354,7 @@ class ptReplica(multiprocessing.Process):
             for count, val in enumerate(self.erodep_coords):
                 erodep_pts[count] = erodep[val[0], val[1]]
 
-            print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
+            # print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
             elev_vec[self.simtime] = elev
             erodep_vec[self.simtime] = erodep
             erodep_pts_vec[self.simtime] = erodep_pts
@@ -378,25 +378,23 @@ class ptReplica(multiprocessing.Process):
         tau_erodep =  np.zeros(self.sim_interval.size) 
 
         for i in range(  self.sim_interval.size):
+            # print ('\ni ', i)
+            # print ('sim interval size  ', self.sim_interval.size, self.sim_interval[i])
+            # print ('pred_erodep_pts_vec[self.sim_interval[i]]', pred_erodep_pts_vec[self.sim_interval[i]], pred_erodep_pts_vec[self.sim_interval[i]].shape)
+            # print ('self.real_erodep_pts[i]', self.real_erodep_pts[i], self.real_erodep_pts[i].shape)
+            # print ('self.real_erodep_pts.shape[1]', self.real_erodep_pts.shape[1])
             tau_erodep[i]  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
-
-        
-        # for i in range(self.sim_interval.size):
-        #     if i == (self.sim_interval.size-1):
-        #         # print('\nself.real_erodep_pts.shape', self.real_erodep_pts.shape)               
-        #         # print('\nself.pred_erodep_pts.shape', pred_erodep_pts_vec[self.simtime])               
-        #         tau_erodep[i]  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
-        #     else:
-        #         # print ('\n\nIm actually in else\n\n')
-        #         tau_erodep[i] = 0 
 
         likelihood_elev = - 0.5 * np.log(2 * math.pi * tausq) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq 
         likelihood_erodep = 0 
         
         if self.check_likelihood_sed  == True: 
 
-            for i in range(1, self.sim_interval.size):
-                likelihood_erodep  += np.sum(-0.5 * np.log(2 * math.pi * tau_erodep[i]) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]) / tau_erodep[i]) # only considers point or core of erodep
+            for i in range(1,self.sim_interval.size):
+                if i == (self.sim_interval.size -1):
+                    likelihood_erodep  += np.sum(-0.5 * np.log(2 * math.pi * tau_erodep[i]) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]) / tau_erodep[i]) # only considers point or core of erodep
+                else:
+                    likelihood_erodep += 0
 
             likelihood = np.sum(likelihood_elev) +  (likelihood_erodep * self.sedscalingfactor)
 
@@ -581,7 +579,7 @@ class ptReplica(multiprocessing.Process):
                 print ('\ncov computed = i ',i, '\n')
                 self.computeCovariance(i,pos_param)
 
-            if ( i % self.swap_interval == 0 ):
+            if ( (i+1) % self.swap_interval == 0 ):
 
                 others = np.asarray([likelihood])
                 param = np.concatenate([v_current,others,np.asarray([self.temperature])])     
@@ -869,15 +867,15 @@ class ParallelTempering:
 
         swaps_appected_main = 0
         total_swaps_main = 0 
-        while True:
-            count = 0
-            for index in range(self.num_chains):
-                if not self.chains[index].is_alive():
-                    count+=1
-                    #print(str(self.chains[index].temperature) +" Dead")
+        for i in range(int(self.NumSamples/self.swap_interval)):
+            # count = 0
+            # for index in range(self.num_chains):
+            #     if not self.chains[index].is_alive():
+            #         count+=1
+            #         print(str(self.chains[index].temperature) +" Dead"+str(index))
 
-            if count == self.num_chains:
-                break
+            # if count == self.num_chains:
+            #     break
             #print("Waiting for chains to finish...")
             timeout_count = 0
             for index in range(0,self.num_chains):
@@ -1025,10 +1023,12 @@ def interpolateArray(coords=None, z=None, dz=None):
     x, y = np.hsplit(coords, 2)
     dx = (x[1]-x[0])[0]
 
-    # nx = int((x.max() - x.min())/dx+1 - 2)
-    # ny = int((y.max() - y.min())/dx+1 - 2)
-    nx = int((x.max() - x.min())/dx+1)
-    ny = int((y.max() - y.min())/dx+1)
+    if problem == 1:
+        nx = int((x.max() - x.min())/dx+1)
+        ny = int((y.max() - y.min())/dx+1)
+    else:
+        nx = int((x.max() - x.min())/dx+1 - 2)
+        ny = int((y.max() - y.min())/dx+1 - 2)
     xi = np.linspace(x.min(), x.max(), nx)
     yi = np.linspace(y.min(), y.max(), ny)
 
@@ -1108,7 +1108,10 @@ def main():
     np.savetxt('foldername.txt', np.array([fname]), fmt="%s")
     run_nb_str =  'results_' + str(run_nb)
     timer_start = time.time()
+    
     sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    if simtime < 0:
+        sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
     #-------------------------------------------------------------------------------------
