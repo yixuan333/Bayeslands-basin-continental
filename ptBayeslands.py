@@ -391,10 +391,11 @@ class ptReplica(multiprocessing.Process):
         if self.check_likelihood_sed  == True: 
 
             for i in range(1,self.sim_interval.size):
-                if i == (self.sim_interval.size -1):
-                    likelihood_erodep  += np.sum(-0.5 * np.log(2 * math.pi * tau_erodep[i]) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]) / tau_erodep[i]) # only considers point or core of erodep
-                else:
-                    likelihood_erodep += 0
+                likelihood_erodep  += np.sum(-0.5 * np.log(2 * math.pi * tau_erodep[i]) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]) / tau_erodep[i])
+                # if i == (self.sim_interval.size -1):
+                #     likelihood_erodep  += np.sum(-0.5 * np.log(2 * math.pi * tau_erodep[i]) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]) / tau_erodep[i]) # only considers point or core of erodep
+                # else:
+                #     likelihood_erodep += 0.01
 
             likelihood = np.sum(likelihood_elev) +  (likelihood_erodep * self.sedscalingfactor)
 
@@ -575,7 +576,7 @@ class ptReplica(multiprocessing.Process):
 
                     num_div += 1
 
-            if (i >= self.adapt_cov and i % self.adapt_cov == 0) :
+            if (i >= self.adapt_cov and i % self.adapt_cov == 0 and self.use_cov==1) :
                 print ('\ncov computed = i ',i, '\n')
                 self.computeCovariance(i,pos_param)
 
@@ -868,42 +869,33 @@ class ParallelTempering:
         swaps_appected_main = 0
         total_swaps_main = 0 
         for i in range(int(self.NumSamples/self.swap_interval)):
-            # count = 0
-            # for index in range(self.num_chains):
-            #     if not self.chains[index].is_alive():
-            #         count+=1
-            #         print(str(self.chains[index].temperature) +" Dead"+str(index))
-
-            # if count == self.num_chains:
-            #     break
-            #print("Waiting for chains to finish...")
             timeout_count = 0
             for index in range(0,self.num_chains):
                 #print("Waiting for chain: {}".format(index+1))
-                flag = self.wait_chain[index].wait(timeout=5000)
+                flag = self.wait_chain[index].wait(timeout=500)
                 if flag:
                     print("Signal from chain: {}".format(index+1))
                     timeout_count += 1
-
-            if timeout_count != self.num_chains:
-                print("Skipping the swap!")
-                continue
-            print("Event occured")
-            for index in range(0,self.num_chains-1):
-                print('starting swap')
-                try:
-                    param_1, param_2, swapped = self.swap_procedure(self.parameter_queue[index],self.parameter_queue[index+1])
-                    self.parameter_queue[index].put(param_1)
-                    self.parameter_queue[index+1].put(param_2)
-                    if index == 0:
-                        if swapped:
-                            swaps_appected_main += 1
-                        total_swaps_main += 1
-                except:
-                    print("Nothing Returned by swap method!")
+                
+            if timeout_count == self.num_chains:
+                #print("Skipping the swap!")
+                #continue
+                print("Event occured")
+                for index in range(0,self.num_chains-1):
+                    print('starting swap')
+                    try:
+                        param_1, param_2, swapped = self.swap_procedure(self.parameter_queue[index],self.parameter_queue[index+1])
+                        self.parameter_queue[index].put(param_1)
+                        self.parameter_queue[index+1].put(param_2)
+                        if index == 0:
+                            if swapped:
+                                swaps_appected_main += 1
+                            total_swaps_main += 1
+                    except:
+                        print("Nothing Returned by swap method!")
             for index in range (self.num_chains):
-                    self.event[index].set()
-                    self.wait_chain[index].clear()
+                self.event[index].set()
+                self.wait_chain[index].clear()
 
         print("Joining processes")
 
