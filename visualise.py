@@ -213,6 +213,9 @@ class results_visualisation:
             rmse_full_init = np.sqrt(np.sum(np.square(init_topo_mean  -  synthetic_initopo))  / (init_topo_mean.shape[0] * init_topo_mean.shape[1]))   # will not be needed in Australia problem
             rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
 
+
+            #rmse_slice_init = 0
+
         else:
 
             rmse_full_init = 0
@@ -727,13 +730,29 @@ class results_visualisation:
         plt.xlabel(' Elevation (meters)  ', fontsize = size)
         plt.ylabel(' Frequency ', fontsize = size)
         plt.tight_layout()  
-        plt.savefig(fname + '/sed_visual/' + title  + '_sed_distri.pdf')
-        plt.clf()
-
         plt.tick_params(labelsize=size)
         params = {'legend.fontsize': size, 'legend.handlelength': 2}
         plt.rcParams.update(params)
         plt.grid(alpha=0.75)
+        plt.savefig(fname + '/sed_visual/' + title  + '_sed_distri.pdf')
+        plt.clf()
+
+        
+
+
+    def heatmap_sed(self, sed_data, title): 
+        size = 15
+        plt.imshow(sed_data, cmap='hot', interpolation='nearest')
+        plt.colorbar()
+        plt.title("Sediment heatmap ", fontsize = size)
+        plt.xlabel(' Northings  ', fontsize = size)
+        plt.ylabel(' Eastings ', fontsize = size)
+        plt.tick_params(labelsize=size)
+        params = {'legend.fontsize': size, 'legend.handlelength': 2}
+        plt.rcParams.update(params)
+        plt.savefig(self.folder+ '/sed_visual/' + title  + '_sed_heatmap.pdf')
+        plt.clf()
+ 
  
 
     def visualize_sediments(self, sediment_timedic):
@@ -761,29 +780,21 @@ class results_visualisation:
         sed = sediment.copy()
 
         grid = sediment 
+
+        len_num = 4
+        wid_num = 4
  
 
 
-        len_grid = int(sediment.shape[0]/5)  # take care of left over
-        wid_grid = int(sediment.shape[1]/5)   # take care of left over
+        len_grid = int(sediment.shape[0]/len_num)  # take care of left over
+        wid_grid = int(sediment.shape[1]/wid_num)   # take care of left over
 
         print(len_grid, wid_grid, ' len_grid, wid_grid ')
 
         i = 0
 
-        
 
-        x = np.zeros((20, len_grid, wid_grid))
 
-        for l in range(0,5-1):
-            for w in range(0,5-1): 
-                
-                for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        x[i][m][n] = sed[m][n]
-                        i = i + 1
-
-        print(x)
 
 
 
@@ -791,14 +802,14 @@ class results_visualisation:
         #reshape the grid and get histogram 
 
         sed_list = grid.flatten()
-
-        print(grid, ' grid ')
+ 
 
         print(grid.shape, ' grid ')
 
         print(sed_list, ' sed list ')
 
         self.plot_sed(sed_list, 'region_x')
+        self.heatmap_sed(grid, 'map_x')
 
 
 
