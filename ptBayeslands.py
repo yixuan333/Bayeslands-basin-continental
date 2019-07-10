@@ -120,7 +120,6 @@ class ptReplica(multiprocessing.Process):
         self.wid_grid  = wid_grid# for initial topo grid size 
         self.inittopo_expertknow =  inittopo_expertknow 
         self.inittopo_estimated = inittopo_estimated
-        self.stepsize_vec = np.zeros(self.maxlimits_vec.size)
         self.adapt_cov = 50
         self.cholesky = [] 
         self.cov_init = False
@@ -466,7 +465,6 @@ class ptReplica(multiprocessing.Process):
             outfile.write('\nburnin:,{0}'.format(self.burn_in))
             outfile.write('\nnum params:,{0}'.format(self.num_param))
             outfile.write('\ninitial_proposed_vec:,{0}'.format(v_proposal))
-            outfile.write('\nself.stepsize_vec:,{0}'.format(self.stepsize_vec))
             outfile.write('\nstepsize_vec:,{0}'.format(stepsize_vec))  
             outfile.write('\nstep_ratio_vec:,{0}'.format(self.stepratio_vec)) 
             outfile.write('\nswap interval:,{0}'.format(self.swap_interval))
@@ -514,6 +512,8 @@ class ptReplica(multiprocessing.Process):
             diff_likelihood = likelihood_proposal - likelihood
 
             try:
+                print ('diff_likelihood', diff_likelihood)
+                print ('math.exp(diff_likelihood)', math.exp(diff_likelihood))
                 mh_prob = min(1, math.exp(diff_likelihood))
             except OverflowError as e:
                 mh_prob = 1
@@ -728,15 +728,27 @@ class ParallelTempering:
         if ntemps is not None and (type(ntemps) != int or ntemps < 1):
             raise ValueError('Invalid number of temperatures specified.')
 
-        maxtemp = Tmax
-        numchain = ntemps
-        b=[]
-        b.append(maxtemp)
-        last=maxtemp
-        for i in range(maxtemp):
-            last = last*(numchain**(-1/(numchain-1)))
-            b.append(last)
-        tstep = np.array(b)
+        tstep = np.array([25.2741, 7., 4.47502, 3.5236, 3.0232,
+                        2.71225, 2.49879, 2.34226, 2.22198, 2.12628,
+                        2.04807, 1.98276, 1.92728, 1.87946, 1.83774,
+                        1.80096, 1.76826, 1.73895, 1.7125, 1.68849,
+                        1.66657, 1.64647, 1.62795, 1.61083, 1.59494,
+                        1.58014, 1.56632, 1.55338, 1.54123, 1.5298,
+                        1.51901, 1.50881, 1.49916, 1.49, 1.4813,
+                        1.47302, 1.46512, 1.45759, 1.45039, 1.4435,
+                        1.4369, 1.43056, 1.42448, 1.41864, 1.41302,
+                        1.40761, 1.40239, 1.39736, 1.3925, 1.38781,
+                        1.38327, 1.37888, 1.37463, 1.37051, 1.36652,
+                        1.36265, 1.35889, 1.35524, 1.3517, 1.34825,
+                        1.3449, 1.34164, 1.33847, 1.33538, 1.33236,
+                        1.32943, 1.32656, 1.32377, 1.32104, 1.31838,
+                        1.31578, 1.31325, 1.31076, 1.30834, 1.30596,
+                        1.30364, 1.30137, 1.29915, 1.29697, 1.29484,
+                        1.29275, 1.29071, 1.2887, 1.28673, 1.2848,
+                        1.28291, 1.28106, 1.27923, 1.27745, 1.27569,
+                        1.27397, 1.27227, 1.27061, 1.26898, 1.26737,
+                        1.26579, 1.26424, 1.26271, 1.26121,
+                        1.25973])
 
         if ndim > tstep.shape[0]:
             # An approximation to the temperature step at large
@@ -801,40 +813,41 @@ class ParallelTempering:
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica(self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance))
+            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.real_elev,   self.real_erodep_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance))
                                      #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
         #print (parameter_queue_2, ", param1:",parameter_queue_1)
-        #if parameter_queue_2.empty() is False and parameter_queue_1.empty() is False:
-        param1 = parameter_queue_1.get()
-        param2 = parameter_queue_2.get()
-        lhood1 = param1[self.num_param]
-        T1 = param1[self.num_param+1]
-        lhood2 = param2[self.num_param]
-        T2 = param2[self.num_param+1]
+        if parameter_queue_2.empty() is False and parameter_queue_1.empty() is False:
+            param1 = parameter_queue_1.get()
+            param2 = parameter_queue_2.get()
+            lhood1 = param1[self.num_param]
+            T1 = param1[self.num_param+1]
+            lhood2 = param2[self.num_param]
+            T2 = param2[self.num_param+1]
 
-        #SWAPPING PROBABILITIES
-        #old method
-        swap_proposal =  (lhood1/[1 if lhood2 == 0 else lhood2])*(1/T1 * 1/T2)
-        u = np.random.uniform(0,1)
-        
-        #new method (sandbridge et al.)
-        #try:
-        #    swap_proposal = min(1, 0.5*math.exp(lhood1-lhood2))
-        #except OverflowError as e:
-        #    print("overflow for swap prop, setting to 1")
-        #    swap_proposal = 1
-        swapped = False
-        if u < swap_proposal: 
-            self.total_swap_proposals += 1
-            self.num_swap += 1
-            param_temp =  param1
-            param1 = param2
-            param2 = param_temp
-            swapped = True
+            #SWAPPING PROBABILITIES
+            #old method
+            swap_proposal =  (lhood1/[1 if lhood2 == 0 else lhood2])*(1/T1 * 1/T2)
+            u = np.random.uniform(0,1)
+            
+            #new method (sandbridge et al.)
+            #try:
+            #    swap_proposal = min(1, 0.5*math.exp(lhood1-lhood2))
+            #except OverflowError as e:
+            #    print("overflow for swap prop, setting to 1")
+            #    swap_proposal = 1
+            
+            if u < swap_proposal: 
+                self.total_swap_proposals += 1
+                self.num_swap += 1
+                param_temp =  param1
+                param1 = param2
+                param2 = param_temp
+            return param1, param2 
+
         else:
-            swapped = False
-        return param1, param2,swapped 
+            self.total_swap_proposals += 1
+            return
     
     def run_chains (self ):
         

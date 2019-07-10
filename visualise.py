@@ -711,6 +711,102 @@ class results_visualisation:
         plt.clf()
 
 
+    def plot_sed(self, list, title): 
+
+        list_points =  list
+        fname = self.folder
+        size = 15
+
+        plt.tick_params(labelsize=size)
+        params = {'legend.fontsize': size, 'legend.handlelength': 2}
+        plt.rcParams.update(params)
+        plt.grid(alpha=0.75)
+        plt.hist(list_points,  bins = 20, color='#0504aa',
+                            alpha=0.7)   
+        plt.title("Sediment distribution ", fontsize = size)
+        plt.xlabel(' Elevation (meters)  ', fontsize = size)
+        plt.ylabel(' Frequency ', fontsize = size)
+        plt.tight_layout()  
+        plt.savefig(fname + '/sed_visual/' + title  + '_sed_distri.pdf')
+        plt.clf()
+
+        plt.tick_params(labelsize=size)
+        params = {'legend.fontsize': size, 'legend.handlelength': 2}
+        plt.rcParams.update(params)
+        plt.grid(alpha=0.75)
+ 
+
+    def visualize_sediments(self, sediment_timedic):
+
+
+        print(" sediments visualize .... ")
+
+        #get grid
+
+        sediment=sediment_timedic[self.simtime]
+
+        print(sediment, ' sediment grid .')
+
+
+ 
+        length = sediment.shape[0]
+        width = sediment.shape[1]
+        len_grid = self.len_grid
+        wid_grid = self.wid_grid
+        sub_gridlen = 30 #int(length/len_grid)  # 25
+        sub_gridwidth = 30 # int(width/wid_grid) # 25
+        #new_length =len_grid * sub_gridlen 
+        #new_width =wid_grid *  sub_gridwidth 
+
+        sed = sediment.copy()
+
+        grid = sediment 
+ 
+
+
+        len_grid = int(sediment.shape[0]/5)  # take care of left over
+        wid_grid = int(sediment.shape[1]/5)   # take care of left over
+
+        print(len_grid, wid_grid, ' len_grid, wid_grid ')
+
+        i = 0
+
+        
+
+        x = np.zeros((20, len_grid, wid_grid))
+
+        for l in range(0,5-1):
+            for w in range(0,5-1): 
+                
+                for m in range(l * len_grid,(l+1) * len_grid):  
+                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
+                        x[i][m][n] = sed[m][n]
+                        i = i + 1
+
+        print(x)
+
+
+
+
+        #reshape the grid and get histogram 
+
+        sed_list = grid.flatten()
+
+        print(grid, ' grid ')
+
+        print(grid.shape, ' grid ')
+
+        print(sed_list, ' sed list ')
+
+        self.plot_sed(sed_list, 'region_x')
+
+
+
+
+
+
+
+
         #---------------------------------------
 
     def viewGrid(self, width=1000, height=1000, zmin=None, zmax=None, zData=None, title='Predicted Topography', time_frame=None, filename=None):
@@ -905,6 +1001,7 @@ def main():
     ax.set_ylabel('Posterior', fontsize=size) 
     plt.title("Boxplot of Posterior", fontsize=size) 
     plt.savefig(fname+'/badlands_pos.pdf')
+    plt.clf()
     
     timer_end = time.time() 
 
@@ -934,6 +1031,11 @@ def main():
     print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
 
     pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt = res.run_badlands(error_dict[min(error_dict)])
+
+
+
+
+    res.visualize_sediments(pred_erodep_opt)
     
     for i in range(res.sim_interval.size):
         res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
