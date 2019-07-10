@@ -938,6 +938,8 @@ def main():
     run_nb_str = fname
     timer_start = time.time()
     sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    if simtime <= 0:
+        sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
     res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str)
