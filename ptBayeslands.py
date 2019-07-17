@@ -46,7 +46,8 @@ from scipy import stats
 from pyBadlands.model import Model as badlandsModel
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.mplot3d import Axes3D
-from plotly.offline.offline import _plot_html
+from IPython.display import HTML
+from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 from scipy.ndimage import filters 
 from scipy.ndimage import gaussian_filter
 from problem_setup import problem_setup
@@ -149,7 +150,7 @@ class ptReplica(multiprocessing.Process):
         # range = [0,zData.shape[0]* self.resolu_factor]
         #range = [0,zData.shape[1]* self.resolu_factor],
 
-        data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YIGnBu')])
+        data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YlGnBu')])
 
         layout = Layout(title='Predicted Topography' , autosize=True, width=width, height=height,scene=Scene(
                     zaxis=ZAxis(title = ' Elev.(m) ', range=[zmin,zmax], autorange=False, nticks=6, gridcolor='rgb(255, 255, 255)',

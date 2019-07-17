@@ -99,7 +99,7 @@ def problem_setup(problem = 1):
     elif problem == 2: #this will have region and time rainfall of Problem 1
         problemfolder = 'Examples/aus_short/'
         xmlinput = problemfolder + 'aus_short.xml'
-        simtime = -5.E+06 #-1.E+05
+        simtime = -1.E+05 #-1.E+05
         resolu_factor = 1
 
         datapath = problemfolder + 'data/final_elev.txt'

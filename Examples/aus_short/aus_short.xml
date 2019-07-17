@@ -18,11 +18,11 @@
     <!-- Simulation time structure -->
     <time>
         <!-- Simulation start time [a] -->
-        <start>-1.E+06</start>
+        <start>-1.E+05</start>
         <!-- Simulation end time [a] -->
         <end>0</end>
         <!-- Display interval [a] -->
-        <display>1.00E+05</display>
+        <display>1.00E+04</display>
     </time>
 
     <!-- Simulation stratigraphic structure -->
@@ -30,7 +30,7 @@
         <!-- Stratal grid resolution [m] -->
         <stratdx>50000.</stratdx>
         <!-- Stratal layer interval [a] -->
-        <laytime>1.00E+05</laytime>
+        <laytime>1.00E+04</laytime>
         <!-- Surface porosity -->
         <poro0>0.52</poro0>
         <!-- characteristic constant for Athy's porosity law [/km] -->
@@ -56,7 +56,7 @@
         <!--  Displacement definition  -->
         <disp>
             <!--  Displacement start time [a]  -->
-            <dstart>-1.E6</dstart>
+            <dstart>-1.E5</dstart>
             <!--  Displacement end time [a]  -->
             <dend>0</dend>
             <!--  Displacement map [m]  -->

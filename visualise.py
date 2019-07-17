@@ -41,8 +41,8 @@ import itertools
 import plotly
 import plotly.plotly as py
 from plotly.graph_objs import *
-#plotly.offline.init_notebook_mode()
-from plotly.offline.offline import _plot_html
+from IPython.display import HTML
+from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 import pandas
 import argparse
 import pandas as pd
@@ -244,7 +244,7 @@ class results_visualisation:
         # range = [0,zData.shape[0]* self.resolu_factor]
         #range = [0,zData.shape[1]* self.resolu_factor],
 
-        data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YIGnBu')])
+        data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YlGnBu')])
 
         layout = Layout(title='' , autosize=True, width=width, height=height,scene=Scene(
                     zaxis=ZAxis(title = ' Elev.(m) ', range=[zmin,zmax], autorange=False, nticks=6, gridcolor='rgb(255, 255, 255)',
