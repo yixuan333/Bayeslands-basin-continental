@@ -101,21 +101,15 @@ def problem_setup(problem = 1):
         xmlinput = problemfolder + 'aus_short.xml'
         simtime = -1.E+05 #-1.E+05
         resolu_factor = 1
-
         datapath = problemfolder + 'data/final_elev.txt'
-        # datapath = problemfolder + 'data/initial_elev.txt'
-        
         groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
         groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
         inittopo_expertknow = []
  
-
         res_summaryfile = '/results_temporalrain.txt'
         inittopo_expertknow =  np.array([]) # no expert knowledge as simulated init topo
         inittopo_estimated = []
-
-
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True

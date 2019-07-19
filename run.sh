@@ -2,7 +2,7 @@
 #!/bin/bash  
 echo Running all 	 
 
-problem=5
+problem=2
 replica=10
 
 samples=5000
