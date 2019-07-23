@@ -261,7 +261,7 @@ class results_visualisation:
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+'_.html', validate=False)
         np.savetxt(self.folder +  '/recons_initialtopo/'+fname+'_.txt', zData,  fmt='%1.2f' )
 
-    def run_badlands(self, input_vector):
+    def run_badlands(self, input_vector, muted = True):
         #Runs a badlands model with the specified inputs
  
         rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time 
@@ -271,7 +271,7 @@ class results_visualisation:
 
         #----------------------------------------------------------------
         # Load the XmL input file
-        model.load_xml(str(self.run_nb_str), self.input, muted=True)
+        model.load_xml(str(self.run_nb_str), self.input, muted=muted)
 
         if  problem == 0 or problem ==1 or problem ==2 or problem==3: # when you have initial topo (problem is global variable)
             init = False
@@ -344,7 +344,7 @@ class results_visualisation:
 
         for x in range(len(self.sim_interval)):
             self.simtime = self.sim_interval[x]
-            model.run_to_time(self.simtime, muted=True)
+            model.run_to_time(self.simtime, muted=muted)
 
             elev, erodep = interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
 
@@ -927,7 +927,7 @@ def main():
     random.seed(time.time()) 
 
     (problemfolder, xmlinput, simtime, resolu_factor, datapath, groundtruth_elev, groundtruth_erodep,
-    groundtruth_erodep_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
+    groundtruth_erodep_pts, groundtruth_elev_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords, inittopo_estimated, vec_parameters, minlimits_vec, maxlimits_vec) = problem_setup(problem)
 
@@ -1042,8 +1042,6 @@ def main():
     print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
 
     pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt = res.run_badlands(error_dict[min(error_dict)])
-
-
 
 
     res.visualize_sediments(pred_erodep_opt)

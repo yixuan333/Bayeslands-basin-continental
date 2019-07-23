@@ -105,6 +105,7 @@ def problem_setup(problem = 1):
         groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
         groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
+        groundtruth_elev_pts = np.loadtxt('Testing/final_elev_pts_.txt')
         inittopo_expertknow = []
  
         res_summaryfile = '/results_temporalrain.txt'
@@ -156,7 +157,7 @@ def problem_setup(problem = 1):
         num_param = vec_parameters.size
         print(vec_parameters) 
 
-        erodep_coords = np.loadtxt("Testing/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.loadtxt("Testing/erdp_coords.txt") #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
         erodep_coords = np.array(erodep_coords, dtype = 'int')
         # erodep_coords = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
     
@@ -223,7 +224,7 @@ def problem_setup(problem = 1):
         num_param = vec_parameters.size
         print(vec_parameters) 
 
-        erodep_coords = np.loadtxt("Testing/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.loadtxt("Testing/erdp_coords.txt") #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
         erodep_coords = np.array(erodep_coords, dtype = 'int')
 
     elif problem == 4: # 5 MILLION YEARS with INIT TOPO
@@ -437,6 +438,6 @@ def problem_setup(problem = 1):
         erodep_coords = np.array(erodep_coords, dtype = 'int')
 
     return (problemfolder, xmlinput, simtime, resolu_factor, datapath, groundtruth_elev, groundtruth_erodep,
-    groundtruth_erodep_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
+    groundtruth_erodep_pts, groundtruth_elev_pts,  res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords, inittopo_estimated, vec_parameters,minlimits_vec, maxlimits_vec)
