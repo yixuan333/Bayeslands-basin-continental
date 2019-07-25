@@ -173,6 +173,7 @@ def problem_setup(problem = 1):
         groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
         groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
+        groundtruth_elev_pts = np.loadtxt('Testing/final_elev_pts_.txt')
         inittopo_expertknow = []
 
         res_summaryfile = '/results_temporalrain.txt'
@@ -245,7 +246,7 @@ def problem_setup(problem = 1):
         groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
         groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
-
+        groundtruth_elev_pts = np.loadtxt('Testing/final_elev_pts_.txt')
 
 
         inittopo_expertknow =[] # estimated expert in grid version not needed anymore with new init topo formulation
@@ -350,8 +351,7 @@ def problem_setup(problem = 1):
         groundtruth_elev = np.loadtxt('Testing/final_elev.txt')
         groundtruth_erodep = np.loadtxt('Testing/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt('Testing/final_erdp_pts_.txt')
-
-
+        groundtruth_elev_pts = np.loadtxt('Testing/final_elev_pts_.txt')
 
         inittopo_expertknow =[] # estimated expert in grid version not needed anymore with new init topo formulation
         inittopo_estimated = np.loadtxt(problemfolder + 'init_expertknowlegeprocess/init_estimated.txt') 

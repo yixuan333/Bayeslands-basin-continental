@@ -211,10 +211,10 @@ class results_visualisation:
             mean_mid = init_topo_mean[xmid, :]
             x = np.linspace(0, synthetic_initopo.shape[1] * self.resolu_factor, num= synthetic_initopo.shape[1])
             rmse_full_init = np.sqrt(np.sum(np.square(init_topo_mean  -  synthetic_initopo))  / (init_topo_mean.shape[0] * init_topo_mean.shape[1]))   # will not be needed in Australia problem
-            rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
+            # rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
 
 
-            #rmse_slice_init = 0
+            rmse_slice_init = 0
 
         else:
 
@@ -1029,6 +1029,7 @@ def main():
 
     print('pos_param',pos_param.size, pos_param.shape)
 
+############################################################################################
     error_dict = {}
     for i,j in enumerate(rmse_elev):
         if j[0] != 0.0:
@@ -1041,7 +1042,7 @@ def main():
     print('min error in dict',min(error_dict))    
     print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
 
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt = res.run_badlands(error_dict[min(error_dict)])
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
 
 
     res.visualize_sediments(pred_erodep_opt)
@@ -1049,6 +1050,7 @@ def main():
     for i in range(res.sim_interval.size):
         res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
 
+############################################################################################
     resultingfile_db = open(problemfolder+res_summaryfile,'a+')  
     swap_perc = 0 # get value later -- to do
     accept_per = 0 
