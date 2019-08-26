@@ -53,6 +53,22 @@ from scipy.ndimage import gaussian_filter
 from problem_setup import problem_setup
 from ptBayeslands import interpolateArray
 
+import glob
+import lavavu
+import viewBadlands as visu
+import stratalArchitecture as strata
+import matplotlib as mpl
+from matplotlib import mlab, cm
+import matplotlib.mlab as ml
+import matplotlib.pyplot as plt
+import matplotlib.colors
+import warnings
+import pandas as pd
+from scipy.interpolate import interp1d
+warnings.filterwarnings('ignore')
+warnings.simplefilter(action = "ignore", category = FutureWarning)
+
+
 #Initialise and parse inputs
 parser=argparse.ArgumentParser(description='PTBayeslands modelling')
 
@@ -756,18 +772,10 @@ class results_visualisation:
  
 
     def visualize_sediments(self, sediment_timedic):
-
-
         print(" sediments visualize .... ")
-
-        #get grid
-
         sediment=sediment_timedic[self.simtime]
-
         print(sediment, ' sediment grid .')
 
-
- 
         length = sediment.shape[0]
         width = sediment.shape[1]
         len_grid = self.len_grid
@@ -776,48 +784,60 @@ class results_visualisation:
         sub_gridwidth = 30 # int(width/wid_grid) # 25
         #new_length =len_grid * sub_gridlen 
         #new_width =wid_grid *  sub_gridwidth 
-
         sed = sediment.copy()
-
         grid = sediment 
-
         len_num = 4
         wid_num = 4
  
-
-
         len_grid = int(sediment.shape[0]/len_num)  # take care of left over
         wid_grid = int(sediment.shape[1]/wid_num)   # take care of left over
-
         print(len_grid, wid_grid, ' len_grid, wid_grid ')
-
+   
         i = 0
-
-
-
-
-
-
-
-        #reshape the grid and get histogram 
 
         sed_list = grid.flatten()
  
-
         print(grid.shape, ' grid ')
-
         print(sed_list, ' sed list ')
 
-        self.plot_sed(sed_list, 'region_x')
-        self.heatmap_sed(grid, 'map_x')
+        # self.plot_sed(sed_list, 'region_x')
+        # self.heatmap_sed(grid, 'map_x')
 
 
+        #---------------------------------------
+    def vis_badlands(self, folder):
+        file = folder + "/output_1"
+        # Load the last time step
+        stepCounter = len(glob.glob1(folder+"/output_1/xmf/","tin.time*"))+1
+        print(stepCounter)
+        # stepCounter = 50
 
+        # Get the elevation, cumulative elevation change, flow discharge, and sea level 
+        tin,flow,sea = visu.loadStep(folder,stepCounter)
+        visu.view1Step(tin, flow, sea, scaleZ=1, maxZ=1500, maxED=200, flowlines=False)
 
+    def stratal_architecture(self, folder, points):
+        strat = strata.stratalSection(folder, 1)
+        timestep = 10
+        strat.loadStratigraphy(timestep)  # load strata files
+        strat.loadTIN(timestep)  # load TIN files
+        strat.plotSectionMap(title='Topography map', xlegend='Distance (m)', ylegend='Distance (m)', 
+                color=cmo.cm.delta, crange=[-2000,2000], cs=None, size=(6,6))
+        
+        # Coordinates [x,y] of two points on the cross-section
+        cs=np.zeros((2,2))
+        cs[0,:] = [12000,10000]  # point 1
+        cs[1,:] = [24000,10000]  # point 2
 
+        # Interpolation parameters
+        nbpts = 500  
+        gfilt = 2  
 
-
-
+        # Show the location of the cross-section on the topography map
+        strat.plotSectionMap(title='Topography map', xlegend='Distance (m)', ylegend='Distance (m)',
+                color=cmo.cm.delta, colorcs='magenta', crange=[-2000,2000], cs=cs, size=(6,6))
+        
+        strat.buildSection(xo = cs[0,0], yo = cs[0,1], xm = cs[1,0], ym = cs[1,1], pts = nbpts, gfilter = gfilt)
         #---------------------------------------
 
     def viewGrid(self, width=1000, height=1000, zmin=None, zmax=None, zData=None, title='Predicted Topography', time_frame=None, filename=None):
@@ -890,8 +910,6 @@ def make_directory (directory):
         os.makedirs(directory)
 
 def plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts, sim_interval, fname):
-
-
     ticksize = 15
 
     fig = plt.figure()
@@ -1044,11 +1062,10 @@ def main():
 
     pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
 
-
-    res.visualize_sediments(pred_erodep_opt)
-    
-    for i in range(res.sim_interval.size):
-        res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
+    res.vis_badlands(fname)
+    res.visualize_sediments(pred_erodep_opt)    
+    # for i in range(res.sim_interval.size):
+    #     res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
 
 ############################################################################################
     resultingfile_db = open(problemfolder+res_summaryfile,'a+')  

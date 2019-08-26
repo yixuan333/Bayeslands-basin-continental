@@ -369,6 +369,6 @@
     </flexure>
 
      <!-- Output folder path -->
-    <outfolder>Examples/aus_short/output</outfolder>
+    <outfolder>output</outfolder>
 
 </badlands>
