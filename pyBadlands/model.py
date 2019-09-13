@@ -482,6 +482,9 @@ class Model(object):
 
         # Create checkpoint files and write HDF5 output
         if self.input.udw == 0 or self.tNow == self.input.tEnd or self.tNow == self.force.next_display:
+            self.fillH, self.elevation = buildFlux.streamflow(self.input, self.FVmesh, self.recGrid, self.force, self.hillslope, \
+                                              self.flow, self.elevation, self.lGIDs, self.rain, self.tNow, verbose)
+
             if not muted:
                 checkPoints.write_checkpoints(self.input, self.recGrid, self.lGIDs, self.inIDs, self.tNow, \
                                     self.FVmesh, self.tMesh, self.force, self.flow, self.rain, \

@@ -460,9 +460,9 @@ def main():
 		topoGenerator(directory,'%s/aus.xml' %(directory), 1.0 , 5.e-7, 0.5, 1, -1.49E08, erdp_coords_australia, elev_coords_australia, final_noise)
 
 	elif choice == 3:
-		directory = 'Examples/aus'
-		print '%s/aus_present.xml' %(directory)
-		topoGenerator(directory,'%s/aus.xml' %(directory), 1.0 , 5.e-7, 0.5, 1, -100, erdp_coords_australia, elev_coords_australia, final_noise)
+		directory = 'Examples/etopo_extended/'
+		print '%s/etopo.xml' %(directory)
+		topoGenerator(directory,'%s/etopo.xml' %(directory), 1.0 , 5.e-6, 0.5, 1, -1000000, erdp_coords_australia, elev_coords_australia, final_noise)
 
 	tend = time.time()
 	print 'TopoGen for aus completed in (s):',tend-tstart

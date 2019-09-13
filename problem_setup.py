@@ -49,7 +49,7 @@ def problem_setup(problem = 1):
         groundtruth_elev = np.loadtxt(datapath)
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
- 
+        groundtruth_elev_pts = np.loadtxt(problemfolder + 'data/final_elev_pts.txt')
         res_summaryfile = '/results_temporalrain.txt'
         inittopo_expertknow = [] # no expert knowledge as simulated init topo
         inittopo_estimated = []
@@ -82,8 +82,8 @@ def problem_setup(problem = 1):
 
         rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale)
-        minlimits_others = [4.e-7, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [6.e-7, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
+        minlimits_others = [3.e-6, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
+        maxlimits_others = [7.e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
         minlimits_vec = np.append(rain_minlimits,minlimits_others)
         maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
         print(maxlimits_vec, ' maxlimits ')
