@@ -45,6 +45,7 @@ from IPython.display import HTML
 from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 import pandas
 import argparse
+import cmocean as cmo
 import pandas as pd
 import seaborn as sns
 from scipy.ndimage import filters 
@@ -295,6 +296,8 @@ class results_visualisation:
         else:
             init = True # when you need to estimate initial topo
 
+        length = self.real_elev.shape[0]
+        width = self.real_elev.shape[1]
 
         if init == True:
 
@@ -325,6 +328,8 @@ class results_visualisation:
         #print(input_vector[0:rain_regiontime] )
         model.force.rainVal  = input_vector[0:rain_regiontime] 
 
+        #reconstructed_topo = reconstructed_topo_.tolist()
+        groundtruth_topo = self.real_elev.copy()
 
         # Adjust erodibility based on given parameter
         model.input.SPLero = input_vector[rain_regiontime]  
@@ -448,23 +453,23 @@ class results_visualisation:
 
 
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
-        print ('list_xslice', list_xslice.shape)
-        print ('list_yslice', list_yslice.shape)
+        # print ('list_xslice', list_xslice.shape)
+        # print ('list_yslice', list_yslice.shape)
 
         ymid = int(self.real_elev.shape[1]/2 ) #   cut the slice in the middle 
         xmid = int(self.real_elev.shape[0]/2)
 
-        print( 'ymid',ymid)
-        print( 'xmid', xmid)
-        print(self.real_elev)
-        print(self.real_elev.shape, ' shape')
+        # print( 'ymid',ymid)
+        # print( 'xmid', xmid)
+        # print(self.real_elev)
+        # print(self.real_elev.shape, ' shape')
 
         x_ymid_real = self.real_elev[xmid, :] 
         y_xmid_real = self.real_elev[:, ymid ] 
         x_ymid_mean = list_xslice.mean(axis=1)
 
-        print( x_ymid_real.shape , ' x_ymid_real shape')
-        print( x_ymid_mean.shape , ' x_ymid_mean shape')
+        # print( x_ymid_real.shape , ' x_ymid_real shape')
+        # print( x_ymid_mean.shape , ' x_ymid_mean shape')
         
         x_ymid_5th = np.percentile(list_xslice, 5, axis=1)
         x_ymid_95th= np.percentile(list_xslice, 95, axis=1)
@@ -490,7 +495,7 @@ class results_visualisation:
         params = {'legend.fontsize': size, 'legend.handlelength': 2}
         plt.rcParams.update(params)
         plt.plot(x,  real, label='Ground Truth') 
-        plt.plot(x, pred, label='Estimated') 
+        plt.plot(x, pred, label='Badlands Pred.') 
         plt.grid(alpha=0.75)
 
         rmse_init = np.sqrt(np.sum(np.square(pred  -  real))  / real.size)   
@@ -533,14 +538,16 @@ class results_visualisation:
         for name in files: 
             dat = np.loadtxt(path+name)
             x.append(dat.shape[0])
-            print(dat.shape) 
+            # print(dat.shape) 
 
-        print(x)
+        # print(x)
         size_pos = min(x) 
         self.num_chains = len(x)
-        print(len(x), self.num_chains,    ' ***')
+
+
+        # print(len(x), self.num_chains,    ' ***')
         self.NumSamples = int((self.num_chains * size_pos)/ self.num_chains)
-        print(self.NumSamples,    ' ***')
+        # print(self.NumSamples,    ' ***')
         burnin =  int((self.NumSamples * self.burn_in)/self.num_chains)
 
         coverage = self.NumSamples - burnin
@@ -570,14 +577,14 @@ class results_visualisation:
         v = 0 
         for name in files: 
             dat = np.loadtxt(path+name) 
-            print(dat.shape, pos_param.shape,  v, burnin, size_pos, coverage) 
+            # print(dat.shape, pos_param.shape,  v, burnin, size_pos, coverage) 
             pos_param[v, :, :] = dat[ :pos_param.shape[1],:] 
             #print (dat)
-            print(v, name, ' is v')
+            # print(v, name, ' is v')
             v = v +1
-            print(pos_param.shape, 'pos_param size') 
+            # print(pos_param.shape, 'pos_param size') 
 
-        print(pos_param.shape, 'pos_param size') 
+        # print(pos_param.shape, 'pos_param size') 
 
 
         posterior = pos_param.transpose(2,0,1).reshape(self.num_param,-1)  
@@ -606,6 +613,7 @@ class results_visualisation:
 
         list_yslice = list_yslice[:, burnin:, :] 
         yslice = list_yslice.transpose(2,0,1).reshape(self.real_elev.shape[0],-1) 
+
 
         path = self.folder +'/posterior/predicted_topo/sed/' 
         files = os.listdir(path)
@@ -773,9 +781,9 @@ class results_visualisation:
  
 
     def visualize_sediments(self, sediment_timedic):
-        print(" sediments visualize .... ")
+        # print(" sediments visualize .... ")
         sediment=sediment_timedic[self.simtime]
-        print(sediment, ' sediment grid .')
+        # print(sediment, ' sediment grid .')
 
         length = sediment.shape[0]
         width = sediment.shape[1]
@@ -792,14 +800,14 @@ class results_visualisation:
  
         len_grid = int(sediment.shape[0]/len_num)  # take care of left over
         wid_grid = int(sediment.shape[1]/wid_num)   # take care of left over
-        print(len_grid, wid_grid, ' len_grid, wid_grid ')
+        # print(len_grid, wid_grid, ' len_grid, wid_grid ')
    
         i = 0
 
         sed_list = grid.flatten()
  
-        print(grid.shape, ' grid ')
-        print(sed_list, ' sed list ')
+        # print(grid.shape, ' grid ')
+        # print(sed_list, ' sed list ')
 
         # self.plot_sed(sed_list, 'region_x')
         # self.heatmap_sed(grid, 'map_x')
@@ -807,39 +815,134 @@ class results_visualisation:
 
         #---------------------------------------
     def vis_badlands(self, folder):
-        file = folder + "/output_1"
         # Load the last time step
-        stepCounter = len(glob.glob1(folder+"/output_1/xmf/","tin.time*"))+1
+        file = folder+"/output/h5/"
+        stepCounter = len(glob.glob1(folder+"/output/xmf/","tin.time*"))-1
         print(stepCounter)
         # stepCounter = 50
 
         # Get the elevation, cumulative elevation change, flow discharge, and sea level 
-        tin,flow,sea = visu.loadStep(folder,stepCounter)
-        visu.view1Step(tin, flow, sea, scaleZ=1, maxZ=1500, maxED=200, flowlines=False)
+        tin,flow,sea = visu.loadStep(folder+"/output",stepCounter)
+        visu.view1Step(tin, flow, sea, scaleZ=20, maxZ=2500, maxED=200, flowlines=False)
 
-    def stratal_architecture(self, folder, points):
-        strat = strata.stratalSection(folder, 1)
-        timestep = 10
-        strat.loadStratigraphy(timestep)  # load strata files
-        strat.loadTIN(timestep)  # load TIN files
+        strat = strata.stratalSection(file,1)
+        strat.loadStratigraphy(stepCounter)
+        strat.loadTIN(stepCounter)
+
         strat.plotSectionMap(title='Topography map', xlegend='Distance (m)', ylegend='Distance (m)', 
-                color=cmo.cm.delta, crange=[-2000,2000], cs=None, size=(6,6))
-        
-        # Coordinates [x,y] of two points on the cross-section
-        cs=np.zeros((2,2))
-        cs[0,:] = [12000,10000]  # point 1
-        cs[1,:] = [24000,10000]  # point 2
+                     color=cmo.cm.delta, crange=[-2000,2000], cs=None, size=(6,6))
 
-        # Interpolation parameters
-        nbpts = 500  
-        gfilt = 2  
-
-        # Show the location of the cross-section on the topography map
-        strat.plotSectionMap(title='Topography map', xlegend='Distance (m)', ylegend='Distance (m)',
-                color=cmo.cm.delta, colorcs='magenta', crange=[-2000,2000], cs=cs, size=(6,6))
-        
-        strat.buildSection(xo = cs[0,0], yo = cs[0,1], xm = cs[1,0], ym = cs[1,1], pts = nbpts, gfilter = gfilt)
         #---------------------------------------
+
+    def run_badlands(self, input_vector, muted = False):
+        #Runs a badlands model with the specified inputs
+ 
+        rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time 
+
+        #Create a badlands model instance
+        model = badlandsModel()
+
+        #----------------------------------------------------------------
+        # Load the XmL input file
+        model.load_xml(str(self.run_nb_str), self.xmlinput, muted=False)
+
+        if  problem==1 or problem ==2  : # in [1,2]: # when you have initial topo (problem is global variable)
+            init = False
+        else:
+            init = True # when you need to estimate initial topo
+
+
+        if init == True:
+
+            geoparam  = rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
+            inittopo_vec = input_vector[geoparam:]
+            filename=self.xmlinput.split("/")
+            problem_folder=filename[0]+"/"+filename[1]+"/"
+
+            #Update the initial topography
+            #Use the coordinates from the original dem file
+            xi=int(np.shape(model.recGrid.rectX)[0]/model.recGrid.nx)
+            yi=int(np.shape(model.recGrid.rectY)[0]/model.recGrid.ny)
+            #And put the demfile on a grid we can manipulate easily
+            elev=np.reshape(model.recGrid.rectZ,(xi,yi)) 
+
+            inittopo_estimate = self.process_inittopo(inittopo_vec)  
+            inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  # bug fix but not good fix - temp @ 
+
+            #Put it back into 'Badlands' format and then re-load the model
+            filename=problem_folder+str(self.run_nb)+'/demfile_'+ str(int(self.temperature*10)) +'_demfile.csv' 
+
+            elev_framex = np.vstack((model.recGrid.rectX,model.recGrid.rectY,inittopo_estimate.flatten()))
+            np.savetxt(filename, elev_framex.T, fmt='%1.2f' ) 
+            model.input.demfile=filename 
+            model.build_mesh(model.input.demfile, verbose=False)
+
+        # Adjust precipitation values based on given parameter
+        #print(input_vector[0:rain_regiontime] )
+        model.force.rainVal  = input_vector[0:rain_regiontime] 
+
+        # Adjust erodibility based on given parameter
+        model.input.SPLero = input_vector[rain_regiontime]  
+        model.flow.erodibility.fill(input_vector[rain_regiontime ] )
+
+        # Adjust m and n values
+        model.input.SPLm = input_vector[rain_regiontime+1]  
+        model.input.SPLn = input_vector[rain_regiontime+2] 
+
+        #Check if it is the etopo extended problem
+        #if problem == 4 or problem == 3:  # will work for more parameters
+        model.input.CDm = input_vector[rain_regiontime+3] # submarine diffusion
+        model.input.CDa = input_vector[rain_regiontime+4] # aerial diffusion
+
+        if problem != 1:
+            model.slp_cr = input_vector[rain_regiontime+5]
+            model.perc_dep = input_vector[rain_regiontime+6]
+            model.input.criver = input_vector[rain_regiontime+7]
+            model.input.elasticH = input_vector[rain_regiontime+8]
+            model.input.diffnb = input_vector[rain_regiontime+9]
+            model.input.diffprop = input_vector[rain_regiontime+10]
+
+        #Check if it is the mountain problem
+        if problem==10: # needs to be updated
+            #Round the input vector 
+            k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
+
+            #Load the current tectonic uplift parameters
+            tectonicValues=pandas.read_csv(str(model.input.tectFile[0]),sep=r'\s+',header=None,dtype=np.float).values
+        
+            #Adjust the parameters by our value k, and save them out
+            newFile = "Examples/mountain/tect/uplift"+str(self.temperature)+"_"+str(k)+".csv"
+            newtect = pandas.DataFrame(tectonicValues*k)
+            newtect.to_csv(newFile,index=False,header=False)
+
+            #Update the model uplift tectonic values
+            model.input.tectFile[0]=newFile
+
+        elev_vec = collections.OrderedDict()
+        erodep_vec = collections.OrderedDict()
+        erodep_pts_vec = collections.OrderedDict()
+        elev_pts_vec = collections.OrderedDict()
+
+        for x in range(len(self.sim_interval)):
+            self.simtime = self.sim_interval[x]
+            model.run_to_time(self.simtime, muted=True)
+
+            elev, erodep = interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
+
+            erodep_pts = np.zeros((self.erodep_coords.shape[0]))
+            elev_pts = np.zeros((self.erodep_coords.shape[0]))
+
+            for count, val in enumerate(self.erodep_coords):
+                erodep_pts[count] = erodep[val[0], val[1]]
+                elev_pts[count] = elev[val[0], val[1]]
+
+            # print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
+            elev_vec[self.simtime] = elev
+            erodep_vec[self.simtime] = erodep
+            erodep_pts_vec[self.simtime] = erodep_pts
+            elev_pts_vec[self.simtime] = elev_pts
+ 
+        return elev_vec, erodep_vec, erodep_pts_vec, elev_pts_vec
 
     def viewGrid(self, width=1000, height=1000, zmin=None, zmax=None, zData=None, title='Predicted Topography', time_frame=None, filename=None):
 
@@ -856,9 +959,7 @@ class results_visualisation:
 
         xx = np.around(xx, decimals=0)
         yy = np.around(yy, decimals=0)
-        print (xx,' xx')
-        print (yy,' yy')
-
+        
         axislabelsize = 20
 
         data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YlGnBu')])
@@ -901,7 +1002,15 @@ class results_visualisation:
 # class  above this line -------------------------------------------------------------------------------------------------------
 
 
-def mean_sqerror( pred_erodep, real_erodep_pts):
+'''def mean_sqerror(  pred_erodep, pred_elev,  real_elev,  real_erodep_pts):
+        
+        elev = np.sqrt(np.sum(np.square(pred_elev -  real_elev))  / real_elev.size)  
+        sed =  np.sqrt(  np.sum(np.square(pred_erodep -  real_erodep_pts)) / real_erodep_pts.size  ) 
+
+        return elev + sed, sed'''
+
+def mean_sqerror(  pred_erodep,   real_erodep_pts):
+        
         #elev = np.sqrt(np.sum(np.square(pred_elev -  real_elev))  / real_elev.size)  
         sed =  np.sqrt(  np.sum(np.square(pred_erodep -  real_erodep_pts)) / real_erodep_pts.size  ) 
         return   sed
@@ -1011,7 +1120,7 @@ def main():
         erodep_std = pos_ed.std(axis=0)  
         pred_erodep[i,:] = pos_ed.mean(axis=0)  
 
-        print(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
+        # print(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
         plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
         #np.savetxt(fname + '/posterior/predicted_erodep/com_erodep_'+str(sim_interval[i]) +'_.txt', pos_ed)
 
