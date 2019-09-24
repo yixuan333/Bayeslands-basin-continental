@@ -344,28 +344,32 @@ class results_visualisation:
 
 
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
-        # print ('list_xslice', list_xslice.shape)
-        # print ('list_yslice', list_yslice.shape)
 
         ymid = int(self.real_elev.shape[1]/2 ) #   cut the slice in the middle 
         xmid = int(self.real_elev.shape[0]/2)
 
-        # print( 'ymid',ymid)
-        # print( 'xmid', xmid)
-        # print(self.real_elev)
-        # print(self.real_elev.shape, ' shape')
+
+        list_xslice = list_xslice[20:120,:]
+        list_yslice = list_yslice[20:100,:]
+        self.real_elev = self.real_elev[20:100, 20:120]
+
 
         x_ymid_real = self.real_elev[xmid, :] 
         y_xmid_real = self.real_elev[:, ymid ] 
         x_ymid_mean = list_xslice.mean(axis=1)
-
+        y_xmid_mean = list_yslice.mean(axis=1)
+        # print( 'ymid',ymid)
+        # print( 'xmid', xmid)
+        # print ('list_xslice', list_xslice.shape)
+        # print ('list_yslice', list_yslice.shape)
+        # print( 'real shape', self.real_elev.shape)
         # print( x_ymid_real.shape , ' x_ymid_real shape')
         # print( x_ymid_mean.shape , ' x_ymid_mean shape')
-        
+        # print( y_xmid_real.shape , ' y_xmid_real shape')
+        # print( y_xmid_mean.shape , ' y_xmid_mean shape')
         x_ymid_5th = np.percentile(list_xslice, 5, axis=1)
         x_ymid_95th= np.percentile(list_xslice, 95, axis=1)
 
-        y_xmid_mean = list_yslice.mean(axis=1)
         y_xmid_5th = np.percentile(list_yslice, 5, axis=1)
         y_xmid_95th= np.percentile(list_yslice, 95, axis=1)
 
@@ -429,18 +433,12 @@ class results_visualisation:
         for name in files: 
             dat = np.loadtxt(path+name)
             x.append(dat.shape[0])
-            # print(dat.shape) 
-
-        # print(x)
         size_pos = min(x) 
         self.num_chains = len(x)
 
 
-        # print(len(x), self.num_chains,    ' ***')
         self.NumSamples = int((self.num_chains * size_pos)/ self.num_chains)
-        # print(self.NumSamples,    ' ***')
         burnin =  int((self.NumSamples * self.burn_in)/self.num_chains)
-
         coverage = self.NumSamples - burnin
 
         pos_param = np.zeros((self.num_chains, self.NumSamples  , self.num_param))
@@ -461,7 +459,7 @@ class results_visualisation:
         rmse_elev = np.zeros((self.num_chains, self.NumSamples))
         rmse_erodep = np.zeros((self.num_chains, self.NumSamples))
 
-        print(self.NumSamples, size_pos, burnin, ' self.NumSamples, size_pos, burn')
+        # print(self.NumSamples, size_pos, burnin, ' self.NumSamples, size_pos, burn')
 
         path = self.folder +'/posterior/pos_parameters/' 
         files = os.listdir(path)
@@ -517,7 +515,7 @@ class results_visualisation:
         erodep_pts = erodep_pts[:, burnin:, :] 
         
         erodep_pts = erodep_pts.transpose(2,0,1).reshape(edp_pts_time,-1) 
-        print(erodep_pts.shape, ' ed   ***')
+        # print(erodep_pts.shape, ' ed   ***')
  
 
         path = self.folder +'/performance/lhood/' 
@@ -707,13 +705,13 @@ class results_visualisation:
         #---------------------------------------
     def vis_badlands(self, folder):
         # Load the last time step
-        file = folder+"/output/h5/"
-        stepCounter = len(glob.glob1(folder+"/output/xmf/","tin.time*"))-1
+        file = folder+"/AUSP1306_output/h5/"
+        stepCounter = len(glob.glob1(folder+"/AUSP1306_output/xmf/","tin.time*"))-1
         print(stepCounter)
         # stepCounter = 50
 
         # Get the elevation, cumulative elevation change, flow discharge, and sea level 
-        tin,flow,sea = visu.loadStep(folder+"/output",stepCounter)
+        tin,flow,sea = visu.loadStep(folder+"/AUSP1306_output",stepCounter)
         visu.view1Step(tin, flow, sea, scaleZ=20, maxZ=2500, maxED=200, flowlines=False)
 
         # strat = strata.stratalSection(file,1)
@@ -1046,7 +1044,7 @@ def main():
 
     # print (rmse_el_min, ' minimum value ', np.where(rmse_elev == rmse_el_min), '@ this index')
 
-    print('pos_param',pos_param.size, pos_param.shape)
+    # print('pos_param',pos_param.size, pos_param.shape)
 
 ############################################################################################
     error_dict = {}
@@ -1059,7 +1057,7 @@ def main():
             # print ('the error was 0.0')
 
     print('min error in dict',min(error_dict))    
-    print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
+    # print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
 
     pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
 
