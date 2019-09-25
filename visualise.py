@@ -351,11 +351,11 @@ class results_visualisation:
 
         list_xslice = list_xslice[20:120,:]
         list_yslice = list_yslice[20:100,:]
-        self.real_elev = self.real_elev[20:100, 20:120]
+        self.real_elev_ = self.real_elev[20:100, 20:120]
 
 
-        x_ymid_real = self.real_elev[xmid, :] 
-        y_xmid_real = self.real_elev[:, ymid ] 
+        x_ymid_real = self.real_elev_[xmid, :] 
+        y_xmid_real = self.real_elev_[:, ymid ] 
         x_ymid_mean = list_xslice.mean(axis=1)
         y_xmid_mean = list_yslice.mean(axis=1)
         # print( 'ymid',ymid)
