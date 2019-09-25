@@ -50,7 +50,7 @@ def loadStep(folder, step,timev=True):
 
     return tin,flow,sea
 
-def view1Step(tin, flow, sea, scaleZ=200,  maxZ=1000, maxED=100,flowlines=False):
+def view1Step(folder, tin, flow, sea, scaleZ=200,  maxZ=1000, maxED=100,flowlines=False):
     """Visualise a given time step of Badlands output.
 
     Parameters
@@ -131,7 +131,7 @@ def view1Step(tin, flow, sea, scaleZ=200,  maxZ=1000, maxED=100,flowlines=False)
         flines.control.Range('linewidth', range=(0.5,7.5))
 
     # lv.control.show()
-    lv.image('Testing_lavavu.png')
+    lv.image(folder+'Testing_lavavu.png')
 
     return
 

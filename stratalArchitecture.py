@@ -263,7 +263,7 @@ def buildEnviID(cs = None, depthID = None):
     
     return enviID
 
-def viewDepoenvi(width = 8, height = 5, cs = None, enviID = None, dnlay = None, color = None,
+def viewDepoenvi(folder, width = 8, height = 5, cs = None, enviID = None, dnlay = None, color = None,
                       rangeX = None, rangeY = None, savefig = 'Yes', figname = 'strata_depoenv'):
     """
     Plot stratal stacking pattern colored by paleo-depositional environments.
@@ -319,7 +319,7 @@ def viewDepoenvi(width = 8, height = 5, cs = None, enviID = None, dnlay = None, 
     plt.ylabel('Depth (m)')
     
     if savefig == 'Yes':
-        fig.savefig("%s.pdf"%(figname), dpi=300)  # save this figure in the current folder
+        fig.savefig(folder + "%s.pdf"%(figname), dpi=300)  # save this figure in the current folder
 
     return
 
@@ -671,7 +671,7 @@ class stratalSection:
         cax = divider.append_axes("right", size="2%", pad=0.2)
 
         plt.colorbar(im,cax=cax)
-        plt.show()
+        plt.savefig(self.folder + "%s.pdf"%('Strata'), dpi=300)
         plt.close()
 
         return

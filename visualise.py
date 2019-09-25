@@ -705,22 +705,61 @@ class results_visualisation:
         #---------------------------------------
     def vis_badlands(self, folder):
         # Load the last time step
-        file = folder+"/AUSP1306_output/h5/"
+        file = folder+"/AUSP1306_output/h5"
         stepCounter = len(glob.glob1(folder+"/AUSP1306_output/xmf/","tin.time*"))-1
         print(stepCounter)
         # stepCounter = 50
 
         # Get the elevation, cumulative elevation change, flow discharge, and sea level 
         tin,flow,sea = visu.loadStep(folder+"/AUSP1306_output",stepCounter)
-        visu.view1Step(tin, flow, sea, scaleZ=20, maxZ=2500, maxED=200, flowlines=False)
+        visu.view1Step(folder+"/AUSP1306_output", tin, flow, sea, scaleZ=20, maxZ=2500, maxED=200, flowlines=False)
 
-        # strat = strata.stratalSection(file,1)
-        # strat.loadStratigraphy(stepCounter)
-        # strat.loadTIN(stepCounter)
+        timestep = 10
+        strat = strata.stratalSection(file,1)
+        strat.loadStratigraphy(stepCounter)
+        strat.loadTIN(stepCounter)
 
-        # strat.plotSectionMap(title='Topography map', xlegend='Distance (m)', ylegend='Distance (m)', 
-        #              color=cmo.cm.delta, crange=[-2000,2000], cs=None, size=(6,6))
+        cs=np.zeros((2,2))
+        cs[0,:] = [12,100]  # point 1
+        cs[1,:] = [24,10]  # point 2
+        # Interpolation parameters
+        nbpts = 500  
+        gfilt = 2  
 
+        strat.plotSectionMap(title='Topography map', xlegend='Distance (m)', ylegend='Distance (m)', 
+                     color=cmo.cm.delta, crange=[-2000,2000], cs=None, size=(6,6))
+        strat.buildSection(xo = cs[0,0], yo = cs[0,1], xm = cs[1,0], ym = cs[1,1], pts = nbpts, gfilter = gfilt)
+        strata.viewSection(width = 800, height = 500, cs = strat, 
+            dnlay = 2, rangeX=[2000, 10000], rangeY=[-400,200],
+            linesize = 0.5, title='Stratal stacking pattern coloured by time')
+                # Specify the range of water depth for the depositional environments, see the table above
+        depthID = [0, -25, -100, -200, -500]
+
+        # Define colors for depositional environments, with number of colors equals to len(depthID) + 2
+        colorDepoenvi = ['white','limegreen','darkkhaki','sandybrown','khaki','c','teal'] 
+        # 'White' colors where either no deposition or deposited sediemnt thickness < 0.01 m.
+
+        # Build an array of depositional environment ID (enviID)
+        enviID = np.zeros((strat.nz, len(strat.dist)))
+        enviID = strata.buildEnviID(cs = strat, depthID = depthID)
+        strata.viewDepoenvi(folder+ "/AUSP1306_output",width = 8, height = 5, cs = strat, enviID = enviID, dnlay = 2, color = colorDepoenvi, 
+                    rangeX=[2000, 12000], rangeY=[-500,100], savefig = 'Yes', figname = 'delta_strata_depoenvi')
+        
+        start_time = 0.  # the start time of the model run [a]
+        disptime = 50000.  # the layer interval of the strata module [a]
+        end_time = start_time + disptime * timestep  # the time of the loaded output [a]
+        layertime = np.linspace(start_time,end_time,strat.nz)  # time of the layers
+
+        # Plot Wheeler diagram
+        # strata.viewWheeler(width = 7, height = 4, cs = strat, enviID = enviID, time = layertime, dnlay = 3, color = colorDepoenvi, 
+                           # rangeX=[2000, 12000], rangeY = None, savefig = 'Yes', figname = 'delta_Wheeler_diagram')
+        
+        # Location of the core on the cross-section (m)
+        posit = 7000
+
+        # Plot the core
+        strata.viewCore(width = 2, height = 5, cs = strat, enviID = enviID, posit = posit, time = layertime, 
+                        color = colorDepoenvi, rangeX = None, rangeY = None, savefig = 'Yes', figname = 'delta_core')
         #---------------------------------------
 
     def run_badlands(self, input_vector, muted = False):
