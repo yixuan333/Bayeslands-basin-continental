@@ -217,16 +217,12 @@ class results_visualisation:
             inittopo_real = self.inittopo_estimated[xmid, :]  # ground-truth init topo mid (synthetic) 
             #inittopo_real = self.inittopo_estimated[xmid, :]  # ground-truth init topo mid (synthetic) 
 
-
-
             lower_mid = init_topo_5th[xmid, :]
             higher_mid = init_topo_95th[xmid, :]
             mean_mid = init_topo_mean[xmid, :]
             x = np.linspace(0, synthetic_initopo.shape[1] * self.resolu_factor, num= synthetic_initopo.shape[1])
             rmse_full_init = np.sqrt(np.sum(np.square(init_topo_mean  -  synthetic_initopo))  / (init_topo_mean.shape[0] * init_topo_mean.shape[1]))   # will not be needed in Australia problem
             # rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
-
-
             rmse_slice_init = 0
 
         else:
@@ -345,42 +341,50 @@ class results_visualisation:
 
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
 
-        ymid = int(self.real_elev.shape[1]/2 ) #   cut the slice in the middle 
+        ymid = int(self.real_elev.shape[1]/2) 
         xmid = int(self.real_elev.shape[0]/2)
 
+        x_m = np.arange(20,80, 10)
+        y_m = np.arange(20,80, 10)
 
+        print ('x_m', x_m)
+        print(' xmid ', xmid, '  ymid ', ymid) 
+        
         list_xslice = list_xslice[20:120,:]
         list_yslice = list_yslice[20:100,:]
         self.real_elev_ = self.real_elev[20:100, 20:120]
+        
+        for i in x_m:
+            xmid = i
+            ymid = i
+
+            x_ymid_real = self.real_elev_[xmid, :] 
+            y_xmid_real = self.real_elev_[:, ymid ] 
+            x_ymid_mean = list_xslice.mean(axis=1)
+            y_xmid_mean = list_yslice.mean(axis=1)
+            # print( 'ymid',ymid)
+            # print( 'xmid', xmid)
+            # print ('list_xslice', list_xslice.shape)
+            # print ('list_yslice', list_yslice.shape)
+            # print( 'real shape', self.real_elev.shape)
+            # print( x_ymid_real.shape , ' x_ymid_real shape')
+            # print( x_ymid_mean.shape , ' x_ymid_mean shape')
+            # print( y_xmid_real.shape , ' y_xmid_real shape')
+            # print( y_xmid_mean.shape , ' y_xmid_mean shape')
+            x_ymid_5th = np.percentile(list_xslice, 5, axis=1)
+            x_ymid_95th= np.percentile(list_xslice, 95, axis=1)
+
+            y_xmid_5th = np.percentile(list_yslice, 5, axis=1)
+            y_xmid_95th= np.percentile(list_yslice, 95, axis=1)
 
 
-        x_ymid_real = self.real_elev_[xmid, :] 
-        y_xmid_real = self.real_elev_[:, ymid ] 
-        x_ymid_mean = list_xslice.mean(axis=1)
-        y_xmid_mean = list_yslice.mean(axis=1)
-        # print( 'ymid',ymid)
-        # print( 'xmid', xmid)
-        # print ('list_xslice', list_xslice.shape)
-        # print ('list_yslice', list_yslice.shape)
-        # print( 'real shape', self.real_elev.shape)
-        # print( x_ymid_real.shape , ' x_ymid_real shape')
-        # print( x_ymid_mean.shape , ' x_ymid_mean shape')
-        # print( y_xmid_real.shape , ' y_xmid_real shape')
-        # print( y_xmid_mean.shape , ' y_xmid_mean shape')
-        x_ymid_5th = np.percentile(list_xslice, 5, axis=1)
-        x_ymid_95th= np.percentile(list_xslice, 95, axis=1)
+            x = np.linspace(0, x_ymid_mean.size * self.resolu_factor, num=x_ymid_mean.size) 
+            x_ = np.linspace(0, y_xmid_mean.size * self.resolu_factor, num=y_xmid_mean.size)
 
-        y_xmid_5th = np.percentile(list_yslice, 5, axis=1)
-        y_xmid_95th= np.percentile(list_yslice, 95, axis=1)
+            #ax.set_xlim(-width,len(ind)+width)
 
-
-        x = np.linspace(0, x_ymid_mean.size * self.resolu_factor, num=x_ymid_mean.size) 
-        x_ = np.linspace(0, y_xmid_mean.size * self.resolu_factor, num=y_xmid_mean.size)
-
-        #ax.set_xlim(-width,len(ind)+width)
-
-        self.cross_section(x, x_ymid_mean, x_ymid_real, x_ymid_5th, x_ymid_95th, 'x_ymid_cross')
-        self.cross_section(x_, y_xmid_mean, y_xmid_real, y_xmid_5th, y_xmid_95th, 'y_xmid_cross')
+            self.cross_section(x, x_ymid_mean, x_ymid_real, x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
+            self.cross_section(x_, y_xmid_mean, y_xmid_real, y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
 
     def cross_section(self, x, pred, real, lower, higher, fname):
 

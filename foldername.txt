@@ -1,1 +1,1 @@
-Examples/australia/results_4
+Examples/australia/typicalexp_1

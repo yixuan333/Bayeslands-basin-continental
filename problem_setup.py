@@ -75,7 +75,7 @@ def problem_setup(problem = 1):
 
         inittopo_expertknow = np.array([0]) # no expert knowledge as simulated init topo
          
-        simtime = -1.49e04
+        simtime = -1.49e08
         resolu_factor = 1 
 
         groundtruth_elev = np.loadtxt(problemfolder +'data/final_elev.txt')
@@ -98,7 +98,7 @@ def problem_setup(problem = 1):
         wid_grid = 1   # ignore
 
         real_rain = 1.5 #m/a
-        real_erod = 5.e-7 
+        real_erod = 1.e-6 
         m = 0.5  #Stream flow parameters
         n = 1 #
         real_cmarine = 0.005 # Marine diffusion coefficient [m2/a] -->
@@ -114,8 +114,8 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
 
         #--------------------------------------------------------
-        minlimits_others = [4.e-7, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [6.e-7, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
+        minlimits_others = [5.e-7, 0, 0, 0 ,  0, 0, 0, 0, 23000, 0, 0]  # make some extra space for future param (last 5)
+        maxlimits_others = [1.5e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 25000, 10, 1]
  
  
         #----------------------------------------InitTOPO
