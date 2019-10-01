@@ -117,7 +117,7 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
 
         #--------------------------------------------------------
-        minlimits_others = [5.e-7, 0, 0, 0 ,  0, 0, 0, 0, 23000, 0, 0]  # make some extra space for future param (last 5)
+        minlimits_others = [5.e-7, 0, 0, 0 ,  0, 0, 0, 1, 23000, 0, 0]  # make some extra space for future param (last 5)
         maxlimits_others = [1.5e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 25000, 10, 1]
  
  
@@ -155,9 +155,6 @@ def problem_setup(problem = 1):
 
         temp_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
         maxlimits_vec = np.append(temp_vec, inittopo_maxlimits)
-
-
-  
 
         vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
         true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
