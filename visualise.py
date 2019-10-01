@@ -105,7 +105,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class results_visualisation:
 
-    def __init__(self, vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str ):
+    def __init__(self, vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev ):
 
    
         self.swap_interval = swap_interval
@@ -141,6 +141,7 @@ class results_visualisation:
         self.wid_grid = wid_grid
         self.inittopo_expertknow =  inittopo_expertknow 
         self.inittopo_estimated = inittopo_estimated
+        self.init_elev = init_elev
 
     def results_current (self ):
 
@@ -341,25 +342,28 @@ class results_visualisation:
 
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
 
-        ymid = int(self.real_elev.shape[1]/2) 
-        xmid = int(self.real_elev.shape[0]/2)
+        # ymid = int(self.real_elev.shape[1]/2) 
+        # xmid = int(self.real_elev.shape[0]/2)
 
-        x_m = np.arange(20,80, 10)
-        y_m = np.arange(20,80, 10)
+        x_m = np.arange(20,80, 5)
+        y_m = np.arange(20,80, 5)
 
         print ('x_m', x_m)
-        print(' xmid ', xmid, '  ymid ', ymid) 
+        # print(' xmid ', xmid, '  ymid ', ymid) 
         
-        list_xslice = list_xslice[20:120,:]
-        list_yslice = list_yslice[20:100,:]
-        self.real_elev_ = self.real_elev[20:100, 20:120]
-        
+        # list_xslice = list_xslice[20:120,:]
+        # list_yslice = list_yslice[20:100,:]
+        self.real_elev_ = self.real_elev
+        # self.real_elev_ = self.real_elev[20:100, 20:120]
+        # self.init_elev = self.init_elev[20:100, 20:120]
         for i in x_m:
             xmid = i
             ymid = i
 
             x_ymid_real = self.real_elev_[xmid, :] 
-            y_xmid_real = self.real_elev_[:, ymid ] 
+            y_xmid_real = self.real_elev_[:, ymid ]
+            x_ymid_init = self.init_elev[xmid, :]
+            y_xmid_init = self.init_elev[:, ymid]
             x_ymid_mean = list_xslice.mean(axis=1)
             y_xmid_mean = list_yslice.mean(axis=1)
             # print( 'ymid',ymid)
@@ -383,18 +387,19 @@ class results_visualisation:
 
             #ax.set_xlim(-width,len(ind)+width)
 
-            self.cross_section(x, x_ymid_mean, x_ymid_real, x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
-            self.cross_section(x_, y_xmid_mean, y_xmid_real, y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
+            self.cross_section(x, x_ymid_mean, x_ymid_real, x_ymid_init, x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
+            self.cross_section(x_, y_xmid_mean, y_xmid_real, y_xmid_init, y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
 
-    def cross_section(self, x, pred, real, lower, higher, fname):
+    def cross_section(self, x, pred, real, init, lower, higher, fname):
 
         size = 15
 
         plt.tick_params(labelsize=size)
         params = {'legend.fontsize': size, 'legend.handlelength': 2}
         plt.rcParams.update(params)
-        plt.plot(x,  real, label='Ground Truth') 
-        plt.plot(x, pred, label='Badlands Pred.') 
+        plt.plot(x, real, label='Ground Truth') 
+        plt.plot(x, pred, label='Badlands Pred.')
+        plt.plot(x, init, label = 'Initial Topo')
         plt.grid(alpha=0.75)
 
         rmse_init = np.sqrt(np.sum(np.square(pred  -  real))  / real.size)   
@@ -986,7 +991,7 @@ def main():
 
     random.seed(time.time()) 
 
-    (problemfolder, xmlinput, simtime, resolu_factor, groundtruth_elev, groundtruth_erodep,
+    (problemfolder, xmlinput, simtime, resolu_factor, init_elev, groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, groundtruth_elev_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords, inittopo_estimated, vec_parameters, minlimits_vec, maxlimits_vec) = problem_setup(problem)
@@ -1013,7 +1018,7 @@ def main():
         sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
-    res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str)
+    res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
     pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init, rmse_full_init   = res.results_current()
 
     print('sucessfully sampled') 
@@ -1119,8 +1124,8 @@ def main():
                         rmse_er_min, rmse, rmse_sed, swap_perc, accept_per,  time_total, rmse_slice_init, rmse_full_init, epsilon]) 
     print(allres, '  result')
         
-    np.savetxt(resultingfile_db,   allres   , fmt='%1.4f',  newline=' ' )  
-    np.savetxt(resultingfile_db, [fname]   ,  fmt="%s", newline=' \n' ) 
+    np.savetxt(resultingfile_db, allres , fmt='%1.4f',  newline=' ' )  
+    np.savetxt(resultingfile_db, [fname] ,  fmt="%s", newline=' \n' ) 
 
 
     print("NumChains, problem, folder, time, RMSE_sed, RMSE,samples,swap,maxtemp,burn")

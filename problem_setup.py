@@ -18,7 +18,9 @@ def problem_setup(problem = 1):
     if problem == 1: #this will have region and time rainfall of Problem 1
         problemfolder = 'Examples/etopo_extended/'
         datapath = problemfolder + 'data/final_elev.txt'
+        
         groundtruth_elev = np.loadtxt(datapath)
+        init_elev = np.loadtxt(problemfolder+ 'data/initial_elev.txt')
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
         groundtruth_elev_pts = np.loadtxt(problemfolder + 'data/final_elev_pts.txt')
@@ -78,6 +80,7 @@ def problem_setup(problem = 1):
         simtime = -1.49e08
         resolu_factor = 1 
 
+        init_elev = np.loadtxt(problemfolder+ 'data/initial_elev.txt')
         groundtruth_elev = np.loadtxt(problemfolder +'data/final_elev.txt')
         groundtruth_erodep = np.loadtxt(problemfolder +'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
@@ -167,7 +170,7 @@ def problem_setup(problem = 1):
         erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
         erodep_coords = np.array(erodep_coords, dtype = 'int')
 
-    return (problemfolder, xmlinput, simtime, resolu_factor, groundtruth_elev, groundtruth_erodep,
+    return (problemfolder, xmlinput, simtime, resolu_factor, init_elev ,groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, groundtruth_elev_pts,  res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords, inittopo_estimated, vec_parameters,minlimits_vec, maxlimits_vec)
