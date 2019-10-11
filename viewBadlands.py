@@ -131,7 +131,7 @@ def view1Step(folder, tin, flow, sea, scaleZ=200,  maxZ=1000, maxED=100,flowline
         flines.control.Range('linewidth', range=(0.5,7.5))
 
     # lv.control.show()
-    lv.image(folder+'Testing_lavavu.png')
+    lv.image(folder+'.png')
 
     return
 

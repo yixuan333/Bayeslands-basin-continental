@@ -767,7 +767,7 @@ class results_visualisation:
         posit = 7000
 
         # Plot the core
-        strata.viewCore(width = 2, height = 5, cs = strat, enviID = enviID, posit = posit, time = layertime, 
+        strata.viewCore(folder+ "/AUSP1306_output", width = 2, height = 5, cs = strat, enviID = enviID, posit = posit, time = layertime, 
                         color = colorDepoenvi, rangeX = None, rangeY = None, savefig = 'Yes', figname = 'delta_core')
         #---------------------------------------
 
@@ -1106,11 +1106,12 @@ def main():
 
     print('min error in dict',min(error_dict))    
     # print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
-    variables = error_dict[min(error_dict)]
-    print ('variables', variables, variables.shape)
 
-    variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
-    print('variables', variables)
+    # variables = error_dict[min(error_dict)]
+    # print ('variables', variables, variables.shape)
+    # variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
+    # print('variables', variables)
+
     pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
 
     res.vis_badlands(fname)

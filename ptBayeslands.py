@@ -176,33 +176,96 @@ class ptReplica(multiprocessing.Process):
         fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
         '''
    
+    # def process_inittopo(self, inittopo_vec):
+
+    #     length = self.real_elev.shape[0]
+    #     width = self.real_elev.shape[1]
+    #     len_grid = self.len_grid
+    #     wid_grid = self.wid_grid
+    #     sub_gridlen = 20 #int(length/len_grid)  # 25
+    #     sub_gridwidth = 20 # int(width/wid_grid) # 25
+    #     new_length =len_grid * sub_gridlen 
+    #     new_width =wid_grid *  sub_gridwidth
+
+    #     reconstructed_topo  = self.real_elev.copy()  # to define the size
+   
+    #     groundtruth_topo = self.inittopo_estimated.copy()
+
+    #     '''if method == 1: 
+    #         #print(self.inittopo_expertknow, ' expert ..')
+    #         #print(sub_gridlen, sub_gridwidth, '  sub_gridlen, sub_gridwidth ')
+    #         #print(inittopo_vec.shape[0], ' inittopo_vec')
+    #         inittopo_vec = inittopo_vec #* self.inittopo_expertknow.flatten() 
+
+    #     elif method ==2:
+    #         inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() '''
+
+    #     scale_factor = np.reshape(inittopo_vec,(sub_gridlen, -1))#np.random.rand(len_grid,wid_grid)
+
+    #     v_ =   scale_factor    
+      
+    #     for l in range(0,sub_gridlen-1):
+    #         for w in range(0,sub_gridwidth-1): 
+    #             for m in range(l * len_grid,(l+1) * len_grid):  
+    #                 for n in range(w *  wid_grid, (w+1) * wid_grid):  
+    #                     reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
+
+    #     width = reconstructed_topo.shape[0]
+    #     length = reconstructed_topo.shape[1]
+ 
+    #     for l in range(0,sub_gridlen -1 ):  
+    #         w = sub_gridwidth-1
+    #         for m in range(l * len_grid,(l+1) * len_grid):  
+    #                 for n in range(w *  wid_grid,  length):  
+    #                     groundtruth_topo[m][n]   +=  v_[l][w] 
+
+    #     for w in range(0,sub_gridwidth -1): 
+
+    #         l = sub_gridlen-1  
+    #         for m in range(l * len_grid,width):  
+    #                 for n in range(w *  wid_grid, (w+1) * wid_grid):  
+    #                     groundtruth_topo[m][n]   +=  v_[l][w]
+
+    #     inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
+
+    #     for m in range(0 , inside.shape[0]):  
+    #         for n in range(0 ,   inside.shape[1]):  
+    #                 groundtruth_topo[m][n]   = inside[m][n]
+ 
+    #     groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
+ 
+    #     self.plot3d_plotly(reconstructed_topo, 'smooth_')
+    #     return groundtruth_topo
+
     def process_inittopo(self, inittopo_vec):
 
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
+
         len_grid = self.len_grid
         wid_grid = self.wid_grid
-        sub_gridlen = 20 #int(length/len_grid)  # 25
-        sub_gridwidth = 20 # int(width/wid_grid) # 25
+        sub_gridlen = int(length/len_grid)
+        sub_gridwidth = int(width/wid_grid) 
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
         reconstructed_topo  = self.real_elev.copy()  # to define the size
-   
-        groundtruth_topo = self.inittopo_estimated.copy()
 
-        '''if method == 1: 
-            #print(self.inittopo_expertknow, ' expert ..')
-            #print(sub_gridlen, sub_gridwidth, '  sub_gridlen, sub_gridwidth ')
-            #print(inittopo_vec.shape[0], ' inittopo_vec')
-            inittopo_vec = inittopo_vec #* self.inittopo_expertknow.flatten() 
+        groundtruth_topo = self.real_elev.copy()
+
+        if method == 1: 
+
+            inittopo_vec = inittopo_vec * self.inittopo_expertknow.flatten() 
 
         elif method ==2:
-            inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() '''
 
-        scale_factor = np.reshape(inittopo_vec,(sub_gridlen, -1))#np.random.rand(len_grid,wid_grid)
+            inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() 
 
-        v_ =   scale_factor    
+
+        scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid)
+
+        v_ =   scale_factor  
+        #v_ =  np.multiply(self.inittopo_expertknow.copy(), scale_factor.copy())   #+ x_
       
         for l in range(0,sub_gridlen-1):
             for w in range(0,sub_gridwidth-1): 
@@ -231,10 +294,13 @@ class ptReplica(multiprocessing.Process):
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
                     groundtruth_topo[m][n]   = inside[m][n]
- 
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
- 
+
+        # self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
         self.plot3d_plotly(reconstructed_topo, 'smooth_')
+        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
+
+        #self.plot3d_plotly(reconstructed_topo, 'smooth_')
+
         return groundtruth_topo
 
     def computeCovariance(self, i, pos_v):
@@ -1133,18 +1199,12 @@ def main():
     #fname = ('sampleresults')
 
     make_directory((fname + '/posterior/pos_parameters')) 
-
     make_directory((fname + '/recons_initialtopo')) 
-
     make_directory((fname + '/pos_plots')) 
     make_directory((fname + '/posterior/predicted_topo/topo'))  
-
     make_directory((fname + '/posterior/predicted_topo/sed'))  
-
     make_directory((fname + '/posterior/predicted_topo/x_slice'))
-
     make_directory((fname + '/posterior/predicted_topo/y_slice'))
-
     make_directory((fname + '/posterior/posterior/predicted_erodep')) 
     make_directory((fname + '/pred_plots'))
     make_directory((fname + '/sed_visual'))
