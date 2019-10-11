@@ -77,7 +77,7 @@ def problem_setup(problem = 1):
 
         inittopo_expertknow = np.array([0]) # no expert knowledge as simulated init topo
          
-        simtime = -1.49e04
+        simtime = -1.49e08
         resolu_factor = 1 
 
         init_elev = np.loadtxt(problemfolder+ 'data/initial_elev.txt')
