@@ -3,7 +3,7 @@
 echo Running all 	 
 
 problem=2
-replica=6
+replica=8
 
 samples=1000
 swapint=$samples

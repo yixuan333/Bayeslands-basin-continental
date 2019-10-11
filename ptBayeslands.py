@@ -298,7 +298,7 @@ class ptReplica(multiprocessing.Process):
         self.plot3d_plotly(reconstructed_topo, 'smooth_')
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
  
-        self.plot3d_plotly(reconstructed_topo, 'smooth_')
+        self.plot3d_plotly(groundtruth_topo, 'ground_smooth_')
         np.savetxt('%s/reconstructed_topo.txt' %self.filename, reconstructed_topo)
         return groundtruth_topo
 
