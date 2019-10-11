@@ -170,11 +170,10 @@ class ptReplica(multiprocessing.Process):
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.html', validate=False)
 
 
-        '''fig = plt.figure()
+        fig = plt.figure()
         ax = fig.gca(projection='3d') 
         ax.plot_trisurf(xx, yy, zData.flatten(), linewidth=0.2, antialiased=True)  
         fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
-        '''
    
     # def process_inittopo(self, inittopo_vec):
 
@@ -298,9 +297,9 @@ class ptReplica(multiprocessing.Process):
         # self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
         self.plot3d_plotly(reconstructed_topo, 'smooth_')
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
-
-        #self.plot3d_plotly(reconstructed_topo, 'smooth_')
-
+ 
+        self.plot3d_plotly(reconstructed_topo, 'smooth_')
+        np.savetxt('%s/reconstructed_topo.txt' %self.filename, reconstructed_topo)
         return groundtruth_topo
 
     def computeCovariance(self, i, pos_v):

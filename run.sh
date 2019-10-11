@@ -5,8 +5,8 @@ echo Running all
 problem=2
 replica=6
 
-samples=100
-swapint=1
+samples=1000
+swapint=$samples
 maxtemp=2
 burn=0.25
 pt_stage=0.25

@@ -105,8 +105,8 @@ def problem_setup(problem = 1):
         real_cmarine = 0.005 # Marine diffusion coefficient [m2/a] -->
         real_caerial = 0.001 #aerial diffusion
 
-        rain_min = 1.0
-        rain_max = 3.0 
+        rain_min = 0.8
+        rain_max = 1.3 
 
         # assume 4 regions and 4 time scales
         rain_regiongrid = 1  # how many regions in grid format 
@@ -115,8 +115,8 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
 
         #--------------------------------------------------------
-        minlimits_others = [5.e-7, 0, 0, 0 ,  0, 0, 0, 1, 23000, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [1.5e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 25000, 10, 1]
+        minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # make some extra space for future param (last 5)
+        maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02]
  
  
         #----------------------------------------InitTOPO
