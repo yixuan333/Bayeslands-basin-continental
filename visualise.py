@@ -55,7 +55,7 @@ from problem_setup import problem_setup
 from ptBayeslands import interpolateArray
 
 import glob
-import lavavu
+# import lavavu
 import viewBadlands as visu
 import stratalArchitecture as strata
 import matplotlib as mpl
@@ -720,8 +720,8 @@ class results_visualisation:
         # stepCounter = 50
 
         # Get the elevation, cumulative elevation change, flow discharge, and sea level 
-        tin,flow,sea = visu.loadStep(folder+"/AUSP1306_output",stepCounter)
-        visu.view1Step(folder+"/AUSP1306_output", tin, flow, sea, scaleZ=20, maxZ=2500, maxED=200, flowlines=False)
+        # tin,flow,sea = visu.loadStep(folder+"/AUSP1306_output",stepCounter)
+        # visu.view1Step(folder+"/AUSP1306_output", tin, flow, sea, scaleZ=20, maxZ=2500, maxED=200, flowlines=False)
 
         timestep = 10
         strat = strata.stratalSection(file,1)
