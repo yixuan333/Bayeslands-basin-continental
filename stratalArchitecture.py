@@ -376,7 +376,7 @@ def viewWheeler(width = 8, height = 5, cs = None, enviID = None, time = None, dn
     
     return
 
-def viewCore(width = 2, height = 5, cs = None, enviID = None, posit = None, time = None, color = None, 
+def viewCore(folder, width = 2, height = 5, cs = None, enviID = None, posit = None, time = None, color = None, 
              rangeX = None, rangeY = None, savefig = 'Yes', figname = 'Core'):
     """
     Plot synthetic cores.

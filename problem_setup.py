@@ -77,7 +77,7 @@ def problem_setup(problem = 1):
 
         inittopo_expertknow = np.array([0]) # no expert knowledge as simulated init topo
          
-        simtime = -1.49e08
+        simtime = -1.49e04
         resolu_factor = 1 
 
         init_elev = np.loadtxt(problemfolder+ 'data/initial_elev.txt')
@@ -86,13 +86,11 @@ def problem_setup(problem = 1):
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
         groundtruth_elev_pts = np.loadtxt(problemfolder +'data/final_elev_pts_.txt')
 
-        inittopo_expertknow =[] # estimated expert in grid version not needed anymore with new init topo formulation
+        inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo.txt')
+        # inittopo_expertknow =[] # estimated expert in grid version not needed anymore with new init topo formulation
         inittopo_estimated = np.loadtxt(problemfolder + 'init_expertknowlegeprocess/init_estimated.txt') 
 
         res_summaryfile = '/results.txt'
-
-
-        inittopo_expertknow = inittopo_expertknow  # no expert knowledge as simulated init topo
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
         likelihood_sediment = True
@@ -162,7 +160,7 @@ def problem_setup(problem = 1):
 
         stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
         num_param = vec_parameters.size
-        print(vec_parameters, 'vec_parameters') 
+        # print(vec_parameters, 'vec_parameters') 
 
         erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
         erodep_coords = np.array(erodep_coords, dtype = 'int')
