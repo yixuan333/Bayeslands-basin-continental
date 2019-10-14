@@ -151,6 +151,27 @@ class ptReplica(multiprocessing.Process):
         # range = [0,zData.shape[0]* self.resolu_factor]
         #range = [0,zData.shape[1]* self.resolu_factor],
 
+
+
+        '''fig = plt.figure()
+        ax = fig.gca(projection='3d') 
+        ax.plot_trisurf(xx, yy, zData.flatten(), linewidth=0.2, antialiased=True)  '''
+        fnameplot = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
+
+        print(fnameplot)
+
+        plt.imshow(zData, cmap='hot', interpolation='nearest')
+        plt.savefig(fnameplot)
+
+
+        fnamedata = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.txt'
+
+        np.savetxt(fnamedata, zData, fmt='%1.2f')
+
+
+
+
+
         data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YlGnBu')])
 
         layout = Layout(title='Predicted Topography' , autosize=True, width=width, height=height,scene=Scene(
@@ -169,12 +190,7 @@ class ptReplica(multiprocessing.Process):
 
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.html', validate=False)
 
-
-        '''fig = plt.figure()
-        ax = fig.gca(projection='3d') 
-        ax.plot_trisurf(xx, yy, zData.flatten(), linewidth=0.2, antialiased=True)  
-        fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
-        '''
+        
    
     def process_inittopo(self, inittopo_vec):
 
@@ -269,10 +285,10 @@ class ptReplica(multiprocessing.Process):
 
         # prob = [0,1,2]
         # if  problem in prob: #problem==1 or problem==2 : # when you have initial topo (problem is global variable)
-        if problem == 0 or problem ==1 or problem ==2 or problem==3:
-            init = False
-        else:
-            init = True # when you need to estimate initial topo
+        #if problem == 0 or problem ==1 or problem ==2 or problem==3:
+         #   init = False  xxxx
+        #else:
+        init = True # when you need to estimate initial topo
 
 
         if init == True:

@@ -17,7 +17,7 @@ def problem_setup(problem = 1):
 
     if problem == 1: #this will have region and time rainfall of Problem 1
         problemfolder = 'Examples/etopo_extended/'
-        datapath = problemfolder + 'data/final_elev.txt'
+        datapath = problemfolder + 'data/final_elev.txt' 
         
         groundtruth_elev = np.loadtxt(datapath)
         init_elev = np.loadtxt(problemfolder+ 'data/initial_elev.txt')

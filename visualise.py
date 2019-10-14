@@ -223,7 +223,7 @@ class results_visualisation:
             mean_mid = init_topo_mean[xmid, :]
             x = np.linspace(0, synthetic_initopo.shape[1] * self.resolu_factor, num= synthetic_initopo.shape[1])
             rmse_full_init = np.sqrt(np.sum(np.square(init_topo_mean  -  synthetic_initopo))  / (init_topo_mean.shape[0] * init_topo_mean.shape[1]))   # will not be needed in Australia problem
-            # rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
+            rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
             rmse_slice_init = 0
 
         else:
@@ -1111,7 +1111,7 @@ def main():
 
     variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
     print('variables', variables)
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
+    #pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
 
     res.vis_badlands(fname)
     res.visualize_sediments(pred_erodep_opt)    
