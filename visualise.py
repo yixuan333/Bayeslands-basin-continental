@@ -212,7 +212,6 @@ class results_visualisation:
         #return (pos_param,likelihood_rep, accept_list,   combined_erodep,  pred_topofinal, swap_perc, accept,  rmse_elev, rmse_erodep, rmse_slice_init, rmse_full_init)
         return  posterior, likelihood_vec, accept_list,   xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init, rmse_full_init
 
-
     def plot3d_plotly(self, zData, fname): # same method from previous class - ptReplica
         zmin =  zData.min() 
         zmax =  zData.max()
@@ -335,13 +334,13 @@ class results_visualisation:
  
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
 
-
+ 
         self.plot3d_plotly(reconstructed_topo, 'mean_')
 
 
 
         return groundtruth_topo
-
+ 
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
 
         # ymid = int(self.real_elev.shape[1]/2) 
@@ -640,7 +639,6 @@ class results_visualisation:
         plt.savefig(fname + '/pos_plots/' + title  + '_trace.pdf')
         plt.clf()
 
-
     def plot_sed(self, list, title): 
 
         list_points =  list
@@ -663,9 +661,6 @@ class results_visualisation:
         plt.grid(alpha=0.75)
         plt.savefig(fname + '/sed_visual/' + title  + '_sed_distri.pdf')
         plt.clf()
-
-        
-
 
     def heatmap_sed(self, sed_data, title): 
         size = 15
