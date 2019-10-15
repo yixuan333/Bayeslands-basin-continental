@@ -9,7 +9,7 @@
 """
 Here we set usefull functions used to analyse stratigraphic sequences from Badlands outputs.
 """
-
+import math
 import os
 import math
 import h5py

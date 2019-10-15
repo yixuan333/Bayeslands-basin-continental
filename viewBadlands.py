@@ -9,7 +9,7 @@
 """
 Here we set usefull functions used to analyse stratigraphic sequences from Badlands outputs.
 """
-
+import os
 import warnings
 warnings.filterwarnings('ignore')
 warnings.simplefilter(action = "ignore", category = FutureWarning)

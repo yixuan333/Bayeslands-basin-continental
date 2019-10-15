@@ -124,8 +124,7 @@ class results_visualisation:
         self.num_param = num_param
         self.erodep_coords = erodep_coords
         self.simtime = simtime
-        self.sim_interval = sim_interval
-        # self.run_nb =run_nb 
+        self.sim_interval = sim_interval 
         self.xmlinput = xmlinput
         self.run_nb_str =  run_nb_str
         self.vec_parameters = vec_parameters
@@ -159,28 +158,7 @@ class results_visualisation:
         for s in range(15): # change this if you want to see all pos plots
             self.plot_figure(posterior[s,:], 'pos_distri_'+str(s) ) 
 
-        '''
-        for i in range(self.sim_interval.size):
-
-            self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_topo[i,:,:], title='Predicted Topography ', time_frame=self.sim_interval[i],  filename= 'mean')
-
-        if self.show_fulluncertainity == True: # this to be used when you need output of the topo predictions - 5th and 95th percentiles
-
-            pred_elev5th, pred_eroddep5th, pred_erd_pts5th = self.run_badlands(np.asarray(para_5thperc)) 
-        
-            self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev5th[self.simtime], title='Pred. Topo. - 5th Percentile', time_frame= self.simtime, filename= '5th')
-
-            pred_elev95th, pred_eroddep95th, pred_erd_pts95th = self.run_badlands(para_95thperc)
-        
-            self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev95th[self.simtime], title='Pred. Topo. - 95th Percentile', time_frame= self.simtime, filename = '95th')
-
-            pred_elevoptimal, pred_eroddepoptimal, pred_erd_optimal = self.run_badlands(optimal_para)
-        
-            self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elevoptimal[self.simtime], title='Pred. Topo. - Optimal', time_frame= self.simtime, filename = 'optimal')
-
-            self.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=  self.real_elev , title='Ground truth Topography', time_frame= self.simtime, filename = 'ground_truth')
-
-        swap_perc = self.num_swap*100/self.total_swap_proposals  '''
+    
 
         rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time  
         geoparam  = rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall) 
@@ -191,10 +169,10 @@ class results_visualisation:
 
         percentile_5th = np.percentile(posterior, 5, axis=1) 
 
-        if problem == 0 or problem ==1 or problem ==2 or problem==3: # problem is global variable
-            init = False
-        else:
-            init = True # when you need to estimate initial topo
+        #if problem == 0 or problem ==1 or problem ==2 or problem==3: # problem is global variable
+         #   init = False
+        #else:
+        init = True # when you need to estimate initial topo
 
         if init == True: 
             init_topo_mean = self.process_inittopo(mean_pos[geoparam:])
@@ -214,8 +192,8 @@ class results_visualisation:
             init_topo_95th = init_topo_95th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
             init_topo_5th = init_topo_5th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
 
-            xmid = int(self.inittopo_estimated.shape[0]/2) 
-            inittopo_real = self.inittopo_estimated[xmid, :]  # ground-truth init topo mid (synthetic) 
+            xmid = int(init_topo_mean.shape[0]/2) 
+            inittopo_real =  init_topo_mean[xmid, :]  # ground-truth init topo mid (synthetic) 
             #inittopo_real = self.inittopo_estimated[xmid, :]  # ground-truth init topo mid (synthetic) 
 
             lower_mid = init_topo_5th[xmid, :]
@@ -272,7 +250,19 @@ class results_visualisation:
         np.savetxt(self.folder +  '/recons_initialtopo/'+fname+'_.txt', zData,  fmt='%1.2f' )
 
     def process_inittopo(self, inittopo_vec):
+
+        '''length = self.real_elev.shape[0]
+        width = self.real_elev.shape[1]
  
+        len_grid = self.len_grid
+        wid_grid = self.wid_grid
+
+        
+        sub_gridlen = int(length/len_grid)
+        sub_gridwidth = int(width/wid_grid) 
+        new_length =len_grid * sub_gridlen 
+        new_width =wid_grid *  sub_gridwidth'''
+
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
@@ -282,30 +272,38 @@ class results_visualisation:
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
-        reconstructed_topo  = self.inittopo_estimated.copy()  # to define the size
-   
-        groundtruth_topo = self.inittopo_estimated.copy()
+        reconstructed_topo  = self.real_elev.copy()  # to define the size 
 
-        '''if method == 1: 
-            #print(self.inittopo_expertknow, ' expert ..')
-            #print(sub_gridlen, sub_gridwidth, '  sub_gridlen, sub_gridwidth ')
-            #print(inittopo_vec.shape[0], ' inittopo_vec')
-            inittopo_vec = inittopo_vec #* self.inittopo_expertknow.flatten() 
+        groundtruth_topo = self.real_elev.copy()
+ 
+        if method == 1: 
+
+            inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
 
         elif method ==2:
-            inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() 
 
-        '''
+            inittopo_vec = ((inittopo_vec/200) * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten()  
 
-        scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid)
 
-        v_ =   scale_factor     
+        print(inittopo_vec.shape, ' inittopo_vec.shape') 
+
+
+
+        scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
+
+
+        v_ =   scale_factor  
+
+        #v_ =  np.multiply(self.inittopo_expertknow.copy(), scale_factor.copy())   #+ x_
+
       
         for l in range(0,sub_gridlen-1):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
+ 
+
 
         width = reconstructed_topo.shape[0]
         length = reconstructed_topo.shape[1]
@@ -323,22 +321,26 @@ class results_visualisation:
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         groundtruth_topo[m][n]   +=  v_[l][w]
 
+ 
+
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
+
+ 
+   
 
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
-                    groundtruth_topo[m][n]   = inside[m][n]
+                    groundtruth_topo[m][n]   = inside[m][n] 
+        #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
  
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
- 
- 
-        self.plot3d_plotly(groundtruth_topo, 'initrecon_')
- 
-        groundtruth_topo = gaussian_filter(groundtruth_topo, sigma=1) # change sigma to higher values if needed 
-        self.plot3d_plotly(groundtruth_topo, 'smooth_')
 
-        return reconstructed_topo
 
+        self.plot3d_plotly(reconstructed_topo, 'mean_')
+
+
+
+        return groundtruth_topo
 
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
 
@@ -362,8 +364,8 @@ class results_visualisation:
 
             x_ymid_real = self.real_elev_[xmid, :] 
             y_xmid_real = self.real_elev_[:, ymid ]
-            x_ymid_init = self.init_elev[xmid, :]
-            y_xmid_init = self.init_elev[:, ymid]
+            #x_ymid_init = self.init_elev[xmid, :]
+            #y_xmid_init = self.init_elev[:, ymid]
             x_ymid_mean = list_xslice.mean(axis=1)
             y_xmid_mean = list_yslice.mean(axis=1)
             # print( 'ymid',ymid)
@@ -387,10 +389,12 @@ class results_visualisation:
 
             #ax.set_xlim(-width,len(ind)+width)
 
-            self.cross_section(x, x_ymid_mean, x_ymid_real, x_ymid_init, x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
-            self.cross_section(x_, y_xmid_mean, y_xmid_real, y_xmid_init, y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
+            self.cross_section(x, x_ymid_mean, x_ymid_real,   x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
+            self.cross_section(x_, y_xmid_mean, y_xmid_real,   y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
 
-    def cross_section(self, x, pred, real, init, lower, higher, fname):
+    def cross_section(self, x, pred, real,   lower, higher, fname):
+
+        init =[]
 
         size = 15
 
@@ -399,7 +403,7 @@ class results_visualisation:
         plt.rcParams.update(params)
         plt.plot(x, real, label='Ground Truth') 
         plt.plot(x, pred, label='Badlands Pred.')
-        plt.plot(x, init, label = 'Initial Topo')
+        #plt.plot(x, init, label = 'Initial Topo')
         plt.grid(alpha=0.75)
 
         rmse_init = np.sqrt(np.sum(np.square(pred  -  real))  / real.size)   
@@ -410,7 +414,7 @@ class results_visualisation:
         #plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3, fancybox=True, shadow=True)
 
         plt.title("Topography  cross section   ", fontsize = size)
-        plt.xlabel(' Distance (km)  ', fontsize = size)
+        plt.xlabel(' Distance (x 50 km)  ', fontsize = size)
         plt.ylabel(' Height (m)', fontsize = size)
         plt.tight_layout()
           
@@ -767,7 +771,7 @@ class results_visualisation:
         posit = 7000
 
         # Plot the core
-        strata.viewCore(folder+ "/AUSP1306_output", width = 2, height = 5, cs = strat, enviID = enviID, posit = posit, time = layertime, 
+        strata.viewCore(width = 2, height = 5, cs = strat, enviID = enviID, posit = posit, time = layertime, 
                         color = colorDepoenvi, rangeX = None, rangeY = None, savefig = 'Yes', figname = 'delta_core')
         #---------------------------------------
 
@@ -783,10 +787,10 @@ class results_visualisation:
 
         # prob = [0,1,2]
         # if  problem in prob: #problem==1 or problem==2 : # when you have initial topo (problem is global variable)
-        if problem == 0 or problem ==1 or problem ==2 or problem==3:
-            init = False
-        else:
-            init = True # when you need to estimate initial topo
+        #if problem == 0 or problem ==1 or problem ==2 or problem==3:
+         #   init = False
+        #else:
+        init = True # when you need to estimate initial topo
 
 
         if init == True:
@@ -807,7 +811,7 @@ class results_visualisation:
             inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  # bug fix but not good fix - temp @ 
 
             #Put it back into 'Badlands' format and then re-load the model
-            filename=problem_folder+str(self.run_nb)+'/demfile_'+ str(int(self.temperature*10)) +'_demfile.csv' 
+            filename=problem_folder +'/inittopo_mean_demfile.csv' 
 
             elev_framex = np.vstack((model.recGrid.rectX,model.recGrid.rectY,inittopo_estimate.flatten()))
             np.savetxt(filename, elev_framex.T, fmt='%1.2f' ) 
@@ -1106,10 +1110,12 @@ def main():
 
     print('min error in dict',min(error_dict))    
     # print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
+    variables = error_dict[min(error_dict)]
+    print ('variables', variables, variables.shape)
 
     variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
     print('variables', variables)
-    #pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
 
     res.vis_badlands(fname)
     res.visualize_sediments(pred_erodep_opt)    
