@@ -185,12 +185,14 @@ class results_visualisation:
 
 
         #   cut the slice in the middle to show cross section of init topo with uncertainity
-            synthetic_initopo = self.get_synthetic_initopo()
+            '''synthetic_initopo = self.get_synthetic_initopo()
+
+            '''
 
 
-            init_topo_mean = init_topo_mean[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
-            init_topo_95th = init_topo_95th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
-            init_topo_5th = init_topo_5th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
+            init_topo_mean = init_topo_mean[0:self.real_elev.shape[0], 0:self.real_elev.shape[1]]  # just to ensure that the size is exact 
+            init_topo_95th = init_topo_95th[0:self.real_elev.shape[0], 0:self.real_elev.shape[1]]  # just to ensure that the size is exact 
+            init_topo_5th = init_topo_5th[0:self.real_elev.shape[0], 0:self.real_elev.shape[1]]  # just to ensure that the size is exact  
 
             xmid = int(init_topo_mean.shape[0]/2) 
             inittopo_real =  init_topo_mean[xmid, :]  # ground-truth init topo mid (synthetic) 
@@ -198,19 +200,63 @@ class results_visualisation:
 
             lower_mid = init_topo_5th[xmid, :]
             higher_mid = init_topo_95th[xmid, :]
-            mean_mid = init_topo_mean[xmid, :]
-            x = np.linspace(0, synthetic_initopo.shape[1] * self.resolu_factor, num= synthetic_initopo.shape[1])
-            rmse_full_init = np.sqrt(np.sum(np.square(init_topo_mean  -  synthetic_initopo))  / (init_topo_mean.shape[0] * init_topo_mean.shape[1]))   # will not be needed in Australia problem
+            mean_mid = init_topo_mean[xmid, :] 
+            x = np.linspace(0, self.real_elev.shape[1] * self.resolu_factor, num= self.real_elev.shape[1])
             rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
-            rmse_slice_init = 0
+             
+            print(self.real_elev, ' real_elev')
+
+            
 
         else:
-
-            rmse_full_init = 0
+ 
             rmse_slice_init =  0
 
-        #return (pos_param,likelihood_rep, accept_list,   combined_erodep,  pred_topofinal, swap_perc, accept,  rmse_elev, rmse_erodep, rmse_slice_init, rmse_full_init)
-        return  posterior, likelihood_vec, accept_list,   xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init, rmse_full_init
+        return  posterior, likelihood_vec, accept_list,   xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init 
+
+
+
+
+    def full_crosssection(self,  simulated_topo, real_elev):
+
+        ymid = int( real_elev.shape[1]/2)  
+
+        x = np.linspace(0, real_elev.shape[0], num=real_elev.shape[0])
+
+        
+
+        x_m = np.arange(0,real_elev.shape[0], 10)
+
+ 
+
+        for i in x_m:
+            xmid = i 
+
+            real = real_elev[0:real_elev.shape[0], i]  
+            pred = simulated_topo[0:real_elev.shape[0], i]
+ 
+
+            size = 15
+
+            plt.tick_params(labelsize=size)
+            params = {'legend.fontsize': size, 'legend.handlelength': 2}
+            plt.rcParams.update(params)
+            plt.plot(x, real, label='Ground Truth') 
+            plt.plot(x, pred, label='Badlands Pred.')
+            #plt.plot(x, init, label = 'Initial Topo')
+            plt.grid(alpha=0.75)
+            plt.legend(loc='best')  
+            plt.title("Topography cross section   ", fontsize = size)
+            plt.xlabel(' Distance (x 50 km)  ', fontsize = size)
+            plt.ylabel(' Height (m)', fontsize = size)
+            plt.tight_layout()
+              
+            plt.savefig(self.folder+'/'+str(i)+'_cross-sec_postcompare.pdf')
+            plt.clf()
+
+ 
+
+
 
     def plot3d_plotly(self, zData, fname): # same method from previous class - ptReplica
         zmin =  zData.min() 
@@ -249,18 +295,7 @@ class results_visualisation:
         np.savetxt(self.folder +  '/recons_initialtopo/'+fname+'_.txt', zData,  fmt='%1.2f' )
 
     def process_inittopo(self, inittopo_vec):
-
-        '''length = self.real_elev.shape[0]
-        width = self.real_elev.shape[1]
  
-        len_grid = self.len_grid
-        wid_grid = self.wid_grid
-
-        
-        sub_gridlen = int(length/len_grid)
-        sub_gridwidth = int(width/wid_grid) 
-        new_length =len_grid * sub_gridlen 
-        new_width =wid_grid *  sub_gridwidth'''
 
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
@@ -277,7 +312,8 @@ class results_visualisation:
  
         if method == 1: 
 
-            inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
+            #inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
+            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  
 
         elif method ==2:
 
@@ -340,56 +376,48 @@ class results_visualisation:
 
 
         return groundtruth_topo
+
+  
  
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
 
-        # ymid = int(self.real_elev.shape[1]/2) 
-        # xmid = int(self.real_elev.shape[0]/2)
+        ymid = int(self.real_elev.shape[1]/2) 
+        xmid = int(self.real_elev.shape[0]/2)
 
-        x_m = np.arange(20,80, 5)
-        y_m = np.arange(20,80, 5)
-
-        print ('x_m', x_m)
-        # print(' xmid ', xmid, '  ymid ', ymid) 
+        #x_m = np.arange(20,80, 10)
+        #y_m = np.arange(20,80, 5)
+  
         
         # list_xslice = list_xslice[20:120,:]
         # list_yslice = list_yslice[20:100,:]
         self.real_elev_ = self.real_elev
         # self.real_elev_ = self.real_elev[20:100, 20:120]
         # self.init_elev = self.init_elev[20:100, 20:120]
-        for i in x_m:
-            xmid = i
-            ymid = i
+        #for i in x_m:
+            #xmid = i
+            #ymid = i
 
-            x_ymid_real = self.real_elev_[xmid, :] 
-            y_xmid_real = self.real_elev_[:, ymid ]
-            #x_ymid_init = self.init_elev[xmid, :]
-            #y_xmid_init = self.init_elev[:, ymid]
-            x_ymid_mean = list_xslice.mean(axis=1)
-            y_xmid_mean = list_yslice.mean(axis=1)
-            # print( 'ymid',ymid)
-            # print( 'xmid', xmid)
-            # print ('list_xslice', list_xslice.shape)
-            # print ('list_yslice', list_yslice.shape)
-            # print( 'real shape', self.real_elev.shape)
-            # print( x_ymid_real.shape , ' x_ymid_real shape')
-            # print( x_ymid_mean.shape , ' x_ymid_mean shape')
-            # print( y_xmid_real.shape , ' y_xmid_real shape')
-            # print( y_xmid_mean.shape , ' y_xmid_mean shape')
-            x_ymid_5th = np.percentile(list_xslice, 5, axis=1)
-            x_ymid_95th= np.percentile(list_xslice, 95, axis=1)
+        x_ymid_real = self.real_elev_[xmid, :] 
+        y_xmid_real = self.real_elev_[:, ymid ]
+        #x_ymid_init = self.init_elev[xmid, :]
+        #y_xmid_init = self.init_elev[:, ymid]
+        x_ymid_mean = list_xslice.mean(axis=1)
+        y_xmid_mean = list_yslice.mean(axis=1)
+    
+        x_ymid_5th = np.percentile(list_xslice, 5, axis=1)
+        x_ymid_95th= np.percentile(list_xslice, 95, axis=1)
 
-            y_xmid_5th = np.percentile(list_yslice, 5, axis=1)
-            y_xmid_95th= np.percentile(list_yslice, 95, axis=1)
+        y_xmid_5th = np.percentile(list_yslice, 5, axis=1)
+        y_xmid_95th= np.percentile(list_yslice, 95, axis=1)
 
 
-            x = np.linspace(0, x_ymid_mean.size * self.resolu_factor, num=x_ymid_mean.size) 
-            x_ = np.linspace(0, y_xmid_mean.size * self.resolu_factor, num=y_xmid_mean.size)
+        x = np.linspace(0, x_ymid_mean.size * self.resolu_factor, num=x_ymid_mean.size) 
+        x_ = np.linspace(0, y_xmid_mean.size * self.resolu_factor, num=y_xmid_mean.size)
 
-            #ax.set_xlim(-width,len(ind)+width)
+        #ax.set_xlim(-width,len(ind)+width)
 
-            self.cross_section(x, x_ymid_mean, x_ymid_real,   x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
-            self.cross_section(x_, y_xmid_mean, y_xmid_real,   y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
+        self.cross_section(x, x_ymid_mean, x_ymid_real,   x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
+        self.cross_section(x_, y_xmid_mean, y_xmid_real,   y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
 
     def cross_section(self, x, pred, real,   lower, higher, fname):
 
@@ -1018,7 +1046,7 @@ def main():
     print("Simulation time interval", sim_interval)
 
     res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
-    pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init, rmse_full_init   = res.results_current()
+    pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init  = res.results_current()
 
     print('sucessfully sampled') 
     timer_end = time.time() 
@@ -1112,6 +1140,9 @@ def main():
     print('variables', variables)
     pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
 
+    res.full_crosssection(pred_elev_opt, groundtruth_elev) 
+
+
     res.vis_badlands(fname)
     res.visualize_sediments(pred_erodep_opt)    
     # for i in range(res.sim_interval.size):
@@ -1124,7 +1155,7 @@ def main():
 
     allres =  np.asarray([ problem, num_chains, maxtemp, samples,swap_interval,  rmse_el, 
                         rmse_er, rmse_el_std, rmse_er_std, rmse_el_min, 
-                        rmse_er_min, rmse, rmse_sed, swap_perc, accept_per,  time_total, rmse_slice_init, rmse_full_init, epsilon]) 
+                        rmse_er_min, rmse, rmse_sed, swap_perc, accept_per,  time_total, rmse_slice_init , epsilon]) 
     print(allres, '  result')
         
     np.savetxt(resultingfile_db, allres , fmt='%1.4f',  newline=' ' )  

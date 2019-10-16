@@ -190,88 +190,10 @@ class ptReplica(multiprocessing.Process):
 
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.html', validate=False)
 
-
-        '''fig = plt.figure()
-        ax = fig.gca(projection='3d') 
-        ax.plot_trisurf(xx, yy, zData.flatten(), linewidth=0.2, antialiased=True)  
-        fname = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
-        '''
-   
-    '''def process_inittopo(self, inittopo_vec):
-
-        length = self.real_elev.shape[0]
-        width = self.real_elev.shape[1]
-        len_grid = self.len_grid
-        wid_grid = self.wid_grid
-        sub_gridlen = 20 #int(length/len_grid)  # 25
-        sub_gridwidth = 20 # int(width/wid_grid) # 25
-        new_length =len_grid * sub_gridlen 
-        new_width =wid_grid *  sub_gridwidth
-
-        reconstructed_topo  = self.real_elev.copy()  # to define the size
-   
-        groundtruth_topo = self.inittopo_estimated.copy()
-
-        if method == 1: 
-            #print(self.inittopo_expertknow, ' expert ..')
-            #print(sub_gridlen, sub_gridwidth, '  sub_gridlen, sub_gridwidth ')
-            #print(inittopo_vec.shape[0], ' inittopo_vec')
-            inittopo_vec = inittopo_vec #* self.inittopo_expertknow.flatten() 
-
-        elif method ==2:
-            inittopo_vec = (inittopo_vec * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten() 
-
-        scale_factor = np.reshape(inittopo_vec,(sub_gridlen, -1))#np.random.rand(len_grid,wid_grid)
-
-        v_ =   scale_factor    
-      
-        for l in range(0,sub_gridlen-1):
-            for w in range(0,sub_gridwidth-1): 
-                for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
-
-        width = reconstructed_topo.shape[0]
-        length = reconstructed_topo.shape[1]
  
-        for l in range(0,sub_gridlen -1 ):  
-            w = sub_gridwidth-1
-            for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid,  length):  
-                        groundtruth_topo[m][n]   +=  v_[l][w] 
-
-        for w in range(0,sub_gridwidth -1): 
-
-            l = sub_gridlen-1  
-            for m in range(l * len_grid,width):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        groundtruth_topo[m][n]   +=  v_[l][w]
-
-        inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
-
-        for m in range(0 , inside.shape[0]):  
-            for n in range(0 ,   inside.shape[1]):  
-                    groundtruth_topo[m][n]   = inside[m][n]
- 
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
- 
-        self.plot3d_plotly(reconstructed_topo, 'smooth_')
-        return groundtruth_topo'''
-
 
     def process_inittopo(self, inittopo_vec):
-
-        '''length = self.real_elev.shape[0]
-        width = self.real_elev.shape[1]
  
-        len_grid = self.len_grid
-        wid_grid = self.wid_grid
-
-        
-        sub_gridlen = int(length/len_grid)
-        sub_gridwidth = int(width/wid_grid) 
-        new_length =len_grid * sub_gridlen 
-        new_width =wid_grid *  sub_gridwidth'''
 
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
@@ -288,7 +210,8 @@ class ptReplica(multiprocessing.Process):
  
         if method == 1: 
 
-            inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
+            #inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
+            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  
 
         elif method ==2:
 
@@ -1075,7 +998,72 @@ class ParallelTempering:
         
         swap_perc = self.num_swap  #*100/self.total_swap_proposals  
 
+        simulated_topofinal = combined_topo[self.sim_interval.size-1,:,:]
+
+        self.full_crosssection(simulated_topofinal, self.real_elev) 
+
+
+
+
+
         return (pred_topofinal, swap_perc, accept)
+
+
+    def full_crosssection(self,  simulated_topo, real_elev):
+
+        ymid = int( real_elev.shape[1]/2)  
+
+        x = np.linspace(0, real_elev.shape[0], num=real_elev.shape[0])
+
+        
+
+        x_m = np.arange(0,real_elev.shape[0], 10)
+
+ 
+
+        for i in x_m:
+            xmid = i 
+
+            real = real_elev[0:real_elev.shape[0], i]  
+            pred = simulated_topo[0:real_elev.shape[0], i]
+ 
+
+            size = 15
+
+            plt.tick_params(labelsize=size)
+            params = {'legend.fontsize': size, 'legend.handlelength': 2}
+            plt.rcParams.update(params)
+            plt.plot(x, real, label='Ground Truth') 
+            plt.plot(x, pred, label='Badlands Pred.') 
+            plt.grid(alpha=0.75)
+            plt.legend(loc='best')  
+            plt.title("Topography cross section   ", fontsize = size)
+            plt.xlabel(' Distance (x 50 km)  ', fontsize = size)
+            plt.ylabel(' Height (m)', fontsize = size)
+            plt.tight_layout()
+              
+            plt.savefig(self.folder+'/'+str(i)+'_cross-sec.pdf')
+            plt.clf()
+
+        fnameplot = self.folder +  '/realmap_.png' 
+        plt.imshow(real_elev, cmap='hot', interpolation='nearest')
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        fnameplot = self.folder +  '/predmap_.png' 
+        plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        fnameplot = self.folder +  '/diffmap_.png' 
+        plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
+        plt.savefig(fnameplot)
+        plt.clf()
+
+
+
+
+
 
 
     # Merge different MCMC chains y stacking them on top of each other
@@ -1166,6 +1154,9 @@ class ParallelTempering:
         plt.tight_layout()  
         plt.savefig(fname )
         plt.clf()
+
+        fname = self.folder + '/pred_plots'+'/pred_'+filename+'_'+str(time_frame)+ '_.txt'
+        np.savetxt(fname, zData, fmt='%1.2f')
 
 
 # class  above this line -------------------------------------------------------------------------------------------------------

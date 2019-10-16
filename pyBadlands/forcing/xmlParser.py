@@ -21,7 +21,7 @@ class xmlParser:
     This class defines XmL input file variables.
     """
 
-    def __init__(self, run_nb, muted = True, inputfile = None, makeUniqueOutputDir=True):
+    def __init__(self, run_nb, muted = True, inputfile = None, makeUniqueOutputDir=False):
         """
         If makeUniqueOutputDir is set, we create a uniquely-named directory for
         the output. If it's clear, we blindly accept what's in the XML file.
@@ -1236,6 +1236,7 @@ class xmlParser:
             self.outDir = self.run_nb+'/'+out.text
         else:
             self.outDir = os.getcwd()+ self.run_nb +'/' +'/out'
+            #self.outDir = '~/'+ self.run_nb +'/' +'/out'
         if self.makeUniqueOutputDir:
             if os.path.exists(self.outDir):
                 self.outDir += '_'+str(len(glob.glob(self.outDir+str('*')))-1)
