@@ -204,7 +204,7 @@ class results_visualisation:
             x = np.linspace(0, self.real_elev.shape[1] * self.resolu_factor, num= self.real_elev.shape[1])
             rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
              
-            print(self.real_elev, ' real_elev')
+            #print(self.real_elev, ' real_elev')
 
             
 
@@ -251,8 +251,26 @@ class results_visualisation:
             plt.ylabel(' Height (m)', fontsize = size)
             plt.tight_layout()
               
-            plt.savefig(self.folder+'/'+str(i)+'_cross-sec_postcompare.pdf')
+            plt.savefig(self.folder+'/cross_section/'+str(i)+'_cross-sec_postcompare.pdf')
             plt.clf()
+
+        fnameplot = self.folder +  '/cross_section/realmap_postcompare.png' 
+        im = plt.imshow(real_elev, cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        fnameplot = self.folder +  '/cross_section/predmap_postcompare.png' 
+        im = plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        fnameplot = self.folder +  '/cross_section/diffmap_postcompare.png' 
+        im = plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
 
  
 
@@ -319,9 +337,7 @@ class results_visualisation:
 
             inittopo_vec = ((inittopo_vec/200) * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten()  
 
-
-        print(inittopo_vec.shape, ' inittopo_vec.shape') 
-
+ 
 
 
         scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
@@ -487,9 +503,7 @@ class results_visualisation:
         likehood_rep = np.zeros((self.num_chains, self.NumSamples)) # index 1 for likelihood posterior and index 0 for Likelihood proposals. Note all likilihood proposals plotted only
         #accept_percent = np.zeros((self.num_chains, 1))
         accept_list = np.zeros((self.num_chains, self.NumSamples )) 
-        topo  = self.real_elev
-        #replica_topo = np.zeros((self.sim_interval.size, self.num_chains, topo.shape[0], topo.shape[1])) #3D
-        #combined_topo = np.zeros(( self.sim_interval.size, topo.shape[0], topo.shape[1]))
+        topo  = self.real_elev 
 
         edp_pts_time = self.real_erodep_pts.shape[1] *self.sim_interval.size
 
@@ -498,8 +512,7 @@ class results_visualisation:
         timespan_erodep = np.zeros(( (self.NumSamples - burnin) * self.num_chains, self.real_erodep_pts.shape[1] ))
         rmse_elev = np.zeros((self.num_chains, self.NumSamples))
         rmse_erodep = np.zeros((self.num_chains, self.NumSamples))
-
-        # print(self.NumSamples, size_pos, burnin, ' self.NumSamples, size_pos, burn')
+ 
 
         path = self.folder +'/posterior/pos_parameters/' 
         files = os.listdir(path)
@@ -511,9 +524,7 @@ class results_visualisation:
             #print (dat)
             # print(v, name, ' is v')
             v = v +1
-            # print(pos_param.shape, 'pos_param size') 
-
-        # print(pos_param.shape, 'pos_param size') 
+             
 
 
         posterior = pos_param.transpose(2,0,1).reshape(self.num_param,-1)  
@@ -962,6 +973,40 @@ class results_visualisation:
         plt.savefig(fname )
         plt.clf()
 
+    def plot_erodeposition(self, erodep_mean, erodep_std, groundtruth_erodep_pts, sim_interval, fname):
+        ticksize = 13
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        index = np.arange(groundtruth_erodep_pts.size) 
+        ground_erodepstd = np.zeros(groundtruth_erodep_pts.size) 
+        opacity = 0.8
+        width = 0.35       # the width of the bars
+
+        rects1 = ax.bar(index, erodep_mean, width,
+                    color='blue',
+                    yerr=erodep_std,
+                    error_kw=dict(elinewidth=2,ecolor='red'))
+
+        rects2 = ax.bar(index+width, groundtruth_erodep_pts, width, color='green', 
+                    yerr=ground_erodepstd,
+                    error_kw=dict(elinewidth=2,ecolor='red') )
+     
+
+        ax.set_ylabel('Height in meters', fontsize=ticksize)
+        ax.set_xlabel('Location ID ', fontsize=ticksize)
+        ax.set_title('Erosion/Deposition', fontsize=ticksize)
+        
+        ax.grid(alpha=0.75)
+        ax.tick_params(labelsize=ticksize)
+
+        plotlegend = ax.legend( (rects1[0], rects2[0]), ('Predicted  ', ' Ground-truth ') )
+        plt.tight_layout()
+        plt.savefig( self.folder+'/sediment_plots/pos_erodep_'+str( sim_interval) +fname+'_.pdf')
+        plt.clf()    
+
+
+
 
 # class  above this line -------------------------------------------------------------------------------------------------------
 
@@ -983,35 +1028,7 @@ def make_directory (directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts, sim_interval, fname):
-    ticksize = 15
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    index = np.arange(groundtruth_erodep_pts.size) 
-    ground_erodepstd = np.zeros(groundtruth_erodep_pts.size) 
-    opacity = 0.8
-    width = 0.35       # the width of the bars
-
-    rects1 = ax.bar(index, erodep_mean, width,
-                color='blue',
-                yerr=erodep_std,
-                error_kw=dict(elinewidth=2,ecolor='red'))
-
-    rects2 = ax.bar(index+width, groundtruth_erodep_pts, width, color='green', 
-                yerr=ground_erodepstd,
-                error_kw=dict(elinewidth=2,ecolor='red') )
- 
-
-    ax.set_ylabel('Height in meters', fontsize=ticksize)
-    ax.set_xlabel('Location ID ', fontsize=ticksize)
-    ax.set_title('Erosion/Deposition', fontsize=ticksize)
-    
-    ax.grid(alpha=0.75)
-    ax.tick_params(labelsize=ticksize)
-    plotlegend = ax.legend( (rects1[0], rects2[0]), ('Predicted  ', ' Ground-truth ') )
-    plt.savefig(fname +'/pos_erodep_'+str( sim_interval) +'_.pdf')
-    plt.clf()    
 
 
 def main():
@@ -1069,7 +1086,7 @@ def main():
     plt.savefig( fname+'/accept_list.pdf' )
     plt.clf()
 
-    print(erodep_pts.shape, ' erodep_pts.shape')
+    #print(erodep_pts.shape, ' erodep_pts.shape')
 
     pred_erodep = np.zeros(( groundtruth_erodep_pts.shape[0], groundtruth_erodep_pts.shape[1] )) # just to get the right size
 
@@ -1084,10 +1101,12 @@ def main():
         erodep_std = pos_ed.std(axis=0)  
         pred_erodep[i,:] = pos_ed.mean(axis=0)  
 
-        # print(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
-        plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
-        #np.savetxt(fname + '/posterior/predicted_erodep/com_erodep_'+str(sim_interval[i]) +'_.txt', pos_ed)
 
+        # print(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
+        res.plot_erodeposition(erodep_mean[0:200:20], erodep_std[0:200:20], groundtruth_erodep_pts[i,0:200:20], sim_interval[i], 'first') 
+        res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[i,200:400:20], sim_interval[i], 'second') 
+        res.plot_erodeposition(erodep_mean[400:600:20], erodep_std[400:600:20], groundtruth_erodep_pts[i,400:600:20], sim_interval[i], 'third') 
+         
     pred_elev = np.array([])
     rmse_sed= mean_sqerror(  pred_erodep,  groundtruth_erodep_pts)
     rmse = 0
@@ -1134,13 +1153,26 @@ def main():
     print('min error in dict',min(error_dict))    
     # print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
     variables = error_dict[min(error_dict)]
-    print ('variables', variables, variables.shape)
+    #print ('variables', variables, variables.shape)
 
     variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
-    print('variables', variables)
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
+    #print('variables', variables)
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = True)
 
-    res.full_crosssection(pred_elev_opt, groundtruth_elev) 
+    
+    for i in range(sim_interval.size):
+        print(pred_erodep_opt[sim_interval[i]], ' pred_erodep_opt[i]')
+        np.savetxt(fname+'/sediment_plots/erodep_' +str(i)+'_.txt', pred_erodep_opt[sim_interval[i]],  fmt='%1.2f' )
+
+        fnameplot = fname +  '/sediment_plots/sediment_map'+str(i) +'_.png' 
+        im = plt.imshow(pred_erodep_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+
+
+    res.full_crosssection(pred_elev_opt[0], groundtruth_elev) 
 
 
     res.vis_badlands(fname)

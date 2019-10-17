@@ -1042,23 +1042,23 @@ class ParallelTempering:
             plt.ylabel(' Height (m)', fontsize = size)
             plt.tight_layout()
               
-            plt.savefig(self.folder+'/'+str(i)+'_cross-sec.pdf')
+            plt.savefig(self.folder+'/cross_section/'+str(i)+'_cross-sec.pdf')
             plt.clf()
 
-        fnameplot = self.folder +  '/realmap_.png' 
+        '''fnameplot = self.folder +  '/cross_section/realmap_.png' 
         plt.imshow(real_elev, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
         plt.clf()
 
-        fnameplot = self.folder +  '/predmap_.png' 
+        fnameplot = self.folder +  '/cross_section/predmap_.png' 
         plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
         plt.clf()
 
-        fnameplot = self.folder +  '/diffmap_.png' 
+        fnameplot = self.folder +  '/cross_section/diffmap_.png' 
         plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
-        plt.clf()
+        plt.clf()'''
 
 
 
@@ -1246,6 +1246,8 @@ def main():
     make_directory((fname + '/recons_initialtopo')) 
 
     make_directory((fname + '/pos_plots')) 
+    make_directory((fname + '/cross_section')) 
+    make_directory((fname + '/sediment_plots')) 
     make_directory((fname + '/posterior/predicted_topo/topo'))  
 
     make_directory((fname + '/posterior/predicted_topo/sed'))  

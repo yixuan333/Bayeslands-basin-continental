@@ -81,7 +81,7 @@ def problem_setup(problem = 1):
 
         print(inittopo_expertknow, ' * **************** inittopo_expertknow ********************** ')
          
-        simtime = -1.49e04
+        simtime = -1.49e08
         resolu_factor = 1 
 
         init_elev = [] #np.loadtxt(problemfolder+ 'data/initial_elev.txt')
@@ -141,8 +141,8 @@ def problem_setup(problem = 1):
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
 
          
-        inittopo_minlimits = np.repeat( -200  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -300  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(300 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------
