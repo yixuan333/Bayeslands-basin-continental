@@ -1163,6 +1163,7 @@ def main():
     for i in range(sim_interval.size):
         print(pred_erodep_opt[sim_interval[i]], ' pred_erodep_opt[i]')
         np.savetxt(fname+'/sediment_plots/erodep_' +str(i)+'_.txt', pred_erodep_opt[sim_interval[i]],  fmt='%1.2f' )
+        np.savetxt(fname+'/sediment_plots/elev_' +str(i)+'_.txt', pred_elev_opt[sim_interval[i]],  fmt='%1.2f' )
 
         fnameplot = fname +  '/sediment_plots/sediment_map'+str(i) +'_.png' 
         im = plt.imshow(pred_erodep_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
@@ -1170,13 +1171,20 @@ def main():
         plt.savefig(fnameplot)
         plt.clf()
 
+        fnameplot = fname +  '/sediment_plots/elev_map'+str(i) +'_.png' 
+        im = plt.imshow(pred_elev_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
+
 
 
     res.full_crosssection(pred_elev_opt[0], groundtruth_elev) 
 
 
-    res.vis_badlands(fname)
-    res.visualize_sediments(pred_erodep_opt)    
+
     # for i in range(res.sim_interval.size):
     #     res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
 
@@ -1200,6 +1208,9 @@ def main():
     dir_name = fname + '/posterior'
     fname_remove = fname +'/pos_param.txt'
     print(dir_name)
+
+    res.vis_badlands(fname)
+    res.visualize_sediments(pred_erodep_opt)    
 
     '''if os.path.isdir(dir_name):
         shutil.rmtree(dir_name)
