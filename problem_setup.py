@@ -120,8 +120,12 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
 
         #--------------------------------------------------------
-        minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # make some extra space for future param (last 5)
-        maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02]
+        #minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # used for Bayeslands initopo (stage 1) 
+        #maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02]
+
+        minlimits_others = [3.e-6, 0, 0 , 0  ,  0 , 0 , 0 , 0, 22001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        maxlimits_others = [7.e-6, 1 ,  2, 0.1, 0.1, 0.1, 1, 10, 26002, 10, 0.1]
+ 
  
  
         #----------------------------------------InitTOPO

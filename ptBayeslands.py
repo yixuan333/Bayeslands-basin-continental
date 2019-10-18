@@ -84,7 +84,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class ptReplica(multiprocessing.Process):
     
-    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, init_elev, real_elev,  real_erodep_pts, real_elev_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance):
+    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, init_elev, real_elev,  real_erodep_pts, real_elev_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance, Bayes_inittopoknowledge):
 
         multiprocessing.Process.__init__(self)
         self.processID = tempr      
@@ -128,6 +128,8 @@ class ptReplica(multiprocessing.Process):
         self.use_cov = covariance
         self.cov_counter = 0
         self.repeated_proposal = False
+
+        self.Bayes_inittopoknowledge = Bayes_inittopoknowledge
 
     def plot3d_plotly(self, zData, fname):
 
@@ -207,15 +209,15 @@ class ptReplica(multiprocessing.Process):
         reconstructed_topo  = self.real_elev.copy()  # to define the size 
 
         groundtruth_topo = self.real_elev.copy()
- 
-        if method == 1: 
 
-            #inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
-            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  
+      
 
-        elif method ==2:
+        if self.Bayes_inittopoknowledge == True: 
+            inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
-            inittopo_vec = ((inittopo_vec/200) * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten()  
+        else: 
+            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo
+  
 
 
         print(inittopo_vec.shape, ' inittopo_vec.shape') 
@@ -734,7 +736,7 @@ class ptReplica(multiprocessing.Process):
 
 class ParallelTempering:
 
-    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance):
+    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance, Bayes_inittopoknowledge):
         self.swap_interval = swap_interval
         self.folder = fname
         self.maxtemp = maxtemp
@@ -777,6 +779,7 @@ class ParallelTempering:
         self.wid_grid = wid_grid
         self.inittopo_expertknow =  inittopo_expertknow 
         self.inittopo_estimated = inittopo_estimated
+        self.Bayes_inittopoknowledge = Bayes_inittopoknowledge
 
         self.covariance = covariance
     def default_beta_ladder(self, ndim, ntemps, Tmax): #https://github.com/konqr/ptemcee/blob/master/ptemcee/sampler.py
@@ -883,7 +886,7 @@ class ParallelTempering:
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance))
+            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
                                      #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
         #print (parameter_queue_2, ", param1:",parameter_queue_1)
@@ -1231,6 +1234,18 @@ def main():
     #print(maxlimits_vec, ' maxlimits ')
     #print(vec_parameters)
 
+
+    Bayes_inittopoknowledge = True # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
+
+    if Bayes_inittopoknowledge == True:  
+        mean_pos = np.loadtxt('Examples/australia/inittopoexp1_100samples'+'/mean_pos.txt')
+        x = np.reshape(mean_pos[15:], (20, -1) )
+        #print(x, ' x')
+
+        inittopo_expertknow = inittopo_expertknow  + x  # all values after environmental params are init topo estimates of expert knowledge uncertainity 
+        #print(inittopo_expertknow, ' inittopo_expertknow') 
+
+
     fname = ""
     run_nb = 0
     while os.path.exists( problemfolder+ 'results_%s' % (run_nb)):
@@ -1284,10 +1299,13 @@ def main():
     print("Simulation time interval", sim_interval)
 
 
+
+
+
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
     #-------------------------------------------------------------------------------------
-    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  , init_elev, groundtruth_elev,  groundtruth_erodep_pts , groundtruth_elev_pts,  erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance)
+    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  , init_elev, groundtruth_elev,  groundtruth_erodep_pts , groundtruth_elev_pts,  erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance, Bayes_inittopoknowledge)
     
     #-------------------------------------------------------------------------------------
     # intialize the MCMC chains

@@ -163,7 +163,11 @@ class results_visualisation:
         rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time  
         geoparam  = rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall) 
  
-        mean_pos = posterior.mean(axis=1) 
+        mean_pos = posterior.mean(axis=1)
+        std_pos = posterior.std(axis=1)
+
+        np.savetxt(self.folder+'/mean_pos.txt', mean_pos) 
+        np.savetxt(self.folder+'/std_pos.txt', std_pos) 
 
         percentile_95th = np.percentile(posterior, 95, axis=1) 
 
