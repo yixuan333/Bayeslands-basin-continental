@@ -259,19 +259,19 @@ class results_visualisation:
             plt.clf()
 
         fnameplot = self.folder +  '/cross_section/realmap_postcompare.png' 
-        im = plt.imshow(real_elev, cmap='hot', interpolation='nearest')
+        # im = plt.imshow(real_elev, cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
 
         fnameplot = self.folder +  '/cross_section/predmap_postcompare.png' 
-        im = plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
+        # im = plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
 
         fnameplot = self.folder +  '/cross_section/diffmap_postcompare.png' 
-        im = plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
+        # im = plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
@@ -707,7 +707,7 @@ class results_visualisation:
 
     def heatmap_sed(self, sed_data, title): 
         size = 15
-        plt.imshow(sed_data, cmap='hot', interpolation='nearest')
+        # plt.imshow(sed_data, cmap='hot', interpolation='nearest')
         plt.colorbar()
         plt.title("Sediment heatmap ", fontsize = size)
         plt.xlabel(' Northings  ', fontsize = size)
@@ -1170,13 +1170,13 @@ def main():
         np.savetxt(fname+'/sediment_plots/elev_' +str(i)+'_.txt', pred_elev_opt[sim_interval[i]],  fmt='%1.2f' )
 
         fnameplot = fname +  '/sediment_plots/sediment_map'+str(i) +'_.png' 
-        im = plt.imshow(pred_erodep_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
+        # im = plt.imshow(pred_erodep_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
 
         fnameplot = fname +  '/sediment_plots/elev_map'+str(i) +'_.png' 
-        im = plt.imshow(pred_elev_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
+        # im = plt.imshow(pred_elev_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
