@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Directives sent to pbs, the job scheduler on Artemis
+#PBS -P BGH 
+#PBS -N mybadlandsrun 
+#PBS -l select=1:ncpus=10:mem=60gb
+#PBS -l walltime=200:00:00
+#PBS -q alloc-dm
+
+
+cd $PBS_O_WORKDIR
+cd /project/RDS-FSC-BGH-RW/danial/Bayeslands-basin-continental
+
+module load singularity
+module load openmpi-gcc/1.10.3 gcc/4.9.0 glib
+
+# singularity exec pybadcont.img python ptBayeslands.py -p 1 -s 100 -r 10 -t 2 -swap 2 -b 0.25 -pt 0.5  -epsilon 0.5 -rain_intervals 4
+
+singularity exec pybadcont.img python ptBayeslands.py -p 2 -s 1000 -r 10 -t 2 -swap 2 -b 0.25 -pt 0.5 -epsilon 0.5 -rain_intervals 4
+singularity exec pybadcont.img python visualise.py -p 2 -s 1000 -r 10 -t 2 -swap 2 -b 0.25 -pt 0.5 -epsilon 0.5 -rain_intervals 4

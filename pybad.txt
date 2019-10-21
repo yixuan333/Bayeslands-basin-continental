@@ -1,0 +1,54 @@
+#!/bin/bash
+#A singularity script to run the repo
+#https://github.com/intelligentEarth/Bayeslands-basin-continental
+#Developed in the docker cotainer
+#https://hub.docker.com/r/nbutter/pybad
+
+#Build with:
+#sudo singularity build --sandbox pybad.img pybad.txt
+#Then enter the container interactively to complete the last commands needed (listed after the build script below).
+#Then re-build the container as an normal singularity container
+#sudo singularity build pybadcont.img pybad.img/
+
+#Assuming you are in the Bayelands repo dir, run with something like this... 
+#singularity exec ../pybadcont.img python ptBayeslands.py -p 1 -s 100 -r 10 -t 2 -swap 2 -b 0.25 -pt 0.5  -epsilon 0.5 -rain_intervals 4
+
+Bootstrap: docker
+From: badlandsmodel/pybadlands-dependencies 
+
+#These directories are mounted on Artemis/NCI, so we add them here
+%post
+mkdir /short /project /scratch /projects /workspace
+
+cd /workspace
+
+apt-get update -y
+
+apt-get install make libtiff4-dev libglu1-mesa-dev freeglut3-dev wget -y
+
+wget https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.3.tar.gz && \
+		tar -xzvf ./openmpi-1.10.3.tar.gz && \
+			cd openmpi-1.10.3 && \
+				./configure --prefix=/usr/local/mpi && \
+					make -j all && \
+						make install
+
+
+cd /workspace
+git clone https://github.com/intelligentEarth/Bayeslands-basin-continental.git
+
+%environment
+export PATH=/usr/local/mpi/bin:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/mpi/lib:/workspace/Bayeslands-basin-continental/pyBadlands/libUtils
+export PYTHON_PATH=$PYTHON_PATH:/workspace/Bayeslands-basin-continental/pyBadlands/libUtils
+
+%runscript
+exec /bin/bash
+
+
+#Lines to execute in the intermediate build
+#pip install seaborn==0.8.1 tensorflow==1.9.0 lavavu==1.3
+#cd /workspace/Bayeslands-basin-continental/pyBadlands/libUtils
+#make all
+#cd /workspace
+#pip install -e Bayeslands-basin-continental/
