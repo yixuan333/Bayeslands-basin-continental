@@ -155,7 +155,7 @@ class results_visualisation:
         np.savetxt(self.folder+'/optimal_percentile_para.txt', np.array([optimal_para, para_5thperc, para_95thperc]) )
 
         #for s in range(self.num_param): 
-        for s in range(15): # change this if you want to see all pos plots
+        for s in range(45): # change this if you want to see all pos plots
             self.plot_figure(posterior[s,:], 'pos_distri_'+str(s) ) 
 
     
@@ -163,7 +163,11 @@ class results_visualisation:
         rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time  
         geoparam  = rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall) 
  
-        mean_pos = posterior.mean(axis=1) 
+        mean_pos = posterior.mean(axis=1)
+        std_pos = posterior.std(axis=1)
+
+        np.savetxt(self.folder+'/mean_pos.txt', mean_pos) 
+        np.savetxt(self.folder+'/std_pos.txt', std_pos) 
 
         percentile_95th = np.percentile(posterior, 95, axis=1) 
 
@@ -185,12 +189,14 @@ class results_visualisation:
 
 
         #   cut the slice in the middle to show cross section of init topo with uncertainity
-            synthetic_initopo = self.get_synthetic_initopo()
+            '''synthetic_initopo = self.get_synthetic_initopo()
+
+            '''
 
 
-            init_topo_mean = init_topo_mean[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
-            init_topo_95th = init_topo_95th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
-            init_topo_5th = init_topo_5th[0:synthetic_initopo.shape[0], 0:synthetic_initopo.shape[1]]  # just to ensure that the size is exact 
+            init_topo_mean = init_topo_mean[0:self.real_elev.shape[0], 0:self.real_elev.shape[1]]  # just to ensure that the size is exact 
+            init_topo_95th = init_topo_95th[0:self.real_elev.shape[0], 0:self.real_elev.shape[1]]  # just to ensure that the size is exact 
+            init_topo_5th = init_topo_5th[0:self.real_elev.shape[0], 0:self.real_elev.shape[1]]  # just to ensure that the size is exact  
 
             xmid = int(init_topo_mean.shape[0]/2) 
             inittopo_real =  init_topo_mean[xmid, :]  # ground-truth init topo mid (synthetic) 
@@ -198,19 +204,81 @@ class results_visualisation:
 
             lower_mid = init_topo_5th[xmid, :]
             higher_mid = init_topo_95th[xmid, :]
-            mean_mid = init_topo_mean[xmid, :]
-            x = np.linspace(0, synthetic_initopo.shape[1] * self.resolu_factor, num= synthetic_initopo.shape[1])
-            rmse_full_init = np.sqrt(np.sum(np.square(init_topo_mean  -  synthetic_initopo))  / (init_topo_mean.shape[0] * init_topo_mean.shape[1]))   # will not be needed in Australia problem
+            mean_mid = init_topo_mean[xmid, :] 
+            x = np.linspace(0, self.real_elev.shape[1] * self.resolu_factor, num= self.real_elev.shape[1])
             rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
-            rmse_slice_init = 0
+             
+            #print(self.real_elev, ' real_elev')
+
+            
 
         else:
-
-            rmse_full_init = 0
+ 
             rmse_slice_init =  0
 
-        #return (pos_param,likelihood_rep, accept_list,   combined_erodep,  pred_topofinal, swap_perc, accept,  rmse_elev, rmse_erodep, rmse_slice_init, rmse_full_init)
-        return  posterior, likelihood_vec, accept_list,   xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init, rmse_full_init
+        return  posterior, likelihood_vec, accept_list,   xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init 
+
+
+
+
+    def full_crosssection(self,  simulated_topo, real_elev):
+
+        ymid = int( real_elev.shape[1]/2)  
+
+        x = np.linspace(0, real_elev.shape[0], num=real_elev.shape[0])
+
+        
+
+        x_m = np.arange(0,real_elev.shape[0], 10)
+
+ 
+
+        for i in x_m:
+            xmid = i 
+
+            real = real_elev[0:real_elev.shape[0], i]  
+            pred = simulated_topo[0:real_elev.shape[0], i]
+ 
+
+            size = 15
+
+            plt.tick_params(labelsize=size)
+            params = {'legend.fontsize': size, 'legend.handlelength': 2}
+            plt.rcParams.update(params)
+            plt.plot(x, real, label='Ground Truth') 
+            plt.plot(x, pred, label='Badlands Pred.')
+            #plt.plot(x, init, label = 'Initial Topo')
+            plt.grid(alpha=0.75)
+            plt.legend(loc='best')  
+            plt.title("Topography cross section   ", fontsize = size)
+            plt.xlabel(' Distance (x 50 km)  ', fontsize = size)
+            plt.ylabel(' Height (m)', fontsize = size)
+            plt.tight_layout()
+              
+            plt.savefig(self.folder+'/cross_section/'+str(i)+'_cross-sec_postcompare.pdf')
+            plt.clf()
+
+        fnameplot = self.folder +  '/cross_section/realmap_postcompare.png' 
+        im = plt.imshow(real_elev, cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        fnameplot = self.folder +  '/cross_section/predmap_postcompare.png' 
+        im = plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        fnameplot = self.folder +  '/cross_section/diffmap_postcompare.png' 
+        im = plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+ 
+
+
 
     def plot3d_plotly(self, zData, fname): # same method from previous class - ptReplica
         zmin =  zData.min() 
@@ -249,18 +317,7 @@ class results_visualisation:
         np.savetxt(self.folder +  '/recons_initialtopo/'+fname+'_.txt', zData,  fmt='%1.2f' )
 
     def process_inittopo(self, inittopo_vec):
-
-        '''length = self.real_elev.shape[0]
-        width = self.real_elev.shape[1]
  
-        len_grid = self.len_grid
-        wid_grid = self.wid_grid
-
-        
-        sub_gridlen = int(length/len_grid)
-        sub_gridwidth = int(width/wid_grid) 
-        new_length =len_grid * sub_gridlen 
-        new_width =wid_grid *  sub_gridwidth'''
 
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
@@ -277,15 +334,14 @@ class results_visualisation:
  
         if method == 1: 
 
-            inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
+            #inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
+            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  
 
         elif method ==2:
 
             inittopo_vec = ((inittopo_vec/200) * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten()  
 
-
-        print(inittopo_vec.shape, ' inittopo_vec.shape') 
-
+ 
 
 
         scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
@@ -340,56 +396,48 @@ class results_visualisation:
 
 
         return groundtruth_topo
+
+  
  
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
 
-        # ymid = int(self.real_elev.shape[1]/2) 
-        # xmid = int(self.real_elev.shape[0]/2)
+        ymid = int(self.real_elev.shape[1]/2) 
+        xmid = int(self.real_elev.shape[0]/2)
 
-        x_m = np.arange(20,80, 5)
-        y_m = np.arange(20,80, 5)
-
-        print ('x_m', x_m)
-        # print(' xmid ', xmid, '  ymid ', ymid) 
+        #x_m = np.arange(20,80, 10)
+        #y_m = np.arange(20,80, 5)
+  
         
         # list_xslice = list_xslice[20:120,:]
         # list_yslice = list_yslice[20:100,:]
         self.real_elev_ = self.real_elev
         # self.real_elev_ = self.real_elev[20:100, 20:120]
         # self.init_elev = self.init_elev[20:100, 20:120]
-        for i in x_m:
-            xmid = i
-            ymid = i
+        #for i in x_m:
+            #xmid = i
+            #ymid = i
 
-            x_ymid_real = self.real_elev_[xmid, :] 
-            y_xmid_real = self.real_elev_[:, ymid ]
-            #x_ymid_init = self.init_elev[xmid, :]
-            #y_xmid_init = self.init_elev[:, ymid]
-            x_ymid_mean = list_xslice.mean(axis=1)
-            y_xmid_mean = list_yslice.mean(axis=1)
-            # print( 'ymid',ymid)
-            # print( 'xmid', xmid)
-            # print ('list_xslice', list_xslice.shape)
-            # print ('list_yslice', list_yslice.shape)
-            # print( 'real shape', self.real_elev.shape)
-            # print( x_ymid_real.shape , ' x_ymid_real shape')
-            # print( x_ymid_mean.shape , ' x_ymid_mean shape')
-            # print( y_xmid_real.shape , ' y_xmid_real shape')
-            # print( y_xmid_mean.shape , ' y_xmid_mean shape')
-            x_ymid_5th = np.percentile(list_xslice, 5, axis=1)
-            x_ymid_95th= np.percentile(list_xslice, 95, axis=1)
+        x_ymid_real = self.real_elev_[xmid, :] 
+        y_xmid_real = self.real_elev_[:, ymid ]
+        #x_ymid_init = self.init_elev[xmid, :]
+        #y_xmid_init = self.init_elev[:, ymid]
+        x_ymid_mean = list_xslice.mean(axis=1)
+        y_xmid_mean = list_yslice.mean(axis=1)
+    
+        x_ymid_5th = np.percentile(list_xslice, 5, axis=1)
+        x_ymid_95th= np.percentile(list_xslice, 95, axis=1)
 
-            y_xmid_5th = np.percentile(list_yslice, 5, axis=1)
-            y_xmid_95th= np.percentile(list_yslice, 95, axis=1)
+        y_xmid_5th = np.percentile(list_yslice, 5, axis=1)
+        y_xmid_95th= np.percentile(list_yslice, 95, axis=1)
 
 
-            x = np.linspace(0, x_ymid_mean.size * self.resolu_factor, num=x_ymid_mean.size) 
-            x_ = np.linspace(0, y_xmid_mean.size * self.resolu_factor, num=y_xmid_mean.size)
+        x = np.linspace(0, x_ymid_mean.size * self.resolu_factor, num=x_ymid_mean.size) 
+        x_ = np.linspace(0, y_xmid_mean.size * self.resolu_factor, num=y_xmid_mean.size)
 
-            #ax.set_xlim(-width,len(ind)+width)
+        #ax.set_xlim(-width,len(ind)+width)
 
-            self.cross_section(x, x_ymid_mean, x_ymid_real,   x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
-            self.cross_section(x_, y_xmid_mean, y_xmid_real,   y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
+        self.cross_section(x, x_ymid_mean, x_ymid_real,   x_ymid_5th, x_ymid_95th, 'x_ymid_cross_%s_%s' %(xmid,ymid))
+        self.cross_section(x_, y_xmid_mean, y_xmid_real,   y_xmid_5th, y_xmid_95th, 'y_xmid_cross_%s_%s'%(xmid,ymid))
 
     def cross_section(self, x, pred, real,   lower, higher, fname):
 
@@ -459,9 +507,7 @@ class results_visualisation:
         likehood_rep = np.zeros((self.num_chains, self.NumSamples)) # index 1 for likelihood posterior and index 0 for Likelihood proposals. Note all likilihood proposals plotted only
         #accept_percent = np.zeros((self.num_chains, 1))
         accept_list = np.zeros((self.num_chains, self.NumSamples )) 
-        topo  = self.real_elev
-        #replica_topo = np.zeros((self.sim_interval.size, self.num_chains, topo.shape[0], topo.shape[1])) #3D
-        #combined_topo = np.zeros(( self.sim_interval.size, topo.shape[0], topo.shape[1]))
+        topo  = self.real_elev 
 
         edp_pts_time = self.real_erodep_pts.shape[1] *self.sim_interval.size
 
@@ -470,8 +516,7 @@ class results_visualisation:
         timespan_erodep = np.zeros(( (self.NumSamples - burnin) * self.num_chains, self.real_erodep_pts.shape[1] ))
         rmse_elev = np.zeros((self.num_chains, self.NumSamples))
         rmse_erodep = np.zeros((self.num_chains, self.NumSamples))
-
-        # print(self.NumSamples, size_pos, burnin, ' self.NumSamples, size_pos, burn')
+ 
 
         path = self.folder +'/posterior/pos_parameters/' 
         files = os.listdir(path)
@@ -483,9 +528,7 @@ class results_visualisation:
             #print (dat)
             # print(v, name, ' is v')
             v = v +1
-            # print(pos_param.shape, 'pos_param size') 
-
-        # print(pos_param.shape, 'pos_param size') 
+             
 
 
         posterior = pos_param.transpose(2,0,1).reshape(self.num_param,-1)  
@@ -934,6 +977,40 @@ class results_visualisation:
         plt.savefig(fname )
         plt.clf()
 
+    def plot_erodeposition(self, erodep_mean, erodep_std, groundtruth_erodep_pts, sim_interval, fname):
+        ticksize = 13
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        index = np.arange(groundtruth_erodep_pts.size) 
+        ground_erodepstd = np.zeros(groundtruth_erodep_pts.size) 
+        opacity = 0.8
+        width = 0.35       # the width of the bars
+
+        rects1 = ax.bar(index, erodep_mean, width,
+                    color='blue',
+                    yerr=erodep_std,
+                    error_kw=dict(elinewidth=2,ecolor='red'))
+
+        rects2 = ax.bar(index+width, groundtruth_erodep_pts, width, color='green', 
+                    yerr=ground_erodepstd,
+                    error_kw=dict(elinewidth=2,ecolor='red') )
+     
+
+        ax.set_ylabel('Height in meters', fontsize=ticksize)
+        ax.set_xlabel('Location ID ', fontsize=ticksize)
+        ax.set_title('Erosion/Deposition', fontsize=ticksize)
+        
+        ax.grid(alpha=0.75)
+        ax.tick_params(labelsize=ticksize)
+
+        plotlegend = ax.legend( (rects1[0], rects2[0]), ('Predicted  ', ' Ground-truth ') )
+        plt.tight_layout()
+        plt.savefig( self.folder+'/sediment_plots/pos_erodep_'+str( sim_interval) +fname+'_.pdf')
+        plt.clf()    
+
+
+
 
 # class  above this line -------------------------------------------------------------------------------------------------------
 
@@ -955,35 +1032,7 @@ def make_directory (directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-def plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts, sim_interval, fname):
-    ticksize = 15
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    index = np.arange(groundtruth_erodep_pts.size) 
-    ground_erodepstd = np.zeros(groundtruth_erodep_pts.size) 
-    opacity = 0.8
-    width = 0.35       # the width of the bars
-
-    rects1 = ax.bar(index, erodep_mean, width,
-                color='blue',
-                yerr=erodep_std,
-                error_kw=dict(elinewidth=2,ecolor='red'))
-
-    rects2 = ax.bar(index+width, groundtruth_erodep_pts, width, color='green', 
-                yerr=ground_erodepstd,
-                error_kw=dict(elinewidth=2,ecolor='red') )
- 
-
-    ax.set_ylabel('Height in meters', fontsize=ticksize)
-    ax.set_xlabel('Location ID ', fontsize=ticksize)
-    ax.set_title('Erosion/Deposition', fontsize=ticksize)
-    
-    ax.grid(alpha=0.75)
-    ax.tick_params(labelsize=ticksize)
-    plotlegend = ax.legend( (rects1[0], rects2[0]), ('Predicted  ', ' Ground-truth ') )
-    plt.savefig(fname +'/pos_erodep_'+str( sim_interval) +'_.pdf')
-    plt.clf()    
 
 
 def main():
@@ -1018,7 +1067,7 @@ def main():
     print("Simulation time interval", sim_interval)
 
     res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
-    pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init, rmse_full_init   = res.results_current()
+    pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init  = res.results_current()
 
     print('sucessfully sampled') 
     timer_end = time.time() 
@@ -1041,7 +1090,7 @@ def main():
     plt.savefig( fname+'/accept_list.pdf' )
     plt.clf()
 
-    print(erodep_pts.shape, ' erodep_pts.shape')
+    #print(erodep_pts.shape, ' erodep_pts.shape')
 
     pred_erodep = np.zeros(( groundtruth_erodep_pts.shape[0], groundtruth_erodep_pts.shape[1] )) # just to get the right size
 
@@ -1056,10 +1105,12 @@ def main():
         erodep_std = pos_ed.std(axis=0)  
         pred_erodep[i,:] = pos_ed.mean(axis=0)  
 
-        # print(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
-        plot_erodeposition(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
-        #np.savetxt(fname + '/posterior/predicted_erodep/com_erodep_'+str(sim_interval[i]) +'_.txt', pos_ed)
 
+        # print(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
+        res.plot_erodeposition(erodep_mean[0:200:20], erodep_std[0:200:20], groundtruth_erodep_pts[i,0:200:20], sim_interval[i], 'first') 
+        res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[i,200:400:20], sim_interval[i], 'second') 
+        res.plot_erodeposition(erodep_mean[400:600:20], erodep_std[400:600:20], groundtruth_erodep_pts[i,400:600:20], sim_interval[i], 'third') 
+         
     pred_elev = np.array([])
     rmse_sed= mean_sqerror(  pred_erodep,  groundtruth_erodep_pts)
     rmse = 0
@@ -1106,14 +1157,38 @@ def main():
     print('min error in dict',min(error_dict))    
     # print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
     variables = error_dict[min(error_dict)]
-    print ('variables', variables, variables.shape)
+    #print ('variables', variables, variables.shape)
 
     variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
-    print('variables', variables)
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
+    #print('variables', variables)
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = True)
 
-    res.vis_badlands(fname)
-    res.visualize_sediments(pred_erodep_opt)    
+    
+    for i in range(sim_interval.size):
+        print(pred_erodep_opt[sim_interval[i]], ' pred_erodep_opt[i]')
+        np.savetxt(fname+'/sediment_plots/erodep_' +str(i)+'_.txt', pred_erodep_opt[sim_interval[i]],  fmt='%1.2f' )
+        np.savetxt(fname+'/sediment_plots/elev_' +str(i)+'_.txt', pred_elev_opt[sim_interval[i]],  fmt='%1.2f' )
+
+        fnameplot = fname +  '/sediment_plots/sediment_map'+str(i) +'_.png' 
+        im = plt.imshow(pred_erodep_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        fnameplot = fname +  '/sediment_plots/elev_map'+str(i) +'_.png' 
+        im = plt.imshow(pred_elev_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
+        plt.colorbar(im) 
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
+
+
+
+    res.full_crosssection(pred_elev_opt[0], groundtruth_elev) 
+
+
+
     # for i in range(res.sim_interval.size):
     #     res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
 
@@ -1124,7 +1199,7 @@ def main():
 
     allres =  np.asarray([ problem, num_chains, maxtemp, samples,swap_interval,  rmse_el, 
                         rmse_er, rmse_el_std, rmse_er_std, rmse_el_min, 
-                        rmse_er_min, rmse, rmse_sed, swap_perc, accept_per,  time_total, rmse_slice_init, rmse_full_init, epsilon]) 
+                        rmse_er_min, rmse, rmse_sed, swap_perc, accept_per,  time_total, rmse_slice_init , epsilon]) 
     print(allres, '  result')
         
     np.savetxt(resultingfile_db, allres , fmt='%1.4f',  newline=' ' )  
@@ -1137,6 +1212,9 @@ def main():
     dir_name = fname + '/posterior'
     fname_remove = fname +'/pos_param.txt'
     print(dir_name)
+
+    res.vis_badlands(fname)
+    res.visualize_sediments(pred_erodep_opt)    
 
     '''if os.path.isdir(dir_name):
         shutil.rmtree(dir_name)
