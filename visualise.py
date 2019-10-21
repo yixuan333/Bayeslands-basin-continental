@@ -155,7 +155,7 @@ class results_visualisation:
         np.savetxt(self.folder+'/optimal_percentile_para.txt', np.array([optimal_para, para_5thperc, para_95thperc]) )
 
         #for s in range(self.num_param): 
-        for s in range(15): # change this if you want to see all pos plots
+        for s in range(45): # change this if you want to see all pos plots
             self.plot_figure(posterior[s,:], 'pos_distri_'+str(s) ) 
 
     
