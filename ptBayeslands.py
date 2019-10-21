@@ -156,12 +156,12 @@ class ptReplica(multiprocessing.Process):
 
         print(fnameplot)
 
-        plt.imshow(zData, cmap='hot', interpolation='nearest')
+        # plt.imshow(zData, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
         plt.clf()
 
         fnameplot = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'_.png' 
-        plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
+        # plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
         plt.clf()
 
