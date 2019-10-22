@@ -81,7 +81,7 @@ def problem_setup(problem = 1):
 
         print(inittopo_expertknow, ' * **************** inittopo_expertknow ********************** ')
          
-        simtime = -1.49e08
+        simtime = -1.49e04
         resolu_factor = 1 
 
         init_elev = [] #np.loadtxt(problemfolder+ 'data/initial_elev.txt')
@@ -110,8 +110,8 @@ def problem_setup(problem = 1):
         real_cmarine = 0.005 # Marine diffusion coefficient [m2/a] -->
         real_caerial = 0.001 #aerial diffusion
 
-        rain_min = 0.8
-        rain_max = 1.3 
+        rain_min = 0 
+        rain_max = 3
 
         # assume 4 regions and 4 time scales
         rain_regiongrid = 1  # how many regions in grid format 
@@ -123,8 +123,14 @@ def problem_setup(problem = 1):
         #minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # used for Bayeslands initopo (stage 1) 
         #maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02]
 
-        minlimits_others = [3.e-6, 0, 0 , 0  ,  0 , 0 , 0 , 0, 22001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
-        maxlimits_others = [7.e-6, 1 ,  2, 0.1, 0.1, 0.1, 1, 10, 26002, 10, 0.1]
+        #minlimits_others = [3.e-6, 0, 0 , 0  ,  0 , 0 , 0 , 0, 22001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        #maxlimits_others = [7.e-6, 1 ,  2, 0.1, 0.1, 0.1, 1, 10, 26002, 10, 0.1]
+
+        minlimits_others = [1.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 10001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        maxlimits_others = [7.e-7, 1 ,  2, 0.2, 0.2, 0.2, 1, 10, 26002, 10, 0.2]
+ 
+ 
+ 
  
  
  

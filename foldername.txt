@@ -1,1 +1,1 @@
-Examples/australia/stage2exp1_1000samples
+Examples/australia/results_18
