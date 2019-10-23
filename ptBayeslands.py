@@ -201,14 +201,17 @@ class ptReplica(multiprocessing.Process):
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
         wid_grid = self.wid_grid
-        sub_gridlen = 20 #int(length/len_grid)  # 25
-        sub_gridwidth = 20 # int(width/wid_grid) # 25
+        sub_gridlen =  20 #int(length/len_grid)  # 25
+        sub_gridwidth =  20 #int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
         reconstructed_topo  = self.real_elev.copy()  # to define the size 
 
         groundtruth_topo = self.real_elev.copy()
+
+
+        print(self.inittopo_expertknow.shape, ' self.inittopo_expertknow')
 
       
 
@@ -266,9 +269,9 @@ class ptReplica(multiprocessing.Process):
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
                     groundtruth_topo[m][n]   = inside[m][n] 
-        #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
+        #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')  
  
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(0.5, 0.5)) # change sigma to higher values if needed 
+        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(1, 1)) # change sigma to higher values if needed 
 
 
         self.plot3d_plotly(groundtruth_topo, 'smooth_')
@@ -369,7 +372,7 @@ class ptReplica(multiprocessing.Process):
             model.input.diffprop = input_vector[rain_regiontime+10]
 
         #Check if it is the mountain problem
-        if problem==10: # needs to be updated
+        '''if problem==10: # needs to be updated
             #Round the input vector 
             k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
 
@@ -382,7 +385,7 @@ class ptReplica(multiprocessing.Process):
             newtect.to_csv(newFile,index=False,header=False)
 
             #Update the model uplift tectonic values
-            model.input.tectFile[0]=newFile
+            model.input.tectFile[0]=newFile'''
 
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()

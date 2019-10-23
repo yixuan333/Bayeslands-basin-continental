@@ -339,7 +339,7 @@ class results_visualisation:
             inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
         else: 
-            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo
+            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec/100  # for Bayeslands inittopo
   
 
 

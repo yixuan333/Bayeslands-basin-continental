@@ -25,12 +25,15 @@ def problem_setup(problem = 1):
         groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
         groundtruth_elev_pts = np.loadtxt(problemfolder + 'data/final_elev_pts.txt')
         res_summaryfile = '/results.txt'
-        inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruthfine.txt') # no expert knowledge as simulated init topo
+        inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruthfine.txt') #  expert knowledge  20 x 20
+        #inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruth.txt') #  expert knowledge 10 x 10
+ 
         inittopo_estimated = []
 
+        inittopo_expertknow = inittopo_expertknow.T
+
         
-        len_grid = 1  # ignore - this is in case if init topo is inferenced
-        wid_grid = 1   # ignore
+         
         simtime = 1000000
         resolu_factor = 1
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
@@ -69,12 +72,16 @@ def problem_setup(problem = 1):
         inittopo_gridwidth = 20
 
 
+        len_grid = int(groundtruth_elev.shape[0]/inittopo_gridlen)  # take care of left over
+        wid_grid = int(groundtruth_elev.shape[1]/inittopo_gridwidth)   # take care of left over
+
+
 
 
 
          
-        inittopo_minlimits = np.repeat( -300  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(300 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -200  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------
