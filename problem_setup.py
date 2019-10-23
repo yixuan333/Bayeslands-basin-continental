@@ -20,12 +20,12 @@ def problem_setup(problem = 1):
         datapath = problemfolder + 'data/final_elev.txt'
         
         groundtruth_elev = np.loadtxt(datapath)
-        init_elev = np.loadtxt(problemfolder+ 'data/initial_elev.txt')
+        init_elev = np.loadtxt(problemfolder+ 'data/pred_mean_0.0_.txt')
         groundtruth_erodep = np.loadtxt(problemfolder + 'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
         groundtruth_elev_pts = np.loadtxt(problemfolder + 'data/final_elev_pts.txt')
         res_summaryfile = '/results.txt'
-        inittopo_expertknow = [] # no expert knowledge as simulated init topo
+        inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruthfine.txt') # no expert knowledge as simulated init topo
         inittopo_estimated = []
 
         
@@ -58,9 +58,46 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale)
         minlimits_others = [3.e-6, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
         maxlimits_others = [7.e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
-        minlimits_vec = np.append(rain_minlimits,minlimits_others)
-        maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
-        print(maxlimits_vec, ' maxlimits ')
+        #minlimits_vec = np.append(rain_minlimits,minlimits_others)
+        #maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
+        #print(maxlimits_vec, ' maxlimits ')
+
+
+        epsilon = 0.5 
+
+        inittopo_gridlen = 20  # should be of same format as @   inittopo_expertknow
+        inittopo_gridwidth = 20
+
+
+
+
+
+         
+        inittopo_minlimits = np.repeat( -300  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(300 , inittopo_gridlen*inittopo_gridwidth)
+ 
+
+        #--------------------------------------------------------
+
+
+        minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
+        maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
+
+
+
+        temp_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
+        minlimits_vec = np.append(temp_vec, inittopo_minlimits)
+
+        temp_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
+        maxlimits_vec = np.append(temp_vec, inittopo_maxlimits)
+
+        vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
+        true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
+        stepsize_ratio  = 0.1 #   you can have different ratio values for different parameters depending on the problem. Its safe to use one value for now
+
+        stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
+        num_param = vec_parameters.size
+        print(vec_parameters, 'vec_parameters')
 
         vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
         true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
@@ -81,7 +118,7 @@ def problem_setup(problem = 1):
 
         print(inittopo_expertknow, ' * **************** inittopo_expertknow ********************** ')
          
-        simtime = -1.49e04
+        simtime = -1.49e08
         resolu_factor = 1 
 
         init_elev = [] #np.loadtxt(problemfolder+ 'data/initial_elev.txt')

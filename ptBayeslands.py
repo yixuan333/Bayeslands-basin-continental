@@ -114,7 +114,7 @@ class ptReplica(multiprocessing.Process):
         self.runninghisto = True  
         self.burn_in = burn_in
         self.sim_interval = sim_interval
-        self.sedscalingfactor = 50 # this is to ensure that the sediment likelihood is given more emphasis as it considers fewer points (dozens of points) when compared to elev liklihood (thousands of points)
+        self.sedscalingfactor = 1 # this is to ensure that the sediment likelihood is given more emphasis as it considers fewer points (dozens of points) when compared to elev liklihood (thousands of points)
         self.adapttemp =  self.temperature
         self.rain_region = rain_region 
         self.rain_time = rain_time 
@@ -493,14 +493,16 @@ class ptReplica(multiprocessing.Process):
         tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]))/ self.real_elev_pts.shape[1]
 
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]) / tau_elev )
-         
+        #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
+        
+
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
                 
 
         likelihood = np.sum(likelihood_elev) +  (likelihood_erodep  )
 
 
-        #likelihood = np.sum(likelihood_elev)
+        #likelihood = np.sum(likelihood_elev_)
 
         print(likelihood_elev, likelihood_erodep, likelihood, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
@@ -1270,7 +1272,7 @@ def main():
     #print(vec_parameters)
 
 
-    Bayes_inittopoknowledge = True # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
+    Bayes_inittopoknowledge = False # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
 
     if Bayes_inittopoknowledge == True:  
         mean_pos = np.loadtxt('Examples/australia/inittopoexp1_100samples'+'/mean_pos.txt')
