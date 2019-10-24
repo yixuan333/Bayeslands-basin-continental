@@ -227,7 +227,7 @@ class ptReplica(multiprocessing.Process):
 
 
 
-        scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
+        v_ = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
   
 
       
