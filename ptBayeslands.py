@@ -201,7 +201,7 @@ class ptReplica(multiprocessing.Process):
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
         wid_grid = self.wid_grid
-        print('\n\nlength, width, len_grid, wid_grid ',length, width, len_grid, wid_grid)
+        #print('\n\nlength, width, len_grid, wid_grid ',length, width, len_grid, wid_grid)
         sub_gridlen =  20 #int(length/len_grid)  # 25
         sub_gridwidth =  20 #int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
@@ -211,8 +211,7 @@ class ptReplica(multiprocessing.Process):
 
         groundtruth_topo = self.real_elev.copy()
 
-
-        print(self.inittopo_expertknow.shape, ' self.inittopo_expertknow')
+ 
 
       
 
@@ -229,11 +228,7 @@ class ptReplica(multiprocessing.Process):
 
 
         scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
-
-
-        v_ =   scale_factor  
-        print ('\n\n\n (v_) ', v_)
-        #v_ =  np.multiply(self.inittopo_expertknow.copy(), scale_factor.copy())   #+ x_
+  
 
       
         for l in range(0,sub_gridlen-1):
@@ -267,14 +262,13 @@ class ptReplica(multiprocessing.Process):
 
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
-                groundtruth_topo[m][n]   = inside[m][n] 
-        #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
+                groundtruth_topo[m][n]   = inside[m][n]  
  
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(0.5,0.5)) # change sigma to higher values if needed 
 
 
-        self.plot3d_plotly(groundtruth_topo, 'smooth_')
-        self.plot3d_plotly(self.real_elev, 'final_')
+        self.plot3d_plotly(groundtruth_topo, 'inittopo_smooth_')
+        #self.plot3d_plotly(self.real_elev, 'final_')
 
 
         return groundtruth_topo
@@ -411,75 +405,7 @@ class ptReplica(multiprocessing.Process):
             elev_pts_vec[self.simtime] = elev_pts
  
         return elev_vec, erodep_vec, erodep_pts_vec, elev_pts_vec
-
-    def likelihood_func_(self,input_vector):
-        #print("Running likelihood function: ", input_vector)
-        try:
-            pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
-            temp_elev, temp_erodep, temp_erodep_pts, temp_elev_pts = pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec
-        except Exception as e:
-            print ('\n Error : ', e, '\n')
-            pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = temp_elev, temp_erodep, temp_erodep_pts,temp_elev_pts
-
-        tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
-        tau_erodep =  np.zeros(self.sim_interval.size) 
-        tau_elev = np.zeros(self.sim_interval.size)
-
-        for i in range(self.sim_interval.size):
-            if problem==2:
-                if i == len(self.sim_interval)-1:
-                    tau_erodep[i] = np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
-                    # print ('if true ', i, self.sim_interval[i])
-                    # print ('tau_ value' ,tau_erodep[i])
-                else:
-                    # print ('else ', i, self.sim_interval[i])
-                    tau_erodep[i] = 0.01
-            else:
-               tau_erodep[i] =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]))/ self.real_erodep_pts.shape[1]
-        for i in range(self.sim_interval.size):
-            
-            if problem==2:
-                if i == len(self.sim_interval)-1:
-                    tau_elev[i] = np.sum(np.square(pred_elev_pts_vec[self.sim_interval[i]] - self.real_elev_pts[i]))/ self.real_elev_pts.shape[1]
-                else:
-                    tau_elev[i] = 0.01
-            else:
-                tau_elev[i] =  np.sum(np.square(pred_elev_pts_vec[self.sim_interval[i]] - self.real_elev_pts[i]))/ self.real_elev_pts.shape[1]
-
-        # likelihood_elev = - 0.5 * np.log(2 * math.pi * tausq) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq 
-        likelihood_elev = 0
-
-        for i in range(1, self.sim_interval.size):
-            if i == (self.sim_interval.size-1):
-                likelihood_elev += np.sum(-0.5 * np.log(2 * math.pi * tau_elev[i]) - 0.5 * np.square(pred_elev_pts_vec[self.sim_interval[i]] - self.real_elev_pts[i]) / tau_elev[i])
-        
-        likelihood_erodep = 0 
-        
-        if self.check_likelihood_sed  == True: 
-
-            for i in range(1,self.sim_interval.size):
-                # likelihood_erodep  += np.sum(-0.5 * np.log(2 * math.pi * tau_erodep[i]) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]) / tau_erodep[i])
-                if i == (self.sim_interval.size -1):
-                    # print ('if likl', i, self.sim_interval[i])
-                    likelihood_erodep  += np.sum(-0.5 * np.log(2 * math.pi * tau_erodep[i]) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[i]] - self.real_erodep_pts[i]) / tau_erodep[i]) # only considers point or core of erodep
-                else:
-                    # print ('else likl', i, self.sim_interval[i])
-                    likelihood_erodep += 0.01
-
-            likelihood = np.sum(likelihood_elev) +  (likelihood_erodep * self.sedscalingfactor)
-
-        else:
-            likelihood = np.sum(likelihood_elev)
-
-        rmse_elev = np.sqrt(tausq)
-        rmse_erodep = np.sqrt(tau_erodep) 
-        rmse_elev_pts = np.sqrt(tau_elev)
-        avg_rmse_er = np.average(rmse_erodep)
-        avg_rmse_el = np.average(rmse_elev_pts)
-
-        return [likelihood *(1.0/self.adapttemp), pred_elev_vec, pred_erodep_pts_vec, likelihood, avg_rmse_el, avg_rmse_er]
-
-
+ 
 
 
     def likelihood_func(self,input_vector): 
