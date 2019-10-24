@@ -125,11 +125,11 @@ def problem_setup(problem = 1):
 
         print(inittopo_expertknow, ' * **************** inittopo_expertknow ********************** ')
          
-        simtime = -1.49e08
+        simtime = -1.49e04
         resolu_factor = 1 
 
         init_elev = [] #np.loadtxt(problemfolder+ 'data/initial_elev.txt')
-        groundtruth_elev = np.loadtxt(problemfolder +'data/final_elev.txt')
+        groundtruth_elev = np.loadtxt(problemfolder +'data/final_elev_filtered_ocean.txt')
         groundtruth_erodep = np.loadtxt(problemfolder +'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
         groundtruth_elev_pts = np.loadtxt(problemfolder +'data/final_elev_pts_.txt')

@@ -201,6 +201,7 @@ class ptReplica(multiprocessing.Process):
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
         wid_grid = self.wid_grid
+        print('\n\nlength, width, len_grid, wid_grid ',length, width, len_grid, wid_grid)
         sub_gridlen =  20 #int(length/len_grid)  # 25
         sub_gridwidth =  20 #int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
@@ -231,15 +232,15 @@ class ptReplica(multiprocessing.Process):
 
 
         v_ =   scale_factor  
-
+        print ('\n\n\n (v_) ', v_)
         #v_ =  np.multiply(self.inittopo_expertknow.copy(), scale_factor.copy())   #+ x_
 
       
         for l in range(0,sub_gridlen-1):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
+                    for n in range(w *  wid_grid, (w+1) * wid_grid):
+                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n])*0.5 +  (v_[l][w])*0.5 
  
 
 
@@ -249,22 +250,20 @@ class ptReplica(multiprocessing.Process):
         for l in range(0,sub_gridlen -1 ):  
             w = sub_gridwidth-1
             for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid,  length):  
-                        groundtruth_topo[m][n]   +=  v_[l][w] 
+                    for n in range(w *  wid_grid,  length):
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5   
+                        # groundtruth_topo[m][n]   +=  v_[l][w] 
 
         for w in range(0,sub_gridwidth -1): 
 
             l = sub_gridlen-1  
             for m in range(l * len_grid,width):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        groundtruth_topo[m][n]   +=  v_[l][w]
+                        # groundtruth_topo[m][n]   +=  v_[l][w]
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5  
 
- 
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
-
- 
-   
 
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
@@ -275,7 +274,7 @@ class ptReplica(multiprocessing.Process):
 
 
         self.plot3d_plotly(groundtruth_topo, 'smooth_')
-
+        self.plot3d_plotly(self.real_elev, 'final_')
 
 
         return groundtruth_topo
