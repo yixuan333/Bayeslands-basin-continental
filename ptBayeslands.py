@@ -265,13 +265,13 @@ class ptReplica(multiprocessing.Process):
 
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
-                    groundtruth_topo[m][n]   = inside[m][n] 
+                groundtruth_topo[m][n]   = inside[m][n] 
         #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
  
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
+        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(0.5,0.5)) # change sigma to higher values if needed 
 
 
-        self.plot3d_plotly(reconstructed_topo, 'smooth_')
+        self.plot3d_plotly(groundtruth_topo, 'smooth_')
 
 
 
