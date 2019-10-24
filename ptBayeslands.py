@@ -114,7 +114,7 @@ class ptReplica(multiprocessing.Process):
         self.runninghisto = True  
         self.burn_in = burn_in
         self.sim_interval = sim_interval
-        self.sedscalingfactor = 50 # this is to ensure that the sediment likelihood is given more emphasis as it considers fewer points (dozens of points) when compared to elev liklihood (thousands of points)
+        self.sedscalingfactor = 1 # this is to ensure that the sediment likelihood is given more emphasis as it considers fewer points (dozens of points) when compared to elev liklihood (thousands of points)
         self.adapttemp =  self.temperature
         self.rain_region = rain_region 
         self.rain_time = rain_time 
@@ -201,14 +201,17 @@ class ptReplica(multiprocessing.Process):
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
         wid_grid = self.wid_grid
-        sub_gridlen = 20 #int(length/len_grid)  # 25
-        sub_gridwidth = 20 # int(width/wid_grid) # 25
+        sub_gridlen =  20 #int(length/len_grid)  # 25
+        sub_gridwidth =  20 #int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
         reconstructed_topo  = self.real_elev.copy()  # to define the size 
 
         groundtruth_topo = self.real_elev.copy()
+
+
+        print(self.inittopo_expertknow.shape, ' self.inittopo_expertknow')
 
       
 
@@ -369,7 +372,7 @@ class ptReplica(multiprocessing.Process):
             model.input.diffprop = input_vector[rain_regiontime+10]
 
         #Check if it is the mountain problem
-        if problem==10: # needs to be updated
+        '''if problem==10: # needs to be updated
             #Round the input vector 
             k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
 
@@ -382,7 +385,7 @@ class ptReplica(multiprocessing.Process):
             newtect.to_csv(newFile,index=False,header=False)
 
             #Update the model uplift tectonic values
-            model.input.tectFile[0]=newFile
+            model.input.tectFile[0]=newFile'''
 
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()
@@ -410,7 +413,7 @@ class ptReplica(multiprocessing.Process):
  
         return elev_vec, erodep_vec, erodep_pts_vec, elev_pts_vec
 
-    def likelihood_func(self,input_vector):
+    def likelihood_func_(self,input_vector):
         #print("Running likelihood function: ", input_vector)
         try:
             pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
@@ -474,6 +477,43 @@ class ptReplica(multiprocessing.Process):
         rmse_elev_pts = np.sqrt(tau_elev)
         avg_rmse_er = np.average(rmse_erodep)
         avg_rmse_el = np.average(rmse_elev_pts)
+
+        return [likelihood *(1.0/self.adapttemp), pred_elev_vec, pred_erodep_pts_vec, likelihood, avg_rmse_el, avg_rmse_er]
+
+
+
+
+    def likelihood_func(self,input_vector): 
+
+        pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
+           
+        tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
+        tau_erodep =  np.zeros(self.sim_interval.size)  
+ 
+        
+        tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
+       
+        tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]))/ self.real_elev_pts.shape[1]
+
+        likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]) / tau_elev )
+        #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
+        
+
+        likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
+                
+
+        likelihood = np.sum(likelihood_elev) +  (likelihood_erodep  )
+
+
+        #likelihood = np.sum(likelihood_elev_)
+
+        print(likelihood_elev, likelihood_erodep, likelihood, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
+
+        rmse_elev = np.sqrt(tausq)
+        rmse_erodep = np.sqrt(tau_erodep) 
+        rmse_elev_pts = np.sqrt(tau_elev)
+        avg_rmse_er = 0#np.average(rmse_erodep)
+        avg_rmse_el = 0#np.average(rmse_elev_pts)
 
         return [likelihood *(1.0/self.adapttemp), pred_elev_vec, pred_erodep_pts_vec, likelihood, avg_rmse_el, avg_rmse_er]
 
@@ -1235,7 +1275,7 @@ def main():
     #print(vec_parameters)
 
 
-    Bayes_inittopoknowledge = True # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
+    Bayes_inittopoknowledge = False # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
 
     if Bayes_inittopoknowledge == True:  
         mean_pos = np.loadtxt('Examples/australia/inittopoexp1_100samples'+'/mean_pos.txt')

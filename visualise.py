@@ -142,6 +142,9 @@ class results_visualisation:
         self.inittopo_estimated = inittopo_estimated
         self.init_elev = init_elev
 
+
+        self.Bayes_inittopoknowledge = True
+
     def results_current (self ):
 
         #pos_param, likelihood_rep, accept_list, pred_topo,  combined_erodep, accept, pred_topofinal, list_xslice, list_yslice, rmse_elev, rmse_erodep = self.show_results('chain_')
@@ -155,7 +158,7 @@ class results_visualisation:
         np.savetxt(self.folder+'/optimal_percentile_para.txt', np.array([optimal_para, para_5thperc, para_95thperc]) )
 
         #for s in range(self.num_param): 
-        for s in range(45): # change this if you want to see all pos plots
+        for s in range(16): # change this if you want to see all pos plots
             self.plot_figure(posterior[s,:], 'pos_distri_'+str(s) ) 
 
     
@@ -259,19 +262,19 @@ class results_visualisation:
             plt.clf()
 
         fnameplot = self.folder +  '/cross_section/realmap_postcompare.png' 
-        # im = plt.imshow(real_elev, cmap='hot', interpolation='nearest')
+        im = plt.imshow(real_elev, cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
 
         fnameplot = self.folder +  '/cross_section/predmap_postcompare.png' 
-        # im = plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
+        im = plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
 
         fnameplot = self.folder +  '/cross_section/diffmap_postcompare.png' 
-        # im = plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
+        im = plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
@@ -332,14 +335,13 @@ class results_visualisation:
 
         groundtruth_topo = self.real_elev.copy()
  
-        if method == 1: 
+        if self.Bayes_inittopoknowledge == True: 
+            inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
-            #inittopo_vec = (inittopo_vec/200 ) * self.inittopo_expertknow.flatten()  
-            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  
+        else: 
+            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec/100  # for Bayeslands inittopo
+  
 
-        elif method ==2:
-
-            inittopo_vec = ((inittopo_vec/200) * self.inittopo_expertknow.flatten()) + self.inittopo_expertknow.flatten()  
 
  
 
@@ -388,10 +390,10 @@ class results_visualisation:
                     groundtruth_topo[m][n]   = inside[m][n] 
         #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
  
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=1) # change sigma to higher values if needed 
+        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(0.5, 0.5)) # change sigma to higher values if needed 
 
- 
-        self.plot3d_plotly(reconstructed_topo, 'mean_')
+
+        self.plot3d_plotly(groundtruth_topo, 'smooth_')
 
 
 
@@ -1170,13 +1172,13 @@ def main():
         np.savetxt(fname+'/sediment_plots/elev_' +str(i)+'_.txt', pred_elev_opt[sim_interval[i]],  fmt='%1.2f' )
 
         fnameplot = fname +  '/sediment_plots/sediment_map'+str(i) +'_.png' 
-        # im = plt.imshow(pred_erodep_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
+        im = plt.imshow(pred_erodep_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
 
         fnameplot = fname +  '/sediment_plots/elev_map'+str(i) +'_.png' 
-        # im = plt.imshow(pred_elev_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
+        im = plt.imshow(pred_elev_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
         plt.colorbar(im) 
         plt.savefig(fnameplot)
         plt.clf()
