@@ -114,7 +114,7 @@ def problem_setup(problem = 1):
         print(vec_parameters) 
         erodep_coords = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])  # need to hand pick given your problem
 
-    elif problem == 2: # 5 MILLION YEARS with INIT TOPO
+    elif problem == 2: # Aus: 149 MILLION YEARS with INIT TOPO
 
         problemfolder = 'Examples/australia/'
         xmlinput = problemfolder + 'AUSP1306.xml'
@@ -125,7 +125,7 @@ def problem_setup(problem = 1):
 
         print(inittopo_expertknow, ' * **************** inittopo_expertknow ********************** ')
          
-        simtime = -1.49e04
+        simtime = -1.49e08
         resolu_factor = 1 
 
         init_elev = [] #np.loadtxt(problemfolder+ 'data/initial_elev.txt')
@@ -164,14 +164,11 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
 
         #--------------------------------------------------------
-        #minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # used for Bayeslands initopo (stage 1) 
-        #maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02]
-
-        #minlimits_others = [3.e-6, 0, 0 , 0  ,  0 , 0 , 0 , 0, 22001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
-        #maxlimits_others = [7.e-6, 1 ,  2, 0.1, 0.1, 0.1, 1, 10, 26002, 10, 0.1]
-
-        minlimits_others = [1.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 10001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
-        maxlimits_others = [7.e-7, 1 ,  2, 0.2, 0.2, 0.2, 1, 10, 26002, 10, 0.2]
+        minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # used for Bayeslands initopo (stage 1) 
+        maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02] # from Carmen
+ 
+        #minlimits_others = [5.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 10001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        #maxlimits_others = [5.e-6, 1 ,  2, 0.2, 0.2, 0.2, 1, 10, 26002, 10, 0.2]
  
  
  
