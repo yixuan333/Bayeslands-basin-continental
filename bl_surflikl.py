@@ -50,14 +50,15 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 class BayesLands():
-	def __init__(self, muted, simtime, samples, real_elev , real_erdp, real_erdp_pts, erdp_coords, filename, xmlinput, erodlimits, rainlimits, mlimit, nlimit, marinelimit, aeriallimit, run_nb, likl_sed):
+	def __init__(self, muted, simtime, samples, real_elev , real_erdp, real_erdp_pts, real_elev_pts, erodep_coords, filename, xmlinput, erodlimits, rainlimits, mlimit, nlimit, marinelimit, aeriallimit, run_nb, likl_sed):
 		self.filename = filename
 		self.input = xmlinput
 		self.real_elev = real_elev
 		self.real_erdp = real_erdp
 		
 		self.real_erdp_pts = real_erdp_pts
-		self.erdp_coords = erdp_coords
+		self.real_elev_pts = real_elev_pts
+		self.erodep_coords = erodep_coords
 		self.likl_sed = likl_sed
 
 		self.simtime = simtime
@@ -87,7 +88,7 @@ class BayesLands():
 	def run_badlands(self, input_vector):
 		#Runs a badlands model with the specified inputs
  
-		rain_regiontime = self.rain_region * self.rain_time # number of parameters for rain based on  region and time 
+		rain_regiontime = 1 # number of parameters for rain based on  region and time 
 
 		#Create a badlands model instance
 		model = badlandsModel()
@@ -96,14 +97,7 @@ class BayesLands():
 		# Load the XmL input file
 		model.load_xml(str(self.run_nb), self.input, muted=True)
 
-		# prob = [0,1,2]
-		# if  problem in prob: #problem==1 or problem==2 : # when you have initial topo (problem is global variable)
-		#if problem == 0 or problem ==1 or problem ==2 or problem==3:
-		 #   init = False
-		#else:
-		 #   init = True # when you need to estimate initial topo
-
-		init = True
+		init = False
 
 
 		if init == True:
@@ -148,14 +142,6 @@ class BayesLands():
 		model.input.CDm = input_vector[rain_regiontime+3] # submarine diffusion
 		model.input.CDa = input_vector[rain_regiontime+4] # aerial diffusion
 
-		if problem != 1:
-			model.slp_cr = input_vector[rain_regiontime+5]
-			model.perc_dep = input_vector[rain_regiontime+6]
-			model.input.criver = input_vector[rain_regiontime+7]
-			model.input.elasticH = input_vector[rain_regiontime+8]
-			model.input.diffnb = input_vector[rain_regiontime+9]
-			model.input.diffprop = input_vector[rain_regiontime+10]
-
 		elev_vec = collections.OrderedDict()
 		erodep_vec = collections.OrderedDict()
 		erodep_pts_vec = collections.OrderedDict()
@@ -165,7 +151,7 @@ class BayesLands():
 			self.simtime = self.sim_interval[x]
 			model.run_to_time(self.simtime, muted=True)
 
-			elev, erodep = interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
+			elev, erodep = self.interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
 
 			erodep_pts = np.zeros((self.erodep_coords.shape[0]))
 			elev_pts = np.zeros((self.erodep_coords.shape[0]))
@@ -174,7 +160,6 @@ class BayesLands():
 				erodep_pts[count] = erodep[val[0], val[1]]
 				elev_pts[count] = elev[val[0], val[1]]
 
-			print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
 			elev_vec[self.simtime] = elev
 			erodep_vec[self.simtime] = erodep
 			erodep_pts_vec[self.simtime] = erodep_pts
@@ -182,19 +167,14 @@ class BayesLands():
  
 		return elev_vec, erodep_vec, erodep_pts_vec, elev_pts_vec
 
-	def interpolateArray(coords=None, z=None, dz=None):
+	def interpolateArray(self, coords=None, z=None, dz=None):
 		"""
 		Interpolate the irregular spaced dataset from badlands on a regular grid.
 		"""
 		x, y = np.hsplit(coords, 2)
 		dx = (x[1]-x[0])[0]
-
-		if problem == 1:
-			nx = int((x.max() - x.min())/dx+1)
-			ny = int((y.max() - y.min())/dx+1)
-		else:
-			nx = int((x.max() - x.min())/dx+1 - 2)
-			ny = int((y.max() - y.min())/dx+1 - 2)
+		nx = int((x.max() - x.min())/dx+1 - 2)
+		ny = int((y.max() - y.min())/dx+1 - 2)
 		xi = np.linspace(x.min(), x.max(), nx)
 		yi = np.linspace(y.min(), y.max(), ny)
 
@@ -372,16 +352,16 @@ class BayesLands():
 		"""
 		pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
 		
-		tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
+		tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erdp_pts[0]))/ self.real_erdp_pts.shape[1]
 		tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]))/ self.real_elev_pts.shape[1]
 		
 
 		likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]) / tau_elev )
-		likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
+		likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erdp_pts[0]) / tau_erodep ) # only considers point or core of erodep
 
 		likelihood = np.sum(likelihood_elev) +  (likelihood_erodep  )
 
-		rmse_ = np.sqrt(tausq)
+		rmse_ = np.sqrt(tau_elev+ tau_erodep)
 		rmse_erdp = np.sqrt(tau_erodep) 
 		rmse_elev = np.sqrt(tau_elev)
 
@@ -483,95 +463,28 @@ def main():
 	run_nb = 0
 	directory = ""
 	likl_sed = False
-	
-	erdp_coords_crater = np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
-	erdp_coords_crater_fast = np.array([[60,60],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69],[79,91],[96,77],[42,49]])
-	erdp_coords_etopo = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])
-	erdp_coords_etopo_fast = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[68,40],[72,44]])
+	choice = 1#input("Please choose a Badlands example to run the likelihood surface generator on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
+	samples = 400#input("Please enter number of samples (Make sure it is a perfect square): \n")
 
-	choice = input("Please choose a Badlands example to run the likelihood surface generator on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
-	samples = input("Please enter number of samples (Make sure it is a perfect square): \n")
-
-	if choice == 1:
-		directory = 'Examples/australia'
-		xmlinput = '%s/AUSP1306.xml' %(directory)
-		simtime = -1.49E+04
-		rainlimits = [0.0, 3.0]
-		erodlimits = [3.e-5, 7.e-5]
-		mlimit = [0.4, 0.6]
-		nlimit = [0.9, 1.1]
-		marinelimit = [5.e-3,4.e-2]
-		aeriallimit = [3.e-2,7.e-2]
-		true_rain = 1.5
-		true_erod = 5.e-5
-		likl_sed = True
-		erdp_coords = erdp_coords_crater_fast
-
-	elif choice == 2:
-		directory = 'Examples/crater'
-		xmlinput = '%s/crater.xml' %(directory)
-		simtime = 50000
-		rainlimits = [0.0, 3.0]
-		erodlimits = [3.e-5, 7.e-5]
-		mlimit = [0.4, 0.6]
-		nlimit = [0.9, 1.1]
-		marinelimit = [5.e-3,4.e-2]
-		aeriallimit = [3.e-2,7.e-2]
-		true_rain = 1.5
-		true_erod = 5.e-5
-		likl_sed = True
-		erdp_coords = erdp_coords_crater
-
-	elif choice == 3:
-		directory = 'Examples/etopo_fast'
-		xmlinput = '%s/etopo.xml' %(directory)
-		simtime = 500000
-		rainlimits = [0.0, 3.0]
-		erodlimits = [3.e-6, 7.e-6]
-		mlimit = [0.4, 0.6]
-		nlimit = [0.9, 1.1]
-		marinelimit = [0.3,0.7]
-		aeriallimit = [0.6,1.0]
-		true_rain = 1.5
-		true_erod = 5.e-6
-		likl_sed = True
-		erdp_coords = erdp_coords_etopo_fast
-
-	elif choice == 4:
-		directory = 'Examples/etopo'
-		xmlinput = '%s/etopo.xml' %(directory)
-		simtime = 1000000
-		rainlimits = [0.0, 3.0]
-		erodlimits = [3.e-6, 7.e-6]
-		mlimit = [0.4, 0.6]
-		nlimit = [0.9, 1.1]
-		marinelimit = [0.3,0.7]
-		aeriallimit = [0.6,1.0]
-		true_rain = 1.5
-		true_erod = 5.e-6
-		likl_sed = True
-		erdp_coords = erdp_coords_etopo
-
-	elif choice == 5:
-		directory = 'Examples/mountain'
-		xmlinput = '%s/mountain.xml' %(directory)
-		simtime = 1000000
-		rainlimits = [0.0, 3.0]
-		erodlimits = [3.e-6, 7.e-6]
-		mlimit = [0.4, 0.6]
-		nlimit = [0.9, 1.1]
-		marinelimit = [0.3,0.7]
-		aeriallimit = [0.6,1.0]
-		true_rain = 1.5
-		true_erod = 5.e-6
-		likl_sed = True
-		erdp_coords = erdp_coords_etopo
-	else:
-		print('Invalid selection, please choose a problem from the list ')
+	directory = 'Examples/australia'
+	xmlinput = '%s/AUSP1306.xml' %(directory)
+	simtime = -1.49E+04
+	rainlimits = [0.0, 2.0]
+	erodlimits = [5.e-7, 1.5e-6]
+	mlimit = [0.4, 0.6]
+	nlimit = [0.9, 1.1]
+	marinelimit = [5.e-3,4.e-2]
+	aeriallimit = [3.e-2,7.e-2]
+	true_rain = 1.5
+	true_erod = 5.e-5
+	likl_sed = True
+	erodep_coords = np.loadtxt('%s/data/erdp_coords.txt' %(directory)) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+	erodep_coords = np.array(erodep_coords, dtype = 'int')
 
 	final_elev = np.loadtxt('%s/data/final_elev.txt' %(directory))
 	final_erdp = np.loadtxt('%s/data/final_erdp.txt' %(directory))
-	final_erdp_pts = np.loadtxt('%s/data/final_erdp_pts.txt' %(directory))	
+	final_elev_pts = np.loadtxt('%s/data/final_elev_pts_.txt' %(directory))	
+	final_erdp_pts = np.loadtxt('%s/data/final_erdp_pts_.txt' %(directory))	
 
 	while os.path.exists('%s/liklSurface_%s' % (directory,run_nb)):
 		run_nb+=1
@@ -586,14 +499,14 @@ def main():
 			outfile.write('\n\tsamples: {0}'.format(samples))
 			outfile.write('\n\terod_limits: {0}'.format(erodlimits))
 			outfile.write('\n\train_limits: {0}'.format(rainlimits))
-			outfile.write('\n\terdp coords: {0}'.format(erdp_coords))
+			outfile.write('\n\terdp coords: {0}'.format(erodep_coords))
 			outfile.write('\n\tlikl_sed: {0}'.format(likl_sed))
 			outfile.write('\n\tfilename: {0}'.format(filename))
 
 	print '\nInput file shape', final_elev.shape, '\n'
 	run_nb_str = 'liklSurface_' + str(run_nb)
 
-	bLands = BayesLands(muted, simtime, samples, final_elev, final_erdp, final_erdp_pts, erdp_coords, filename, xmlinput, erodlimits, rainlimits, mlimit, nlimit, marinelimit, aeriallimit, run_nb_str, likl_sed)
+	bLands = BayesLands(muted, simtime, samples, final_elev, final_erdp, final_erdp_pts,final_elev_pts, erodep_coords, filename, xmlinput, erodlimits, rainlimits, mlimit, nlimit, marinelimit, aeriallimit, run_nb_str, likl_sed)
 	[pos_rain, pos_erod, pos_likl] = bLands.likelihoodSurface()
 
 	print 'Results are stored in ', filename
