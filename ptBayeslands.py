@@ -413,8 +413,7 @@ class ptReplica(multiprocessing.Process):
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
            
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
-        tau_erodep =  np.zeros(self.sim_interval.size)  
- 
+        # tau_erodep =  np.zeros(self.sim_interval.size)  
         
         tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
        
