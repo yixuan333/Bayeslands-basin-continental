@@ -158,7 +158,7 @@ class results_visualisation:
         np.savetxt(self.folder+'/optimal_percentile_para.txt', np.array([optimal_para, para_5thperc, para_95thperc]) )
 
         #for s in range(self.num_param): 
-        for s in range(16): # change this if you want to see all pos plots
+        for s in range(25): # change this if you want to see all pos plots
             self.plot_figure(posterior[s,:], 'pos_distri_'+str(s) ) 
 
     
@@ -182,9 +182,13 @@ class results_visualisation:
         init = True # when you need to estimate initial topo
 
         if init == True: 
-            init_topo_mean = self.process_inittopo(mean_pos[geoparam:])
-            init_topo_95th = self.process_inittopo(percentile_95th[geoparam:])
-            init_topo_5th = self.process_inittopo(percentile_5th[geoparam:])
+            init_topo_mean = self.process_inittopo(mean_pos[geoparam:], 'post_mean')
+            init_topo_95th = self.process_inittopo(percentile_95th[geoparam:], 'post_95th')
+            init_topo_5th = self.process_inittopo(percentile_5th[geoparam:], 'post_5th')
+
+            print(mean_pos[geoparam:] - percentile_95th[geoparam:], 'init_topo_mean - init_topo_95th')
+
+            print(init_topo_mean[geoparam:] - init_topo_95th[geoparam:], 'init_topo_mean - init_topo_95th')
 
             self.plot3d_plotly(init_topo_mean, 'mean_init')
             self.plot3d_plotly(init_topo_95th, 'percentile95_init')
@@ -208,8 +212,16 @@ class results_visualisation:
             lower_mid = init_topo_5th[xmid, :]
             higher_mid = init_topo_95th[xmid, :]
             mean_mid = init_topo_mean[xmid, :] 
+
+            print(higher_mid  , ' higher_mid - ')
+
+            print(  mean_mid, '   mean_mid')
+
+            print(higher_mid - mean_mid, ' higher_mid - mean_mid')
+
+
             x = np.linspace(0, self.real_elev.shape[1] * self.resolu_factor, num= self.real_elev.shape[1])
-            rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid, higher_mid, 'init_x_ymid_cross') # not needed in Australia problem 
+            rmse_slice_init = self.cross_section(x, mean_mid, inittopo_real, lower_mid  , higher_mid  , 'init_x_ymid_cross') # not needed in Australia problem 
              
             #print(self.real_elev, ' real_elev')
 
@@ -302,6 +314,16 @@ class results_visualisation:
         # range = [0,zData.shape[0]* self.resolu_factor]
         #range = [0,zData.shape[1]* self.resolu_factor],
 
+
+
+        fnameplot = self.folder +  '/recons_initialtopo/'+fname+'.png'
+
+        print(fnameplot)
+
+        plt.imshow(zData, cmap='hot', interpolation='nearest')
+        plt.savefig(fnameplot)
+        plt.clf()
+
         data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YlGnBu')])
 
         layout = Layout(title='' , autosize=True, width=width, height=height,scene=Scene(
@@ -319,46 +341,46 @@ class results_visualisation:
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+'_.html', validate=False)
         np.savetxt(self.folder +  '/recons_initialtopo/'+fname+'_.txt', zData,  fmt='%1.2f' )
 
-    def process_inittopo(self, inittopo_vec):
- 
+    
+    def process_inittopo(self, inittopo_vec, filename):
 
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
         wid_grid = self.wid_grid
-        sub_gridlen = 20 #int(length/len_grid)  # 25
-        sub_gridwidth = 20 # int(width/wid_grid) # 25
+        #print('\n\nlength, width, len_grid, wid_grid ',length, width, len_grid, wid_grid)
+        sub_gridlen =  20 #int(length/len_grid)  # 25
+        sub_gridwidth =  20 #int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
         reconstructed_topo  = self.real_elev.copy()  # to define the size 
 
         groundtruth_topo = self.real_elev.copy()
+
  
+
+      
+
         if self.Bayes_inittopoknowledge == True: 
             inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
         else: 
             inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo
   
-
-
  
 
 
-        scale_factor = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
 
-
-        v_ =   scale_factor  
-
-        #v_ =  np.multiply(self.inittopo_expertknow.copy(), scale_factor.copy())   #+ x_
+        v_ = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
+  
 
       
         for l in range(0,sub_gridlen-1):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        reconstructed_topo[m][n]  = reconstructed_topo[m][n] +  v_[l][w] 
+                    for n in range(w *  wid_grid, (w+1) * wid_grid):
+                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n])*0.5 +  (v_[l][w])*0.5 
  
 
 
@@ -368,33 +390,30 @@ class results_visualisation:
         for l in range(0,sub_gridlen -1 ):  
             w = sub_gridwidth-1
             for m in range(l * len_grid,(l+1) * len_grid):  
-                    for n in range(w *  wid_grid,  length):  
-                        groundtruth_topo[m][n]   +=  v_[l][w] 
+                    for n in range(w *  wid_grid,  length):
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5   
+                        # groundtruth_topo[m][n]   +=  v_[l][w] 
 
         for w in range(0,sub_gridwidth -1): 
 
             l = sub_gridlen-1  
             for m in range(l * len_grid,width):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        groundtruth_topo[m][n]   +=  v_[l][w]
+                        # groundtruth_topo[m][n]   +=  v_[l][w]
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5  
 
- 
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
 
- 
-   
-
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
-                    groundtruth_topo[m][n]   = inside[m][n] 
-        #self.plot3d_plotly(reconstructed_topo, 'GTinitrecon_')
+                groundtruth_topo[m][n]   = inside[m][n]  
  
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(0.5, 0.5)) # change sigma to higher values if needed 
+        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(0.5,0.5)) # change sigma to higher values if needed 
 
 
-        self.plot3d_plotly(groundtruth_topo, 'smooth_')
-
+        self.plot3d_plotly(groundtruth_topo, filename)
+        #self.plot3d_plotly(self.real_elev, 'final_')
 
 
         return groundtruth_topo
@@ -847,7 +866,7 @@ class results_visualisation:
             #And put the demfile on a grid we can manipulate easily
             elev=np.reshape(model.recGrid.rectZ,(xi,yi)) 
 
-            inittopo_estimate = self.process_inittopo(inittopo_vec)  
+            inittopo_estimate = self.process_inittopo(inittopo_vec, 're_run')  
             inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  # bug fix but not good fix - temp @ 
 
             #Put it back into 'Badlands' format and then re-load the model
@@ -1073,7 +1092,9 @@ def main():
 
     print('sucessfully sampled') 
     timer_end = time.time() 
-    likelihood = likehood_rep # just plot proposed likelihood  
+    #likelihood = likehood_rep[:,10:] # just plot proposed likelihood  
+
+    likelihood = likehood_rep  # just plot proposed likelihood  
 
     plt.plot(likelihood.T)
     plt.savefig( fname+'/likelihood.pdf')

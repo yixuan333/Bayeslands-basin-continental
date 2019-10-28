@@ -3,15 +3,15 @@
 echo Running all 	 
 
 problem=2
-replica=6
+replica=8
 
-samples=200
+samples=400
 swapint=$samples
-maxtemp=2
-burn=0.25
-pt_stage=0.25
+maxtemp=2 
+burn=0.35
+pt_stage=0.35
 raintimeint=4
-initialtopoep=0.5
+initialtopoep=0.5 # not used anymore
 cov=0
 
 echo $problem 

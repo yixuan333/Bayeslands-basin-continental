@@ -156,12 +156,12 @@ class ptReplica(multiprocessing.Process):
 
         print(fnameplot)
 
-        # plt.imshow(zData, cmap='hot', interpolation='nearest')
+        plt.imshow(zData, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
         plt.clf()
 
         fnameplot = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'_.png' 
-        # plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
+        plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
         plt.clf()
 
@@ -362,7 +362,7 @@ class ptReplica(multiprocessing.Process):
             model.input.criver = input_vector[rain_regiontime+7]
             model.input.elasticH = input_vector[rain_regiontime+8]
             model.input.diffnb = input_vector[rain_regiontime+9]
-            model.input.diffprop = input_vector[rain_regiontime+10]
+            model.input.diffprop = input_vector[rain_regiontime+10] 
 
         #Check if it is the mountain problem
         '''if problem==10: # needs to be updated
@@ -439,7 +439,11 @@ class ptReplica(multiprocessing.Process):
         avg_rmse_er = 0#np.average(rmse_erodep)
         avg_rmse_el = 0#np.average(rmse_elev_pts)
 
-        return [likelihood *(1.0/self.adapttemp), pred_elev_vec, pred_erodep_pts_vec, likelihood, avg_rmse_el, avg_rmse_er]
+        likelihood = likelihood *(1.0/self.adapttemp)
+
+        print(likelihood , likelihood *(1.0/self.adapttemp),  self.adapttemp,     ' ----    *** ------------------')
+
+        return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, avg_rmse_el, avg_rmse_er]
 
     def run(self):
 
@@ -494,6 +498,11 @@ class ptReplica(multiprocessing.Process):
         num_accepted = 0
         num_div = 0 
 
+        pt_samplesratio = 0.35 # this means pt will be used in begiining and then mcmc with temp of 1 will take place
+
+        pt_samples = int(pt_samplesratio * samples)
+
+
         with file(('%s/experiment_setting.txt' % (self.folder)),'a') as outfile:
             outfile.write('\nsamples_per_chain:,{0}'.format(self.samples))
             outfile.write('\nburnin:,{0}'.format(self.burn_in))
@@ -511,7 +520,7 @@ class ptReplica(multiprocessing.Process):
 
         for i in range(samples-1):
 
-            print ("Temperature: ", self.temperature, ' Sample: ', i ,"/",samples)
+            print ("Temperature: ", self.temperature, ' Sample: ', i ,"/",samples, pt_samples)
 
             if i < pt_samples:
                 self.adapttemp =  self.temperature #* ratio  #
@@ -520,6 +529,8 @@ class ptReplica(multiprocessing.Process):
                 self.adapttemp = 1
                 [likelihood, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er] = self.likelihood_func(v_proposal) 
                 init_count = 1
+
+                print('  * adapttemp --------------------------------------- 1 **** ***** ***')
 
             if self.cov_init and self.use_cov==1:        
                 v_p = np.random.normal(size = v_current.shape)
@@ -1199,7 +1210,7 @@ def main():
     #print(vec_parameters)
 
 
-    Bayes_inittopoknowledge = True # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
+    Bayes_inittopoknowledge = False # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
 
     if Bayes_inittopoknowledge == True:  
         mean_pos = np.loadtxt('Examples/australia/inittopoexp1_100samples'+'/mean_pos.txt')

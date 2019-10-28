@@ -44,8 +44,8 @@ def problem_setup(problem = 1):
         n = 1 #
         real_cmarine = 5.e-1 # Marine diffusion coefficient [m2/a] -->
         real_caerial = 8.e-1 #aerial diffusion
-        rain_min = 0.0
-        rain_max = 3.0 
+        rain_min = 1.5
+        rain_max = 1.5 
         # assume 4 regions and 4 time scales
         rain_regiongrid = 1  # how many regions in grid format 
         rain_timescale = 4  # to show climate change 
@@ -59,8 +59,11 @@ def problem_setup(problem = 1):
 
         rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale)
-        minlimits_others = [3.e-6, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [7.e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
+        #minlimits_others = [3.e-6, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
+        #maxlimits_others = [7.e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
+
+        minlimits_others = [5.e-6, 0.5, 1, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
+        maxlimits_others = [5.e-6, 0.5, 1, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
         #minlimits_vec = np.append(rain_minlimits,minlimits_others)
         #maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
         #print(maxlimits_vec, ' maxlimits ')
@@ -80,8 +83,8 @@ def problem_setup(problem = 1):
 
 
          
-        inittopo_minlimits = np.repeat( -200  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -800  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(800 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------
@@ -192,8 +195,8 @@ def problem_setup(problem = 1):
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
 
          
-        inittopo_minlimits = np.repeat( -300  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(300 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -600  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(600 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------
