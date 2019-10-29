@@ -1210,10 +1210,10 @@ def main():
     #print(vec_parameters)
 
 
-    Bayes_inittopoknowledge = False # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
+    Bayes_inittopoknowledge = True # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
 
     if Bayes_inittopoknowledge == True:  
-        mean_pos = np.loadtxt('Examples/australia/inittopoexp1_100samples'+'/mean_pos.txt')
+        mean_pos = np.loadtxt('Examples/australia/stage1_400samples'+'/mean_pos.txt')
         x = np.reshape(mean_pos[15:], (20, -1) )
         #print(x, ' x')
 
