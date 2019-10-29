@@ -1168,14 +1168,16 @@ def main():
     # print('pos_param',pos_param.size, pos_param.shape)
 
 ############################################################################################
+    print ('minimum error', min(rmse_elev))
     error_dict = {}
     for i,j in enumerate(rmse_elev):
-        if j[0] != 0.0:
-            # print ('\ni : ', i, '  j : ', j[0], '\n')
-            error_dict[j[0]] = pos_param.T[i,:] 
-        else:
-            pass
-            # print ('the error was 0.0')
+        error_dict[j[0]] = pos_param.T[i,:]
+        # if j[0] != 0.0:
+        #     # print ('\ni : ', i, '  j : ', j[0], '\n')
+        #     error_dict[j[0]] = pos_param.T[i,:] 
+        # else:
+        #     pass
+        #     # print ('the error was 0.0')
 
     print('min error in dict',min(error_dict))    
     # print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
@@ -1184,7 +1186,7 @@ def main():
 
     variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
     #print('variables', variables)
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = True)
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
 
     
     for i in range(sim_interval.size):
@@ -1236,7 +1238,7 @@ def main():
     fname_remove = fname +'/pos_param.txt'
     print(dir_name)
 
-    res.vis_badlands(fname)
+    # res.vis_badlands(fname)
     res.visualize_sediments(pred_erodep_opt)    
 
     '''if os.path.isdir(dir_name):

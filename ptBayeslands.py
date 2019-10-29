@@ -207,9 +207,9 @@ class ptReplica(multiprocessing.Process):
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
-        reconstructed_topo  = self.real_elev.copy()  # to define the size 
+        reconstructed_topo  = self.init_elev.copy()  # to define the size 
 
-        groundtruth_topo = self.real_elev.copy()
+        groundtruth_topo = self.init_elev.copy()
 
  
 
