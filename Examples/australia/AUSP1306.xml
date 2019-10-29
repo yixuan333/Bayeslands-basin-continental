@@ -17,7 +17,11 @@
     <!-- Simulation time structure -->
     <time>
         <!-- Simulation start time [a] -->
+<<<<<<< Updated upstream
         <start>-1.49E+08</start>
+=======
+        <start>-1.49E+06</start>
+>>>>>>> Stashed changes
         <!-- start>-1.49E+04</start> -->
 
         <!-- Simulation end time [a] -->
