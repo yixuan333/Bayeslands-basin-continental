@@ -83,8 +83,8 @@ def problem_setup(problem = 1):
 
 
          
-        inittopo_minlimits = np.repeat( -800  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(800 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -60   , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(60 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------
@@ -157,11 +157,11 @@ def problem_setup(problem = 1):
         real_cmarine = 0.005 # Marine diffusion coefficient [m2/a] -->
         real_caerial = 0.001 #aerial diffusion
 
-        rain_min = 0 
-        rain_max = 3
+        #rain_min = 0 
+        #rain_max = 3
 
-        #rain_min = 1.5 
-        #rain_max = 1.5
+        rain_min = 1.45 
+        rain_max = 1.55
 
         # assume 4 regions and 4 time scales
         rain_regiongrid = 1  # how many regions in grid format 
@@ -170,11 +170,11 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
 
         #--------------------------------------------------------
-        #minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # used for Bayeslands initopo (stage 1) 
-        #maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02] # from Carmen
+        minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # used for Bayeslands initopo (stage 1) 
+        maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02] # from Carmen
  
-        minlimits_others = [5.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 10001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
-        maxlimits_others = [5.e-6, 1 ,  2, 0.2, 0.2, 0.2, 1, 10, 26002, 10, 0.2]
+        #minlimits_others = [5.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 10001, 0, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        #maxlimits_others = [5.e-6, 1 ,  2, 0.2, 0.2, 0.2, 1, 10, 26002, 10, 0.2]
  
  
  
