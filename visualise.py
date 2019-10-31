@@ -233,9 +233,6 @@ class results_visualisation:
 
         return  posterior, likelihood_vec, accept_list,   xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init 
 
-
-
-
     def full_crosssection(self,  simulated_topo, real_elev):
 
         ymid = int( real_elev.shape[1]/2)  
@@ -291,10 +288,6 @@ class results_visualisation:
         plt.savefig(fnameplot)
         plt.clf()
 
- 
-
-
-
     def plot3d_plotly(self, zData, fname): # same method from previous class - ptReplica
         zmin =  zData.min() 
         zmax =  zData.max()
@@ -340,8 +333,7 @@ class results_visualisation:
         fig = Figure(data=data, layout=layout) 
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+'_.html', validate=False)
         np.savetxt(self.folder +  '/recons_initialtopo/'+fname+'_.txt', zData,  fmt='%1.2f' )
-
-    
+   
     def process_inittopo(self, inittopo_vec, filename):
 
         length = self.real_elev.shape[0]
@@ -421,8 +413,6 @@ class results_visualisation:
 
 
         return groundtruth_topo
-
-  
  
     def view_crosssection_uncertainity(self,  list_xslice, list_yslice):
 
@@ -743,8 +733,6 @@ class results_visualisation:
         plt.savefig(self.folder+ '/sed_visual/' + title  + '_sed_heatmap.pdf')
         plt.clf()
  
- 
-
     def visualize_sediments(self, sediment_timedic):
         # print(" sediments visualize .... ")
         sediment=sediment_timedic[self.simtime]
@@ -779,6 +767,7 @@ class results_visualisation:
 
 
         #---------------------------------------
+
     def vis_badlands(self, folder):
         # Load the last time step
         file = folder+"/AUSP1306_output/h5"
@@ -1034,9 +1023,6 @@ class results_visualisation:
         plt.savefig( self.folder+'/sediment_plots/pos_erodep_'+str( sim_interval) +fname+'_.pdf')
         plt.clf()    
 
-
-
-
 # class  above this line -------------------------------------------------------------------------------------------------------
 
 
@@ -1056,8 +1042,6 @@ def mean_sqerror(  pred_erodep,   real_erodep_pts):
 def make_directory (directory): 
     if not os.path.exists(directory):
         os.makedirs(directory)
-
-
 
 
 def main():

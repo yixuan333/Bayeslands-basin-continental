@@ -192,8 +192,6 @@ class ptReplica(multiprocessing.Process):
 
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.html', validate=False)
 
- 
-
     def process_inittopo(self, inittopo_vec):
  
 
@@ -277,7 +275,6 @@ class ptReplica(multiprocessing.Process):
 
         return groundtruth_topo
  
-
     def computeCovariance(self, i, pos_v):
         cov_mat = np.cov(pos_v[:i,].T)
         # np.savetxt('%s/cov_mat_%s.txt' %(self.filename,self.temperature), cov_mat )
@@ -410,8 +407,6 @@ class ptReplica(multiprocessing.Process):
  
         return elev_vec, erodep_vec, erodep_pts_vec, elev_pts_vec
  
-
-
     def likelihood_func(self,input_vector): 
 
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
@@ -1139,8 +1134,6 @@ class ParallelTempering:
 
         fname = self.folder + '/pred_plots'+'/pred_'+filename+'_'+str(time_frame)+ '_.txt'
         np.savetxt(fname, zData, fmt='%1.2f')
-
-
 # class  above this line -------------------------------------------------------------------------------------------------------
 
 def interpolateArray(coords=None, z=None, dz=None):
@@ -1185,8 +1178,6 @@ def interpolateArray(coords=None, z=None, dz=None):
 def make_directory (directory): 
     if not os.path.exists(directory):
         os.makedirs(directory)
-
- 
 
 
 def main():
