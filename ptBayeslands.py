@@ -205,34 +205,28 @@ class ptReplica(multiprocessing.Process):
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
-        '''reconstructed_topo  = self.real_elev.copy()  # to define the size 
+        if problem == 1:
+            reconstructed_topo  = self.real_elev.copy()  # to define the size 
+            groundtruth_topo = self.real_elev.copy() 
+        else:
+            reconstructed_topo  = self.init_elev.copy()  # to define the size 
+            groundtruth_topo = self.init_elev.copy()
 
-        groundtruth_topo = self.real_elev.copy()'''
+        
 
-        reconstructed_topo  = self.init_elev.copy()  # to define the size 
+        if problem == 1:  
+            if self.Bayes_inittopoknowledge == True: 
+                inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
-        groundtruth_topo = self.init_elev.copy()
+            else: 
+                inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo'''
 
- 
+        else:  
+            if self.Bayes_inittopoknowledge == True: 
+                inittopo_vec =     inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
-      
-
-        '''if self.Bayes_inittopoknowledge == True: 
-            inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
-
-        else: 
-            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo'''
-
-
-        if self.Bayes_inittopoknowledge == True: 
-            inittopo_vec =     inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
-
-        else: 
-            inittopo_vec =     inittopo_vec  # for Bayeslands inittopo
-  
-
-
-        print(inittopo_vec.shape, ' inittopo_vec.shape') 
+            else: 
+                inittopo_vec =     inittopo_vec  # for Bayeslands  
 
 
 
@@ -432,12 +426,12 @@ class ptReplica(multiprocessing.Process):
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
                 
 
-        likelihood = np.sum(likelihood_elev) +  (likelihood_erodep  )
+        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep  )
 
 
         #likelihood = np.sum(likelihood_elev_)
 
-        print(likelihood_elev, likelihood_erodep, likelihood, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
+        
 
         rmse_elev = np.sqrt(tausq)
         rmse_erodep = np.sqrt(tau_erodep) 
@@ -447,9 +441,11 @@ class ptReplica(multiprocessing.Process):
 
         likelihood = likelihood *(1.0/self.adapttemp)
 
-        print(likelihood , likelihood *(1.0/self.adapttemp),  self.adapttemp,     ' ----    *** ------------------')
+        print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
-        return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, avg_rmse_el, avg_rmse_er]
+        print(likelihood , likelihood_,  self.adapttemp,     ' ----    *** ------------------')
+
+        return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep]
 
     def run(self):
 

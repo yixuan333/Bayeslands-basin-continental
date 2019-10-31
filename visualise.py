@@ -345,32 +345,29 @@ class results_visualisation:
         sub_gridwidth =  20 #int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
-
-        #reconstructed_topo  = self.real_elev.copy()  # to define the size 
-
-        #groundtruth_topo = self.real_elev.copy()
-
-        reconstructed_topo  = self.init_elev.copy()  # to define the size 
-
-        groundtruth_topo = self.init_elev.copy()
-
  
+        if problem == 1:
+            reconstructed_topo  = self.real_elev.copy()  # to define the size 
+            groundtruth_topo = self.real_elev.copy() 
+        else:
+            reconstructed_topo  = self.init_elev.copy()  # to define the size 
+            groundtruth_topo = self.init_elev.copy()
 
-      
+        
 
-        '''if self.Bayes_inittopoknowledge == True: 
-            inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
+        if problem == 1:  
+            if self.Bayes_inittopoknowledge == True: 
+                inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
-        else: 
-            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo'''
+            else: 
+                inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo'''
 
+        else:  
+            if self.Bayes_inittopoknowledge == True: 
+                inittopo_vec =     inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
-        if self.Bayes_inittopoknowledge == True: 
-            inittopo_vec =     inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
-
-        else: 
-            inittopo_vec =     inittopo_vec  # for Bayeslands inittopo
-  
+            else: 
+                inittopo_vec =     inittopo_vec  # for Bayeslands  
  
 
 
