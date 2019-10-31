@@ -49,7 +49,7 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 class BayesLands():
-    def __init__(self, muted, simtime, samples, real_elev , real_erdp, real_erdp_pts, real_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
+    def __init__(self, muted, simtime, sim_interval, samples, real_elev , real_erdp, real_erdp_pts, real_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
         self.filename = filename
         self.input = xmlinput
         self.real_elev = real_elev
@@ -69,6 +69,7 @@ class BayesLands():
         self.vec_parameters = vec_parameters
 
         self.simtime = simtime
+        self.sim_interval = sim_interval
         self.burn_in = 0.0
 
     def run_badlands(self, input_vector):
@@ -187,7 +188,6 @@ class BayesLands():
         return zreg,dzreg
 
     def plotFunctions(self, fname, pos_likl, pos_params):
-        nb_bins=30
         font = 9
         width = 1
 
@@ -209,23 +209,23 @@ class BayesLands():
         plt.savefig('%s/plot.png'% (fname), bbox_inches='tight', dpi=300, transparent=False)
         plt.show()
 
-    def storeParams(self, pos_params , pos_likl):
+    def storeParams(self, vec_parameters , pos_likl):
         """
         
         """
         pos_likl = str(pos_likl)
-        pos_params = str(pos_rain)
+        vec_parameters = str(vec_parameters)
 
         if not os.path.isfile(('%s/exp_data.txt' % (self.filename))):
             with file(('%s/exp_data.txt' % (self.filename)),'w') as outfile:
                 # outfile.write('\n# {0}\t'.format(naccept))
-                outfile.write(pos_params)
+                outfile.write(vec_parameters)
                 outfile.write('\t')
                 outfile.write(pos_likl)
                 outfile.write('\n')
         else:
             with file(('%s/exp_data.txt' % (self.filename)),'a') as outfile:
-                outfile.write(pos_params)
+                outfile.write(vec_parameters)
                 outfile.write('\t')
                 outfile.write(pos_likl)
                 outfile.write('\n')
@@ -270,85 +270,58 @@ class BayesLands():
         real_erdp_pts = self.real_erdp_pts
 
         count_list = []
-
+        font = 9
+        width = 1
         variables = np.zeros((self.vec_parameters.size,int(math.sqrt(samples))))
+        pos_likl = np.zeros((variables.shape[0], variables.shape[1]))
+        pos_rmse_elev = np.zeros((variables.shape[0], variables.shape[1]))
+        pos_rmse_erdp = np.zeros((variables.shape[0], variables.shape[1]))
+        
         print ('variables', variables.shape)
-        # for i in range(len(pos_params))
 
         for x in range(len(self.vec_parameters)):
             
             variables[x,:] = np.linspace(self.minlimits_vec[x], self.maxlimits_vec[x], num = int(math.sqrt(samples)), endpoint = False)
 
+        
         for i, v in enumerate(variables):
             print ('i and v', i , v)
             for j in v:
-                vec_parameters[i] = j
-                likelihood, sq_error, tau_elev, tau_erdp_pts = self.likelihoodFunc(vec_parameters)
+                start = time.time()
 
+                v_prop = self.vec_parameters
+                v_prop[i] = j
+                likelihood, rmse_elev, rmse_erdp = self.likelihood_func(v_prop)
+                pos_likl[i,j] = likelihood
+                self.storeParams(i, vec_parameters, pos_likl[r,e])
+                end = time.time()
+                total_time = end - start
+                print 'counter i ', i,'var v ', v ,'\nTime elapsed:', total_time
 
-        pos_likl = np.zeros((dimx, dimy))
-        pos_sq_error = np.zeros((dimx, dimy))
-        pos_tau_elev = np.zeros((dimx, dimy))
-        pos_tau_erdp_pts = np.zeros((dimx, dimy))
-        # print 'pos_likl', pos_likl.shape, 'pos_rain', pos_rain, 'pos_erod', pos_erod
+            fig = plt.figure(figsize=(15,15))
+            ax = fig.add_subplot(111)
+            ax.spines['top'].set_color('none')
+            ax.spines['bottom'].set_color('none')
+            ax.spines['left'].set_color('none')
+            ax.spines['right'].set_color('none')
+            ax.tick_params(labelcolor='w', top='off', bottom='off', left='off', right='off')
+            ax.set_title(' Likelihood', fontsize=  font+2)#, y=1.02)
+            
+            ax1 = fig.add_subplot(211, projection = '3d')
+            ax1.set_facecolor('#f2f2f3')
+            
+            ax1.plot(variables[i,:], pos_likl[i,:])
+            ax.set(xlabel='Parameter', ylabel='Likelihood', title='Pos Param vs Likelihood')
+            plt.savefig('%s/plot.png'% (self.filename), bbox_inches='tight', dpi=300, transparent=False)
+            plt.show()
 
         # Storing RMSE, tau values and adding initial run to accepted list
-        start = time.time()
 
-        i = 0
         
-        for r in range(len(rain)):
-            for e in range(len(erod)):
-                print '\n'
-                print 'Rain : ', rain[r], '  Erod : ', erod[e]
-                print 'Simtime', self.simtime
-                
-                # Updating rain parameter and checking limits
-                p_rain = rain[r]
-                
-                # Updating edodibility parameter and checking limits
-                p_erod = erod[e]
-
-                p_m = np.random.normal(0.5, 0.05)
-                p_n = np.random.normal(1.0, 0.05)
-                p_marinediff = np.random.normal(np.mean(self.marinelimit), np.std(self.marinelimit)/2)
-                p_aerialdiff = np.random.normal(np.mean(self.aeriallimit), np.std(self.aeriallimit)/2)
-
-                # Creating storage for parameters to be passed to blackBox model
-                v_proposal = []
-                v_proposal.append(p_rain)
-                v_proposal.append(p_erod)
-                v_proposal.append(p_m)
-                v_proposal.append(p_n)
-                v_proposal.append(p_marinediff)
-                v_proposal.append(p_aerialdiff)
-
-                # Passing paramters to calculate likelihood and rmse with new tau
-                likelihood, sq_error, tau_elev, tau_erdp_pts = self.likelihoodFunc(v_proposal)
-                print 'sq_error : ', sq_error, 'tau_elev :', tau_elev, 'tau_erdp_pts: ',tau_erdp_pts
-                pos_erod[i] = p_erod
-                pos_rain[i] = p_rain
-                pos_m[i] = p_m
-                pos_n[i] = p_n
-                pos_marinediff[i] = p_marinediff
-                pos_aerialdiff[i] = p_aerialdiff
-
-                pos_likl[r,e] = likelihood
-                pos_sq_error[r,e] = sq_error
-                pos_tau_elev[r,e] = tau_elev
-                pos_tau_erdp_pts[r,e] = tau_erdp_pts
-                self.storeParams(i, pos_params, pos_likl[r,e])
-
-                i += 1
-
-        # self.plotFunctions(self.filename, pos_likl, rain, erod)
-        self.viewGrid('Log_likelihood ',self.filename, pos_likl, rain, erod)
-        self.viewGrid('Sum Squared Error',self.filename, pos_sq_error, rain, erod)
-        end = time.time()
-        total_time = end - start
+        
         print 'counter', i, '\nTime elapsed:', total_time, '\npos_likl.shape', pos_likl.shape
         
-        return (pos_rain, pos_erod, pos_likl)
+        return
 
 def main():
 
@@ -362,8 +335,8 @@ def main():
 
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
-    num_successive_topo = 4
-    simtime = -1.49E+08
+    num_successive_topo = 1
+    simtime = -1.49E+02
     sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
@@ -382,7 +355,7 @@ def main():
     minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
     maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
     
-    vec_parameters = [1.16, 0.9, 1.092, 1.5, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
+    vec_parameters = np.array([1.16, 0.9, 1.092, 1.5, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01])
     print('vec_parameters', vec_parameters)
 
     num_param = vec_parameters.size
@@ -408,8 +381,8 @@ def main():
     print '\nInput file shape', final_elev.shape, '\n'
     run_nb_str = 'liklSurface_' + str(run_nb)
 
-    bLands = BayesLands(muted, simtime, samples, final_elev, final_erdp, final_erdp_pts,final_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed)
-    [pos_rain, pos_erod, pos_likl] = bLands.likelihoodSurface()
+    bLands = BayesLands(muted, simtime, sim_interval, samples, final_elev, final_erdp, final_erdp_pts,final_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed)
+    bLands.likelihoodSurface()
 
     print 'Results are stored in ', filename
 
