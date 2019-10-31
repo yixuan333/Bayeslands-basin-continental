@@ -879,7 +879,8 @@ class results_visualisation:
 
         # Adjust precipitation values based on given parameter
         #print(input_vector[0:rain_regiontime] )
-        model.force.rainVal  = input_vector[0:rain_regiontime] 
+        
+        # model.force.rainVal  = input_vector[0:rain_regiontime] 
 
         # Adjust erodibility based on given parameter
         model.input.SPLero = input_vector[rain_regiontime]  
@@ -1166,7 +1167,7 @@ def main():
     print ('minimum error', min(rmse_elev))
     error_dict = {}
     for i,j in enumerate(rmse_elev):
-        error_dict[j[0]] = pos_param.T[i,:]
+        error_dict[j[0]] = pos_param.T[i,:] 
         # if j[0] != 0.0:
         #     # print ('\ni : ', i, '  j : ', j[0], '\n')
         #     error_dict[j[0]] = pos_param.T[i,:] 
@@ -1174,14 +1175,18 @@ def main():
         #     pass
         #     # print ('the error was 0.0')
 
-    print('min error in dict',min(error_dict))    
-    # print(' The parameters with min error are : ', error_dict[min(error_dict)], error_dict[min(error_dict)].shape )
-    variables = error_dict[min(error_dict)]
-    #print ('variables', variables, variables.shape)
+    print('min error in dict',min(error_dict))
 
-    variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
+    variables = error_dict[min(error_dict)]
+    print('variables[:15]',variables[:15])
+    np.savetxt('variables.txt', variables)
+    
+    variables[12:15] = [24000, 5, 0.01]
+    print('variables[:15]',variables[:15])
     #print('variables', variables)
     pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = True)
+
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(variables, muted = False)
 
     
     for i in range(sim_interval.size):
