@@ -1,1 +1,1 @@
-Examples/australia/stage1_100samples_carmen
+Examples/australia/results_0
