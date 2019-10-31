@@ -219,11 +219,18 @@ class ptReplica(multiprocessing.Process):
 
       
 
-        if self.Bayes_inittopoknowledge == True: 
+        '''if self.Bayes_inittopoknowledge == True: 
             inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
 
         else: 
-            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo
+            inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo'''
+
+
+        if self.Bayes_inittopoknowledge == True: 
+            inittopo_vec =     inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
+
+        else: 
+            inittopo_vec =     inittopo_vec  # for Bayeslands inittopo
   
 
 
@@ -239,7 +246,7 @@ class ptReplica(multiprocessing.Process):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):
-                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n])*0.95 +  (v_[l][w])*0.05 
+                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n])*0.5 +  (v_[l][w])*0.5 
  
 
 
@@ -250,7 +257,7 @@ class ptReplica(multiprocessing.Process):
             w = sub_gridwidth-1
             for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid,  length):
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.95 +  (v_[l][w])*0.05   
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5   
                         # groundtruth_topo[m][n]   +=  v_[l][w] 
 
         for w in range(0,sub_gridwidth -1): 
@@ -259,7 +266,7 @@ class ptReplica(multiprocessing.Process):
             for m in range(l * len_grid,width):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         # groundtruth_topo[m][n]   +=  v_[l][w]
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.95 +  (v_[l][w])*0.05  
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5 
 
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
@@ -1214,10 +1221,10 @@ def main():
     #print(vec_parameters)
 
 
-    Bayes_inittopoknowledge = True # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
+    Bayes_inittopoknowledge = False # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
 
     if Bayes_inittopoknowledge == True:  
-        mean_pos = np.loadtxt('Examples/australia/stage1_400samples'+'/mean_pos.txt')
+        mean_pos = np.loadtxt('Examples/australia/stage1_100samples_carmen'+'/mean_pos.txt')
         x = np.reshape(mean_pos[15:], (20, -1) )
         #print(x, ' x')
 
