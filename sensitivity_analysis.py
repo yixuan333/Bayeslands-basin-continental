@@ -49,7 +49,7 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 class BayesLands():
-    def __init__(self, muted, simtime, samples, real_elev , real_erdp, real_erdp_pts, real_elev_pts, erodep_coords, filename, xmlinput, erodlimits, rainlimits, mlimit, nlimit, marinelimit, aeriallimit, run_nb, likl_sed):
+    def __init__(self, muted, simtime, samples, real_elev , real_erdp, real_erdp_pts, real_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
         self.filename = filename
         self.input = xmlinput
         self.real_elev = real_elev
@@ -64,24 +64,11 @@ class BayesLands():
         self.samples = samples
         self.run_nb = run_nb
         self.muted = muted
-        self.erodlimits = erodlimits
-        self.rainlimits = rainlimits
-        self.mlimit = mlimit
-        self.nlimit = nlimit
-        self.marinelimit = marinelimit
-        self.aeriallimit = aeriallimit
+        self.minlimits_vec = minlimits_vec
+        self.maxlimits_vec = maxlimits_vec
+        self.vec_parameters = vec_parameters
 
-        self.initial_erod = []
-        self.initial_rain = []
-        self.initial_m = []
-        self.initial_n = []
-
-        self.step_rain = (rainlimits[1]- rainlimits[0])*0.01
-        self.step_erod = (erodlimits[1] - erodlimits[0])*0.01
-        self.step_m = (mlimit[1] - mlimit[0])*0.01
-        self.step_n = (nlimit[1] - nlimit[0])*0.01
-
-        self.sim_interval = np.arange(0, self.simtime+1, self.simtime/4)
+        self.simtime = simtime
         self.burn_in = 0.0
 
     def run_badlands(self, input_vector):
@@ -125,7 +112,7 @@ class BayesLands():
 
         # Adjust precipitation values based on given parameter
         #print(input_vector[0:rain_regiontime] )
-        model.force.rainVal  = input_vector[0:rain_regiontime] 
+        # model.force.rainVal  = input_vector[0:rain_regiontime] 
 
         # Adjust erodibility based on given parameter
         model.input.SPLero = input_vector[rain_regiontime]  
@@ -199,70 +186,7 @@ class BayesLands():
         dzreg = np.reshape(dzi,(ny,nx))
         return zreg,dzreg
 
-    def viewGrid(self, plot_name ,fname, Z, rain, erod, width = 1000, height = 1000, zmin = None, zmax = None, zData = None, title='Export Grid'):
-        """
-        Use Plotly library to visualise the grid in 3D.
-
-        Parameters
-        ----------
-        variable : resolution
-            Required resolution for the model grid (in metres).
-        variable: width
-            Figure width.
-        variable: height
-            Figure height.
-        variable: zmin
-            Minimal elevation.
-        variable: zmax
-            Maximal elevation.
-        variable: height
-            Figure height.
-        variable: zData
-            Elevation data to plot.
-        variable: title
-            Title of the graph.
-        """
-
-        zData = Z
-
-        if zmin == None:
-            zmin = zData.min()
-
-        if zmax == None:
-            zmax = zData.max()
-        axislabelsize = 20
-
-        data = Data([ Surface( x=rain, y=erod, z=zData ) ])
-
-        layout = Layout(
-        autosize=True, 
-        width=width,
-        height=height,
-        scene=Scene(
-            zaxis=ZAxis(title = 'L ', range=[zmin,zmax], autorange=False, nticks=5, gridcolor='rgb(255, 255, 255)',
-                        gridwidth=2, zerolinecolor='rgb(255, 255, 255)', zerolinewidth=2, showticklabels = True,  titlefont=dict(size=axislabelsize),
-                        tickfont=dict(size=14 ),),
-            xaxis=XAxis(title = 'Rain ',nticks = 8, gridcolor='rgb(255, 255, 255)', gridwidth=2,zerolinecolor='rgb(255, 255, 255)',
-                        zerolinewidth=2, showticklabels = True,  titlefont=dict(size=axislabelsize),  tickfont=dict(size=14 ),),
-            yaxis=YAxis(title = 'Erodibility ',nticks = 8, gridcolor='rgb(255, 255, 255)', gridwidth=2,zerolinecolor='rgb(255, 255, 255)',
-                        zerolinewidth=2, showticklabels = True,  titlefont=dict(size=axislabelsize),  tickfont=dict(size=14 ),),
-            bgcolor="rgb(244, 244, 248)"
-            )
-        )
-
-        fig = Figure(data=data, layout=layout)
-        
-        camera = dict(up=dict(x=0, y=0, z=1),
-        center=dict(x=0.0, y=0.0, z=0.0),
-        eye=dict(x=1.25, y=1.25, z=1.25)
-        )
-
-        fig['layout'].update(scene=dict(camera=camera))
-
-        graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename='%s/plots/elev_grid_%s.html' %(fname, plot_name), validate=False)
-        return
-
-    def plotFunctions(self, fname, pos_likl, pos_rain, pos_erod):
+    def plotFunctions(self, fname, pos_likl, pos_params):
         nb_bins=30
         font = 9
         width = 1
@@ -278,22 +202,9 @@ class BayesLands():
         
         ax1 = fig.add_subplot(211, projection = '3d')
         ax1.set_facecolor('#f2f2f3')
-        X = pos_rain
-        Y = pos_erod
-
-        R = X/Y
-
-        X, Y = np.meshgrid(X, Y)
-        Z = pos_likl
-
-        print 'X shape ', X.shape, 'Y shape ', Y.shape, 'Z shape ', Z.shape
-
-        surf = ax1.plot_surface(X,Y,Z, cmap = cm.coolwarm, linewidth= 0, antialiased = False)
-        ax1.set_zlim(Z.min(), Z.max())
-        ax1.zaxis.set_major_locator(LinearLocator(10))
-        ax1.zaxis.set_major_formatter(FormatStrFormatter('%.05f'))
-        # Add a color bar which maps values to colors.
-
+        
+        ax1.plot(pos_params, pos_likl)
+        ax.set(xlabel='Parameter', ylabel='Likelihood', title='Pos Param vs Likelihood')
         fig.colorbar(surf, shrink=0.5, aspect=5)
         plt.savefig('%s/plot.png'% (fname), bbox_inches='tight', dpi=300, transparent=False)
         plt.show()
@@ -303,28 +214,23 @@ class BayesLands():
         
         """
         pos_likl = str(pos_likl)
-        pos_rain = str(pos_rain)
-        pos_erod = str(pos_erod)
-        pos_m = str(pos_m)
-        pos_n = str(pos_n)
-        tausq_elev = str(np.sqrt(tausq_elev)) 
-        tausq_erdp_pts = str(np.sqrt(tausq_erdp_pts)) 
+        pos_params = str(pos_rain)
 
         if not os.path.isfile(('%s/exp_data.txt' % (self.filename))):
             with file(('%s/exp_data.txt' % (self.filename)),'w') as outfile:
                 # outfile.write('\n# {0}\t'.format(naccept))
-                outfile.write(pos_rain)
+                outfile.write(pos_params)
                 outfile.write('\t')
                 outfile.write(pos_likl)
                 outfile.write('\n')
         else:
             with file(('%s/exp_data.txt' % (self.filename)),'a') as outfile:
-                outfile.write(pos_rain)
+                outfile.write(pos_params)
                 outfile.write('\t')
                 outfile.write(pos_likl)
                 outfile.write('\n')
-                  
-   def likelihood_func(self,input_vector): 
+
+    def likelihood_func(self,input_vector): 
 
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
            
@@ -340,7 +246,7 @@ class BayesLands():
 
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
 
-        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep  )
+        likelihood = np.sum(likelihood_elev) +  (likelihood_erodep  )
 
         rmse_elev = np.sqrt(tausq)
         rmse_erodep = np.sqrt(tau_erodep) 
@@ -348,14 +254,11 @@ class BayesLands():
         avg_rmse_er = 0#np.average(rmse_erodep)
         avg_rmse_el = 0#np.average(rmse_elev_pts)
 
-        likelihood = likelihood *(1.0/self.adapttemp)
-
         print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
-        print(likelihood , likelihood_,  self.adapttemp,     ' ----    *** ------------------')
+        print(likelihood ,  self.adapttemp,     ' ----    *** ------------------')
 
-        return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep]
-
+        return likelihood, rmse_elev_pts, rmse_erodep
 
     def likelihoodSurface(self):
         
@@ -366,21 +269,22 @@ class BayesLands():
         real_erdp = self.real_erdp
         real_erdp_pts = self.real_erdp_pts
 
-        # Creating storage for data
-        pos_erod = np.zeros(samples)
-        pos_rain = np.zeros(samples)
-        pos_m = np.zeros(samples)
-        pos_n = np.zeros(samples)
-        pos_marinediff = np.zeros(samples)
-        pos_aerialdiff = np.zeros(samples)
-        # List of accepted samples
         count_list = []
 
-        rain = np.linspace(self.rainlimits[0], self.rainlimits[1], num = int(math.sqrt(samples)), endpoint = False)
-        erod = np.linspace(self.erodlimits[0], self.erodlimits[1], num = int(math.sqrt(samples)), endpoint = False)
+        variables = np.zeros((self.vec_parameters.size,int(math.sqrt(samples))))
+        print ('variables', variables.shape)
+        # for i in range(len(pos_params))
 
-        dimx = rain.shape[0]
-        dimy = erod.shape[0]
+        for x in range(len(self.vec_parameters)):
+            
+            variables[x,:] = np.linspace(self.minlimits_vec[x], self.maxlimits_vec[x], num = int(math.sqrt(samples)), endpoint = False)
+
+        for i, v in enumerate(variables):
+            print ('i and v', i , v)
+            for j in v:
+                vec_parameters[i] = j
+                likelihood, sq_error, tau_elev, tau_erdp_pts = self.likelihoodFunc(vec_parameters)
+
 
         pos_likl = np.zeros((dimx, dimy))
         pos_sq_error = np.zeros((dimx, dimy))
@@ -458,15 +362,32 @@ def main():
 
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
-    simtime = -1.49E+06
-    rainlimits = [0.0, 2.0]
-    erodlimits = [5.e-7, 1.5e-6]
-    mlimit = [0.4, 0.6]
-    nlimit = [0.9, 1.1]
-    marinelimit = [5.e-3,4.e-2]
-    aeriallimit = [3.e-2,7.e-2]
-    true_rain = 1.5
-    true_erod = 5.e-5
+    num_successive_topo = 4
+    simtime = -1.49E+08
+    sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    print ('Simulation time interval before',sim_interval)
+    if simtime < 0:
+        sim_interval = sim_interval[::-1]
+    print("Simulation time interval", sim_interval)
+
+    rain_min = 0 
+    rain_max = 3
+    # assume 4 regions and 4 time scales
+    rain_regiongrid = 1  # how many regions in grid format 
+    rain_timescale = 4  # to show climate change 
+    rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale) 
+    rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
+    minlimits_others = [5.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 23001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+    maxlimits_others = [2.e-6, 1 ,  2, 0.2, 0.2, 0.2, 1, 10, 25002, 6, 0.2]
+    minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
+    maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
+    
+    vec_parameters = [1.16, 0.9, 1.092, 1.5, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
+    print('vec_parameters', vec_parameters)
+
+    num_param = vec_parameters.size
+    print('num_param', num_param)
+
     likl_sed = True
     erodep_coords = np.loadtxt('%s/data/erdp_coords.txt' %(directory)) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
     erodep_coords = np.array(erodep_coords, dtype = 'int')
@@ -484,19 +405,10 @@ def main():
         os.makedirs('%s/liklSurface_%s/prediction_data' % (directory,run_nb))
         filename = ('%s/liklSurface_%s' % (directory,run_nb))
 
-
-    with file(('%s/liklSurface_%s/description.txt' % (directory,run_nb)),'a') as outfile:
-            outfile.write('\n\tsamples: {0}'.format(samples))
-            outfile.write('\n\terod_limits: {0}'.format(erodlimits))
-            outfile.write('\n\train_limits: {0}'.format(rainlimits))
-            outfile.write('\n\terdp coords: {0}'.format(erodep_coords))
-            outfile.write('\n\tlikl_sed: {0}'.format(likl_sed))
-            outfile.write('\n\tfilename: {0}'.format(filename))
-
     print '\nInput file shape', final_elev.shape, '\n'
     run_nb_str = 'liklSurface_' + str(run_nb)
 
-    bLands = BayesLands(muted, simtime, samples, final_elev, final_erdp, final_erdp_pts,final_elev_pts, erodep_coords, filename, xmlinput, erodlimits, rainlimits, mlimit, nlimit, marinelimit, aeriallimit, run_nb_str, likl_sed)
+    bLands = BayesLands(muted, simtime, samples, final_elev, final_erdp, final_erdp_pts,final_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed)
     [pos_rain, pos_erod, pos_likl] = bLands.likelihoodSurface()
 
     print 'Results are stored in ', filename
