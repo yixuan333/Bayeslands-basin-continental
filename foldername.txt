@@ -1,1 +1,5 @@
+<<<<<<< Updated upstream
 Examples/australia/results_2
+=======
+Examples/australia/init_carmen100samples
+>>>>>>> Stashed changes

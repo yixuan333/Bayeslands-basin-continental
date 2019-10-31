@@ -1156,9 +1156,7 @@ def main():
 
     time_total = (timer_end-timer_start)/60
 
-    # print (rmse_el_min, ' minimum value ', np.where(rmse_elev == rmse_el_min), '@ this index')
-
-    # print('pos_param',pos_param.size, pos_param.shape)
+    np.savetxt(fname+'/rmseelev.txt', rmse_elev)
 
 ############################################################################################
     print ('minimum error', min(rmse_elev))
@@ -1175,15 +1173,15 @@ def main():
     print('min error in dict',min(error_dict))
 
     variables = error_dict[min(error_dict)]
-    print('variables[:15]',variables[:15])
+    
     np.savetxt('variables.txt', variables)
     
-    variables[12:15] = [24000, 5, 0.01]
-    print('variables[:15]',variables[:15])
-    #print('variables', variables)
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = True)
+    # variables[12:15] = [24000, 5, 0.01]
+    # print('variables[:15]',variables[:15])
 
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(variables, muted = False)
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
+
+    # pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(variables, muted = False)
 
     
     for i in range(sim_interval.size):
