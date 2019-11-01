@@ -1162,16 +1162,16 @@ def main():
     print ('minimum error', min(rmse_elev))
     error_dict = {}
     for i,j in enumerate(rmse_elev):
-        error_dict[j[0]] = pos_param.T[i,:] 
-        # if j[0] != 0.0:
-        #     # print ('\ni : ', i, '  j : ', j[0], '\n')
-        #     error_dict[j[0]] = pos_param.T[i,:] 
-        # else:
-        #     pass
-        #     # print ('the error was 0.0')
+        # error_dict[j[0]] = pos_param.T[i,:] 
+        if j[0] != 0.0:
+            print ('\ni : ', i, '  j : ', j[0], '\n')
+            error_dict[j[0]] = pos_param.T[i,:] 
+        else:
+            pass
+            # print ('the error was 0.0')
 
     print('min error in dict',min(error_dict))
-
+    print('error_dict[min(error_dict)] ', error_dict[min(error_dict)])
     variables = error_dict[min(error_dict)]
     
     np.savetxt('variables.txt', variables)

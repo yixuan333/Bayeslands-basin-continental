@@ -49,13 +49,13 @@ from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 class BayesLands():
-    def __init__(self, muted, simtime, sim_interval, samples, real_elev , real_erdp, real_erdp_pts, real_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
+    def __init__(self, muted, simtime, sim_interval, samples, real_elev , real_erodep, real_erodep_pts, real_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
         self.filename = filename
         self.input = xmlinput
         self.real_elev = real_elev
-        self.real_erdp = real_erdp
+        self.real_erodep = real_erodep
         
-        self.real_erdp_pts = real_erdp_pts
+        self.real_erodep_pts = real_erodep_pts
         self.real_elev_pts = real_elev_pts
         self.erodep_coords = erodep_coords
         self.likl_sed = likl_sed
@@ -150,6 +150,7 @@ class BayesLands():
             erodep_vec[self.simtime] = erodep
             erodep_pts_vec[self.simtime] = erodep_pts
             elev_pts_vec[self.simtime] = elev_pts
+            print ('Interval ', x )
  
         return elev_vec, erodep_vec, erodep_pts_vec, elev_pts_vec
 
@@ -209,7 +210,7 @@ class BayesLands():
         plt.savefig('%s/plot.png'% (fname), bbox_inches='tight', dpi=300, transparent=False)
         plt.show()
 
-    def storeParams(self, vec_parameters , pos_likl):
+    def storeParams(self, count, vec_parameters , pos_likl):
         """
         
         """
@@ -231,8 +232,8 @@ class BayesLands():
                 outfile.write('\n')
 
     def likelihood_func(self,input_vector): 
-
-        pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
+        print('Im here now')
+        pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector)
            
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         # tau_erodep =  np.zeros(self.sim_interval.size)  
@@ -254,9 +255,7 @@ class BayesLands():
         avg_rmse_er = 0#np.average(rmse_erodep)
         avg_rmse_el = 0#np.average(rmse_elev_pts)
 
-        print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
-
-        print(likelihood ,  self.adapttemp,     ' ----    *** ------------------')
+        # print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
         return likelihood, rmse_elev_pts, rmse_erodep
 
@@ -266,8 +265,8 @@ class BayesLands():
         samples = self.samples
 
         real_elev = self.real_elev
-        real_erdp = self.real_erdp
-        real_erdp_pts = self.real_erdp_pts
+        real_erodep = self.real_erodep
+        real_erodep_pts = self.real_erodep_pts
 
         count_list = []
         font = 9
@@ -275,7 +274,7 @@ class BayesLands():
         variables = np.zeros((self.vec_parameters.size,int(math.sqrt(samples))))
         pos_likl = np.zeros((variables.shape[0], variables.shape[1]))
         pos_rmse_elev = np.zeros((variables.shape[0], variables.shape[1]))
-        pos_rmse_erdp = np.zeros((variables.shape[0], variables.shape[1]))
+        pos_rmse_erodep = np.zeros((variables.shape[0], variables.shape[1]))
         
         print ('variables', variables.shape)
 
@@ -291,9 +290,9 @@ class BayesLands():
 
                 v_prop = self.vec_parameters
                 v_prop[i] = j
-                likelihood, rmse_elev, rmse_erdp = self.likelihood_func(v_prop)
-                pos_likl[i,j] = likelihood
-                self.storeParams(i, vec_parameters, pos_likl[r,e])
+                likelihood, rmse_elev, rmse_erodep = self.likelihood_func(v_prop)
+                pos_likl[i,int(j)] = likelihood
+                self.storeParams(i, self.vec_parameters, pos_likl[i,int(j)])
                 end = time.time()
                 total_time = end - start
                 print 'counter i ', i,'var v ', v ,'\nTime elapsed:', total_time
@@ -317,8 +316,6 @@ class BayesLands():
 
         # Storing RMSE, tau values and adding initial run to accepted list
 
-        
-        
         print 'counter', i, '\nTime elapsed:', total_time, '\npos_likl.shape', pos_likl.shape
         
         return
@@ -336,7 +333,7 @@ def main():
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
     num_successive_topo = 1
-    simtime = -1.49E+02
+    simtime = -1.49E+04
     sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
@@ -366,9 +363,9 @@ def main():
     erodep_coords = np.array(erodep_coords, dtype = 'int')
 
     final_elev = np.loadtxt('%s/data/final_elev.txt' %(directory))
-    final_erdp = np.loadtxt('%s/data/final_erdp.txt' %(directory))
+    final_erodep = np.loadtxt('%s/data/final_erdp.txt' %(directory))
     final_elev_pts = np.loadtxt('%s/data/final_elev_pts_.txt' %(directory)) 
-    final_erdp_pts = np.loadtxt('%s/data/final_erdp_pts_.txt' %(directory)) 
+    final_erodep_pts = np.loadtxt('%s/data/final_erdp_pts_.txt' %(directory)) 
 
     while os.path.exists('%s/liklSurface_%s' % (directory,run_nb)):
         run_nb+=1
@@ -381,7 +378,7 @@ def main():
     print '\nInput file shape', final_elev.shape, '\n'
     run_nb_str = 'liklSurface_' + str(run_nb)
 
-    bLands = BayesLands(muted, simtime, sim_interval, samples, final_elev, final_erdp, final_erdp_pts,final_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed)
+    bLands = BayesLands(muted, simtime, sim_interval, samples, final_elev, final_erodep, final_erodep_pts,final_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed)
     bLands.likelihoodSurface()
 
     print 'Results are stored in ', filename
