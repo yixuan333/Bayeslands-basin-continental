@@ -25,12 +25,12 @@ def problem_setup(problem = 1):
         groundtruth_erodep_pts = np.loadtxt(problemfolder + 'data/final_erdp_pts.txt')
         groundtruth_elev_pts = np.loadtxt(problemfolder + 'data/final_elev_pts.txt')
         res_summaryfile = '/results.txt'
-        inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruthfine.txt') #  expert knowledge  20 x 20
-        #inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruth.txt') #  expert knowledge 10 x 10
+        #inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruthfine.txt') #  expert knowledge  20 x 20
+        inittopo_expertknow = np.loadtxt(problemfolder + 'data/init_topo_20_20.txt') #  expert knowledge 10 x 10
  
         inittopo_estimated = []
 
-        inittopo_expertknow = inittopo_expertknow.T
+        inittopo_expertknow = inittopo_expertknow 
 
         
          
@@ -59,11 +59,11 @@ def problem_setup(problem = 1):
 
         rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale)
-        #minlimits_others = [3.e-6, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
-        #maxlimits_others = [7.e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
+        minlimits_others = [3.e-6, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
+        maxlimits_others = [7.e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
 
-        minlimits_others = [5.e-6, 0.5, 1, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
-        maxlimits_others = [5.e-6, 0.5, 1, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
+        #minlimits_others = [5.e-6, 0.5, 1, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
+        #maxlimits_others = [5.e-6, 0.5, 1, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
         #minlimits_vec = np.append(rain_minlimits,minlimits_others)
         #maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
         #print(maxlimits_vec, ' maxlimits ')
@@ -83,8 +83,8 @@ def problem_setup(problem = 1):
 
 
          
-        inittopo_minlimits = np.repeat( -400   , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(400 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -200   , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------

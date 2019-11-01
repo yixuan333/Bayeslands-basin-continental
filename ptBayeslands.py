@@ -440,7 +440,7 @@ class ptReplica(multiprocessing.Process):
         avg_rmse_er = 0#np.average(rmse_erodep)
         avg_rmse_el = 0#np.average(rmse_elev_pts)
 
-        likelihood = likelihood *(1.0/self.adapttemp)
+        likelihood = likelihood_ *(1.0/self.adapttemp)
 
         print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
