@@ -472,8 +472,8 @@ class ptReplica(multiprocessing.Process):
 
         likeh_list = np.zeros((samples,2)) # one for posterior of likelihood and the other for all proposed likelihood
         likeh_list[0,:] = [-10000, -10000] # to avoid prob in calc of 5th and 95th percentile   later
-        rmse_elev  = np.zeros(samples)
-        rmse_erodep = np.zeros(samples)
+        rmse_elev  = np.ones(samples)  
+        rmse_erodep = np.ones(samples)  
         count_list.append(0) # just to count number of accepted for each chain (replica)
         accept_list = np.zeros(samples)
         
