@@ -174,8 +174,11 @@ def problem_setup(problem = 1):
         #minlimits_others = [8.e-7, 0.50, 0.8, 0.003 ,  0.0008, 0.0008, 0.4, 4, 24001, 4, 0.005]  # used for Bayeslands initopo (stage 1) 
         #maxlimits_others = [1.2e-6, 0.55 , 1.2, 0.006, 0.002, 0.0012, 0.6, 6, 24002, 6, 0.02] # from Carmen
  
-        minlimits_others = [5.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 23001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
-        maxlimits_others = [5.e-6, 1 ,  2, 0.2, 0.2, 0.2, 1, 10, 25002, 6, 0.2]
+        minlimits_others = [9.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 23001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        maxlimits_others = [2.e-6, 1 ,  2, 0.2, 0.01, 0.01, 1, 10, 25002, 6, 0.05]
+
+
+        #variables[:15] = [1.0, 1.0, 1.0, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
  
  
  
@@ -199,8 +202,8 @@ def problem_setup(problem = 1):
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
 
          
-        inittopo_minlimits = np.repeat( -400  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(400 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -200  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------

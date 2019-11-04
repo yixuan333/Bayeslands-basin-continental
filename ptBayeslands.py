@@ -152,7 +152,7 @@ class ptReplica(multiprocessing.Process):
  
 
 
-        fnameplot = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
+        '''fnameplot = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
 
         print(fnameplot)
 
@@ -163,7 +163,7 @@ class ptReplica(multiprocessing.Process):
         fnameplot = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'_.png' 
         plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
-        plt.clf()
+        plt.clf()'''
 
 
 
@@ -215,18 +215,10 @@ class ptReplica(multiprocessing.Process):
         
 
         if problem == 1:  
-            if self.Bayes_inittopoknowledge == True: 
-                inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
+            inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec  
 
-            else: 
-                inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo'''
-
-        else:  
-            if self.Bayes_inittopoknowledge == True: 
-                inittopo_vec =     inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
-
-            else: 
-                inittopo_vec =     inittopo_vec  # for Bayeslands  
+        else:
+            inittopo_vec =     inittopo_vec 
 
 
 
@@ -267,11 +259,11 @@ class ptReplica(multiprocessing.Process):
             for n in range(0 ,   inside.shape[1]):  
                 groundtruth_topo[m][n]   = inside[m][n]  
  
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(0.5,0.5)) # change sigma to higher values if needed 
+        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(1 ,1 )) # change sigma to higher values if needed 
 
 
         self.plot3d_plotly(groundtruth_topo, 'inittopo_smooth_')
-        #self.plot3d_plotly(self.real_elev, 'final_')
+        self.plot3d_plotly(reconstructed_topo, 'inittopo_')
 
 
         return groundtruth_topo
@@ -469,8 +461,8 @@ class ptReplica(multiprocessing.Process):
 
         likeh_list = np.zeros((samples,2)) # one for posterior of likelihood and the other for all proposed likelihood
         likeh_list[0,:] = [-10000, -10000] # to avoid prob in calc of 5th and 95th percentile   later
-        rmse_elev  = np.zeros(samples)
-        rmse_erodep = np.zeros(samples)
+        rmse_elev  = np.ones(samples)  
+        rmse_erodep = np.ones(samples)  
         count_list.append(0) # just to count number of accepted for each chain (replica)
         accept_list = np.zeros(samples)
         
@@ -1206,15 +1198,15 @@ def main():
     #print(vec_parameters)
 
 
-    Bayes_inittopoknowledge = False # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge
+    Bayes_inittopoknowledge = False # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge  # NOT USED ANYMORE
 
-    if Bayes_inittopoknowledge == True:  
+    '''if Bayes_inittopoknowledge == True:  
         mean_pos = np.loadtxt('Examples/australia/stage1_100samples_carmen'+'/mean_pos.txt')
         x = np.reshape(mean_pos[15:], (20, -1) )
         #print(x, ' x')
 
         inittopo_expertknow = inittopo_expertknow  + x  # all values after environmental params are init topo estimates of expert knowledge uncertainity 
-        #print(inittopo_expertknow, ' inittopo_expertknow') 
+        #print(inittopo_expertknow, ' inittopo_expertknow') '''
 
 
     fname = ""
