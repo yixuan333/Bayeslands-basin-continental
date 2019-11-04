@@ -188,7 +188,7 @@ class BayesLands():
         dzreg = np.reshape(dzi,(ny,nx))
         return zreg,dzreg
 
-    def plotFunctions(self, fname, pos_likl, pos_params):
+    def plotFunctions(self, fname, pos_rmse, pos_params):
         font = 9
         width = 1
 
@@ -204,17 +204,17 @@ class BayesLands():
         ax1 = fig.add_subplot(211, projection = '3d')
         ax1.set_facecolor('#f2f2f3')
         
-        ax1.plot(pos_params, pos_likl)
+        ax1.plot(pos_params, pos_rmse)
         ax.set(xlabel='Parameter', ylabel='Likelihood', title='Pos Param vs Likelihood')
         fig.colorbar(surf, shrink=0.5, aspect=5)
         plt.savefig('%s/plot.png'% (fname), bbox_inches='tight', dpi=300, transparent=False)
         plt.show()
 
-    def storeParams(self, count, vec_parameters , pos_likl):
+    def storeParams(self, count, vec_parameters , pos_rmse):
         """
         
         """
-        pos_likl = str(pos_likl)
+        pos_rmse = str(pos_rmse)
         vec_parameters = str(vec_parameters)
 
         if not os.path.isfile(('%s/exp_data.txt' % (self.filename))):
@@ -222,17 +222,16 @@ class BayesLands():
                 # outfile.write('\n# {0}\t'.format(naccept))
                 outfile.write(vec_parameters)
                 outfile.write('\t')
-                outfile.write(pos_likl)
+                outfile.write(pos_rmse)
                 outfile.write('\n')
         else:
             with file(('%s/exp_data.txt' % (self.filename)),'a') as outfile:
                 outfile.write(vec_parameters)
                 outfile.write('\t')
-                outfile.write(pos_likl)
+                outfile.write(pos_rmse)
                 outfile.write('\n')
 
     def likelihood_func(self,input_vector): 
-        print('Im here now')
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector)
            
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
@@ -272,6 +271,7 @@ class BayesLands():
         font = 9
         width = 1
         variables = np.zeros((self.vec_parameters.size,int(math.sqrt(samples))))
+        pos_rmse = np.zeros((variables.shape[0], variables.shape[1]))
         pos_likl = np.zeros((variables.shape[0], variables.shape[1]))
         pos_rmse_elev = np.zeros((variables.shape[0], variables.shape[1]))
         pos_rmse_erodep = np.zeros((variables.shape[0], variables.shape[1]))
@@ -284,39 +284,42 @@ class BayesLands():
 
         
         for i, v in enumerate(variables):
-            print ('i and v', i , v)
-            for j in v:
+            for j, w in enumerate(v):
                 start = time.time()
 
                 v_prop = self.vec_parameters
                 v_prop[i] = j
                 likelihood, rmse_elev, rmse_erodep = self.likelihood_func(v_prop)
-                pos_likl[i,int(j)] = likelihood
-                self.storeParams(i, self.vec_parameters, pos_likl[i,int(j)])
+                pos_rmse[i,int(j)] = rmse_elev
+                self.storeParams(i, self.vec_parameters, pos_rmse[i,int(j)])
                 end = time.time()
                 total_time = end - start
-                print 'counter i ', i,'var v ', v ,'\nTime elapsed:', total_time
+                print 'counter i ', i,'\n v',v,' \nw', w ,'\nj  ',j,'\nTime elapsed:', total_time
 
-            fig = plt.figure(figsize=(15,15))
-            ax = fig.add_subplot(111)
-            ax.spines['top'].set_color('none')
-            ax.spines['bottom'].set_color('none')
-            ax.spines['left'].set_color('none')
-            ax.spines['right'].set_color('none')
-            ax.tick_params(labelcolor='w', top='off', bottom='off', left='off', right='off')
-            ax.set_title(' Likelihood', fontsize=  font+2)#, y=1.02)
-            
-            ax1 = fig.add_subplot(211, projection = '3d')
-            ax1.set_facecolor('#f2f2f3')
-            
-            ax1.plot(variables[i,:], pos_likl[i,:])
-            ax.set(xlabel='Parameter', ylabel='Likelihood', title='Pos Param vs Likelihood')
-            plt.savefig('%s/plot.png'% (self.filename), bbox_inches='tight', dpi=300, transparent=False)
-            plt.show()
+            # fig = plt.figure(figsize=(15,15))
+            # ax = fig.add_subplot(111)
+            # ax.spines['top'].set_color('none')
+            # ax.spines['bottom'].set_color('none')
+            # ax.spines['left'].set_color('none')
+            # ax.spines['right'].set_color('none')
+            # ax.tick_params(labelcolor='w')
+            # ax.set_title(' Likelihood', fontsize=  font+2)#, y=1.02)
+            # ax.set_facecolor('#f2f2f3')
+            # ax.plot(variables[i,:], pos_rmse[i,:])
+            # ax.set(xlabel='Parameter', ylabel='Likelihood', title='Pos Param vs Likelihood')
+            # plt.savefig('%s/plot_%s_%s.png'% (self.filename,i,int(j)), bbox_inches='tight', dpi=300, transparent=False)
+            plt.plot(variables[i,:], pos_rmse[i,:])
+            plt.xlabel('Parameter')
+            plt.ylabel('RMSE ')
+            fig, ax = plt.subplots()
+            ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.0e'))
+            plt.savefig('%s/plot_%s_%s.png'% (self.filename,i,int(j)), bbox_inches='tight', dpi=300, transparent=False)
+            # plt.show()
+            plt.close()
 
         # Storing RMSE, tau values and adding initial run to accepted list
 
-        print 'counter', i, '\nTime elapsed:', total_time, '\npos_likl.shape', pos_likl.shape
+        print 'counter', i, '\nTime elapsed:', total_time, '\npos_rmse.shape', pos_rmse.shape
         
         return
 

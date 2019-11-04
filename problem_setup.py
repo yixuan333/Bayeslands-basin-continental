@@ -135,7 +135,8 @@ def problem_setup(problem = 1):
         groundtruth_elev = np.loadtxt(problemfolder +'data/final_elev_filtered_ocean.txt')
         groundtruth_erodep = np.loadtxt(problemfolder +'data/final_erdp.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
-        groundtruth_elev_pts = np.loadtxt(problemfolder +'data/final_elev_pts_.txt')
+        # groundtruth_elev_pts = np.loadtxt(problemfolder +'data/final_elev_pts_.txt')
+        groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated.txt')
  
         inittopo_estimated = [] #np.loadtxt(problemfolder + 'init_expertknowlegeprocess/init_estimated.txt') 
 
@@ -224,7 +225,10 @@ def problem_setup(problem = 1):
         num_param = vec_parameters.size
         print(vec_parameters, 'vec_parameters') 
 
-        erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        # erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        # print('erdp_coords', erodep_coords.shape)
+        erodep_coords = np.loadtxt(problemfolder +"data/coord_final_elev.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        print('erdp_coords', erodep_coords.shape)        
         erodep_coords = np.array(erodep_coords, dtype = 'int')
 
     return (problemfolder, xmlinput, simtime, resolu_factor, init_elev ,groundtruth_elev, groundtruth_erodep,

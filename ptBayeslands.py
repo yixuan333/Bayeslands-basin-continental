@@ -424,15 +424,12 @@ class ptReplica(multiprocessing.Process):
         #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
         
 
-        likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
+        # likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
                 
-
-        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep  )
-
+        # likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep  )
+        likelihood = likelihood_elev
 
         #likelihood = np.sum(likelihood_elev_)
-
-        
 
         rmse_elev = np.sqrt(tausq)
         rmse_erodep = np.sqrt(tau_erodep) 
@@ -444,7 +441,7 @@ class ptReplica(multiprocessing.Process):
 
         print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
-        print(likelihood , likelihood_,  self.adapttemp,     ' ----    *** ------------------')
+        print(likelihood , likelihood_,  self.adapttemp,     ' ----    *** ------------------', 'rmse_elev_pts',rmse_elev_pts)
 
         return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep]
 
