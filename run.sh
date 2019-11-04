@@ -2,10 +2,10 @@
 #!/bin/bash  
 echo Running all 	 
 
-problem=2
+problem=1
 replica=8
 
-samples=50
+samples=80
 swapint=$samples
 maxtemp=2 
 burn=0.0

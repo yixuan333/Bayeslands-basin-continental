@@ -355,19 +355,13 @@ class results_visualisation:
 
         
 
+        
+
         if problem == 1:  
-            if self.Bayes_inittopoknowledge == True: 
-                inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
+            inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec  
 
-            else: 
-                inittopo_vec =  self.inittopo_expertknow.flatten()  +  inittopo_vec  # for Bayeslands inittopo'''
-
-        else:  
-            if self.Bayes_inittopoknowledge == True: 
-                inittopo_vec =     inittopo_vec/10  # we add some level of uncertaintinty after Bayeslands initopo 
-
-            else: 
-                inittopo_vec =     inittopo_vec  # for Bayeslands  
+        else:
+            inittopo_vec =     inittopo_vec 
  
 
 
@@ -1163,7 +1157,7 @@ def main():
     error_dict = {}
     for i,j in enumerate(rmse_elev):
         # error_dict[j[0]] = pos_param.T[i,:] 
-        if j[0] != 0.0:
+        if j[0] != 1.0:
             print ('\ni : ', i, '  j : ', j[0], '\n')
             error_dict[j[0]] = pos_param.T[i,:] 
         else:
@@ -1179,7 +1173,7 @@ def main():
     # variables[12:15] = [24000, 5, 0.01]
     # print('variables[:15]',variables[:15])
 
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = True)
 
     # pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(variables, muted = False)
 
