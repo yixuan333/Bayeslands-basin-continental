@@ -522,11 +522,11 @@ class results_visualisation:
         accept_list = np.zeros((self.num_chains, self.NumSamples )) 
         topo  = self.real_elev 
 
-        edp_pts_time = self.real_erodep_pts.shape[1] *self.sim_interval.size
+        edp_pts_time = self.real_erodep_pts.shape[0] *self.sim_interval.size
 
         erodep_pts = np.zeros(( self.num_chains, self.NumSamples  , edp_pts_time )) 
-        combined_erodep = np.zeros((self.num_chains, self.NumSamples, self.real_erodep_pts.shape[1] ))
-        timespan_erodep = np.zeros(( (self.NumSamples - burnin) * self.num_chains, self.real_erodep_pts.shape[1] ))
+        combined_erodep = np.zeros((self.num_chains, self.NumSamples, self.real_erodep_pts.shape[0] ))
+        timespan_erodep = np.zeros(( (self.NumSamples - burnin) * self.num_chains, self.real_erodep_pts.shape[0] ))
         rmse_elev = np.zeros((self.num_chains, self.NumSamples))
         rmse_erodep = np.zeros((self.num_chains, self.NumSamples))
  
@@ -577,7 +577,7 @@ class results_visualisation:
         v = 0 
         for name in files: 
             dat = np.loadtxt(path+name) 
-            erodep_pts[v, :, :] = dat[ : erodep_pts.shape[1],: ] 
+            erodep_pts[v, :, :] = dat[ : erodep_pts.shape[0],: ] 
             v = v +1 
 
         erodep_pts = erodep_pts[:, burnin:, :] 
@@ -1102,12 +1102,12 @@ def main():
 
     #print(erodep_pts.shape, ' erodep_pts.shape')
 
-    pred_erodep = np.zeros(( groundtruth_erodep_pts.shape[0], groundtruth_erodep_pts.shape[1] )) # just to get the right size
+    pred_erodep = np.zeros(( groundtruth_erodep_pts.shape[0], groundtruth_erodep_pts.shape[0] )) # just to get the right size
 
     for i in range(sim_interval.size): 
 
-        begin = i * groundtruth_erodep_pts.shape[1] # number of points 
-        end = begin + groundtruth_erodep_pts.shape[1] 
+        begin = i * groundtruth_erodep_pts.shape[0] # number of points 
+        end = begin + groundtruth_erodep_pts.shape[0] 
 
         pos_ed = erodep_pts[begin:end, :] 
         pos_ed = pos_ed.T 

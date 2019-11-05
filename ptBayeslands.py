@@ -262,8 +262,11 @@ class ptReplica(multiprocessing.Process):
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(1 ,1 )) # change sigma to higher values if needed 
 
 
-        self.plot3d_plotly(groundtruth_topo, 'inittopo_smooth_')
-        self.plot3d_plotly(reconstructed_topo, 'inittopo_')
+        #self.plot3d_plotly(groundtruth_topo, 'inittopo_smooth_')
+        #self.plot3d_plotly(reconstructed_topo, 'inittopo_')
+
+    
+
 
 
         return groundtruth_topo
@@ -407,6 +410,9 @@ class ptReplica(multiprocessing.Process):
            
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         # tau_erodep =  np.zeros(self.sim_interval.size)  
+
+        #self.plot3d_plotly(pred_elev_vec[self.simtime], 'Badlandstopo')
+        #self.plot3d_plotly(self.real_elev, ' self.real_elev')
         
         # tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
         tau_erodep = 0     
@@ -416,17 +422,19 @@ class ptReplica(multiprocessing.Process):
         print(self.real_elev_pts.shape,  self.real_elev_pts, ' self.real_elev_pts,  self.real_elev_pts[0]')
 
 
-        tau_elev =  np.sum(np.square(xxx - self.real_elev_pts)) #/ self.real_elev_pts.shape[1]
+        tau_elev =  np.sum(np.square(xxx - self.real_elev_pts)) / self.real_elev_pts.shape[0]
+
+        print(tausq, tau_elev, xxx.shape,  self.real_elev_pts.shape , ' tausq     tau_elev   xxx.shape   self.real_elev_pts.shape[1]  ..   .... ...  .... ...')
 
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep = 0
-        #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
+        likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
         
 
         # likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
                 
         # likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep  )
-        likelihood = likelihood_elev
+        likelihood = likelihood_elev 
 
         #likelihood = np.sum(likelihood_elev_)
 
@@ -438,7 +446,7 @@ class ptReplica(multiprocessing.Process):
 
         likelihood = likelihood*(1.0/self.adapttemp)
 
-        print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
+        print(likelihood_elev, likelihood_erodep, likelihood, rmse_elev_pts, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
         print(likelihood) # , likelihood_,  self.adapttemp,     ' ----    *** ------------------', 'rmse_elev_pts',rmse_elev_pts)
 
