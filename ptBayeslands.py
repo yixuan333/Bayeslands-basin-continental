@@ -408,11 +408,18 @@ class ptReplica(multiprocessing.Process):
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         # tau_erodep =  np.zeros(self.sim_interval.size)  
         
-        tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
-       
-        tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]))/ self.real_elev_pts.shape[1]
+        # tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
+        tau_erodep = 0     
+        xxx = pred_elev_pts_vec[self.simtime]
 
-        likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]) / tau_elev )
+        print(xxx.shape, ' xxxx ')
+        print(self.real_elev_pts.shape,  self.real_elev_pts, ' self.real_elev_pts,  self.real_elev_pts[0]')
+
+
+        tau_elev =  np.sum(np.square(xxx - self.real_elev_pts)) #/ self.real_elev_pts.shape[1]
+
+        likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
+        likelihood_erodep = 0
         #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
         
 
@@ -429,11 +436,11 @@ class ptReplica(multiprocessing.Process):
         avg_rmse_er = 0#np.average(rmse_erodep)
         avg_rmse_el = 0#np.average(rmse_elev_pts)
 
-        likelihood = likelihood_ *(1.0/self.adapttemp)
+        likelihood = likelihood*(1.0/self.adapttemp)
 
         print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
-        print(likelihood , likelihood_,  self.adapttemp,     ' ----    *** ------------------', 'rmse_elev_pts',rmse_elev_pts)
+        print(likelihood) # , likelihood_,  self.adapttemp,     ' ----    *** ------------------', 'rmse_elev_pts',rmse_elev_pts)
 
         return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep]
 
@@ -1181,8 +1188,11 @@ def main():
     groundtruth_erodep_pts, groundtruth_elev_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords,inittopo_estimated, vec_parameters, minlimits_vec,
-     maxlimits_vec) = problem_setup(problem)
+    maxlimits_vec) = problem_setup(problem)
     
+
+    print('\n\ngroundtruth_elev_pts[0]',groundtruth_elev_pts[0],'\n\n')
+
     rain_timescale = rain_intervals  # to show climate change 
 
     '''rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
