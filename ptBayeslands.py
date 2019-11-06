@@ -415,6 +415,23 @@ class ptReplica(multiprocessing.Process):
         #self.plot3d_plotly(self.real_elev, ' self.real_elev')
         
         # tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
+        
+        print(self.real_elev_pts, self.real_elev_pts .shape, ' self.real_elev_pts ')
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter'+ str(int(self.temperature*10))+'_.png' 
+        plt.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], s=2)
+        plt.savefig(fnameplot)
+        plt.clf()
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d') 
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d'+ str(int(self.temperature*10))+'_.png' 
+        ax.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], self.real_elev_pts )
+        plt.savefig(fnameplot)
+        plt.clf()
+        
+        
+         
+
         tau_erodep = 0     
         xxx = pred_elev_pts_vec[self.simtime]
 
@@ -455,6 +472,9 @@ class ptReplica(multiprocessing.Process):
     def run(self):
 
         #This is a chain that is distributed to many cores. AKA a 'Replica' in Parallel Tempering
+
+        self.plot3d_plotly(self.real_elev, 'realelev')
+        self.plot3d_plotly(self.init_elev, 'expert_inittopo')
 
         samples = self.samples
         count_list = [] 
