@@ -17,13 +17,13 @@
     <!-- Simulation time structure -->
     <time>
         <!-- Simulation start time [a] -->
-        <start>-1.49E+06</start>
+        <start>-1.49E+08</start>
         <!-- start>-1.49E+04</start> -->
 
         <!-- Simulation end time [a] -->
         <end>0</end>
         <!-- Display interval [a] -->
-        <display>1.00E+04</display>
+        <display>1.00E+06</display>
         <!-- start>-1.49E+06</start> -->
     </time>
 
@@ -32,7 +32,7 @@
         <!-- Stratal grid resolution [m] -->
         <stratdx>50000.</stratdx>
         <!-- Stratal layer interval [a] -->
-        <laytime>1.00E+04</laytime>
+        <laytime>1.00E+06</laytime>
         <!-- start>-1.49E+06</start> -->
         <!-- Surface porosity -->
         <poro0>0.49</poro0>

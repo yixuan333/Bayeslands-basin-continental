@@ -5,7 +5,7 @@ echo Running all
 problem=2
 replica=8
 
-samples=300
+samples=400
 swapint=$samples
 maxtemp=2 
 burn=0.1

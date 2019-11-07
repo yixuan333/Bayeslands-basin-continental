@@ -187,9 +187,9 @@ class results_visualisation:
             init_topo_95th = self.process_inittopo(percentile_95th[geoparam:], 'post_95th')
             init_topo_5th = self.process_inittopo(percentile_5th[geoparam:], 'post_5th')
 
-            print(mean_pos[geoparam:] - percentile_95th[geoparam:], 'init_topo_mean - init_topo_95th')
+            #print(mean_pos[geoparam:] - percentile_95th[geoparam:], 'init_topo_mean - init_topo_95th')
 
-            print(init_topo_mean[geoparam:] - init_topo_95th[geoparam:], 'init_topo_mean - init_topo_95th')
+            #print(init_topo_mean[geoparam:] - init_topo_95th[geoparam:], 'init_topo_mean - init_topo_95th')
 
             self.plot3d_plotly(init_topo_mean, 'mean_init')
             self.plot3d_plotly(init_topo_95th, 'percentile95_init')
@@ -213,12 +213,7 @@ class results_visualisation:
             lower_mid = init_topo_5th[xmid, :]
             higher_mid = init_topo_95th[xmid, :]
             mean_mid = init_topo_mean[xmid, :] 
-
-            print(higher_mid  , ' higher_mid - ')
-
-            print(  mean_mid, '   mean_mid')
-
-            print(higher_mid - mean_mid, ' higher_mid - mean_mid')
+ 
 
 
             x = np.linspace(0, self.real_elev.shape[1] * self.resolu_factor, num= self.real_elev.shape[1])
@@ -311,8 +306,7 @@ class results_visualisation:
 
 
         fnameplot = self.folder +  '/recons_initialtopo/'+fname+'.png'
-
-        print(fnameplot)
+ 
 
         plt.imshow(zData, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
@@ -337,6 +331,7 @@ class results_visualisation:
    
     def process_inittopo(self, inittopo_vec, filename):
 
+        
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
         len_grid = self.len_grid
@@ -346,7 +341,7 @@ class results_visualisation:
         sub_gridwidth =  20 #int(width/wid_grid) # 25
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
- 
+
         if problem == 1:
             reconstructed_topo  = self.real_elev.copy()  # to define the size 
             groundtruth_topo = self.real_elev.copy() 
@@ -356,14 +351,11 @@ class results_visualisation:
 
         
 
-        
-
         if problem == 1:  
             inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec  
 
         else:
             inittopo_vec =     inittopo_vec 
- 
 
 
 
@@ -395,7 +387,7 @@ class results_visualisation:
             for m in range(l * len_grid,width):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         # groundtruth_topo[m][n]   +=  v_[l][w]
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5  
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5 
 
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
@@ -404,11 +396,7 @@ class results_visualisation:
             for n in range(0 ,   inside.shape[1]):  
                 groundtruth_topo[m][n]   = inside[m][n]  
  
-        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(0.5,0.5)) # change sigma to higher values if needed 
-
-
-        self.plot3d_plotly(groundtruth_topo, filename)
-        #self.plot3d_plotly(self.real_elev, 'final_')
+        groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(1 ,1 )) # change sigma to higher values if needed 
 
 
         return groundtruth_topo
@@ -936,8 +924,7 @@ class results_visualisation:
             for count, val in enumerate(self.elev_coords):
                 elev_pts[count] = elev[val[0], val[1]]
  
-
-            print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
+ 
             elev_vec[self.simtime] = elev
             erodep_vec[self.simtime] = erodep
             erodep_pts_vec[self.simtime] = erodep_pts
@@ -1109,26 +1096,26 @@ def main():
     plt.savefig( fname+'/accept_list.pdf' )
     plt.clf()
 
-    #print(erodep_pts.shape, ' erodep_pts.shape')
+    print(erodep_pts.shape, ' erodep_pts.shape -----------------------------------------------------------------------------')
 
-    pred_erodep = np.zeros(( groundtruth_erodep_pts.shape[0], groundtruth_erodep_pts.shape[1] )) # just to get the right size
+    pred_erodep = np.zeros((  sim_interval.size, groundtruth_erodep_pts.shape[0])) # just to get the right size
 
-    for i in range(sim_interval.size): 
+    for i in range(3, sim_interval.size): 
 
-        begin = i * groundtruth_erodep_pts.shape[1] # number of points 
-        end = begin + groundtruth_erodep_pts.shape[1] 
+        begin = i * groundtruth_erodep_pts.shape[0] # number of points 
+        end = begin + groundtruth_erodep_pts.shape[0]
 
         pos_ed = erodep_pts[begin:end, :] 
         pos_ed = pos_ed.T 
         erodep_mean = pos_ed.mean(axis=0)  
         erodep_std = pos_ed.std(axis=0)  
-        pred_erodep[i,:] = pos_ed.mean(axis=0)  
+        pred_erodep[i,:] = pos_ed.mean(axis=0)
+  
 
-
-        # print(erodep_mean, erodep_std, groundtruth_erodep_pts[i,:], sim_interval[i], fname) 
-        res.plot_erodeposition(erodep_mean[0:200:20], erodep_std[0:200:20], groundtruth_erodep_pts[i,0:200:20], sim_interval[i], 'first') 
-        res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[i,200:400:20], sim_interval[i], 'second') 
-        res.plot_erodeposition(erodep_mean[400:600:20], erodep_std[400:600:20], groundtruth_erodep_pts[i,400:600:20], sim_interval[i], 'third') 
+        res.plot_erodeposition(erodep_mean[0:200:20] , erodep_std[ 0:200:20] , groundtruth_erodep_pts[ 0:200:20], sim_interval[i], 'first') 
+        res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[200:400:20], sim_interval[i], 'second') 
+        res.plot_erodeposition(erodep_mean[400:600:20], erodep_std[400:600:20], groundtruth_erodep_pts[400:600:20], sim_interval[i], 'third')
+    print(pred_erodep.shape, ' pred_erodep') 
          
     pred_elev = np.array([])
     rmse_sed= mean_sqerror(  pred_erodep,  groundtruth_erodep_pts)
