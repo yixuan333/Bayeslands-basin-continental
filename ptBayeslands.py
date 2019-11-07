@@ -84,7 +84,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class ptReplica(multiprocessing.Process):
     
-    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, init_elev, real_elev,  real_erodep_pts, real_elev_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance, Bayes_inittopoknowledge):
+    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, init_elev, real_elev,  real_erodep_pts, real_elev_pts, erodep_coords,elev_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance, Bayes_inittopoknowledge):
 
         multiprocessing.Process.__init__(self)
         self.processID = tempr      
@@ -108,6 +108,7 @@ class ptReplica(multiprocessing.Process):
         self.check_likelihood_sed =  check_likelihood_sed
         self.real_erodep_pts = real_erodep_pts
         self.real_elev_pts = real_elev_pts
+        self.elev_coords = elev_coords
         self.erodep_coords = erodep_coords
         self.init_elev = init_elev
         self.real_elev = real_elev
@@ -389,12 +390,15 @@ class ptReplica(multiprocessing.Process):
 
             elev, erodep = interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
 
-            erodep_pts = np.zeros((self.erodep_coords.shape[0]))
-            elev_pts = np.zeros((self.erodep_coords.shape[0]))
+            erodep_pts = np.zeros(self.erodep_coords.shape[0])
+            elev_pts = np.zeros(self.elev_coords.shape[0])
 
             for count, val in enumerate(self.erodep_coords):
                 erodep_pts[count] = erodep[val[0], val[1]]
+
+            for count, val in enumerate(self.elev_coords):
                 elev_pts[count] = elev[val[0], val[1]]
+ 
 
             print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
             elev_vec[self.simtime] = elev
@@ -410,45 +414,26 @@ class ptReplica(multiprocessing.Process):
            
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         # tau_erodep =  np.zeros(self.sim_interval.size)  
+ 
 
-        #self.plot3d_plotly(pred_elev_vec[self.simtime], 'Badlandstopo')
-        #self.plot3d_plotly(self.real_elev, ' self.real_elev')
-        
-        # tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
-        
-        print(self.real_elev_pts, self.real_elev_pts .shape, ' self.real_elev_pts ')
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter'+ str(int(self.temperature*10))+'_.png' 
-        plt.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], s=2)
-        plt.savefig(fnameplot)
-        plt.clf()
-        
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d') 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d'+ str(int(self.temperature*10))+'_.png' 
-        ax.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], self.real_elev_pts )
-        plt.savefig(fnameplot)
-        plt.clf()
-        
-        
-         
+        tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
 
-        tau_erodep = 0     
-        xxx = pred_elev_pts_vec[self.simtime]
+        print(  tau_elev,  '   tau_elev ----------')
 
-        print(xxx.shape, ' xxxx ')
+        print(pred_erodep_pts_vec[self.simtime].shape ,  self.real_erodep_pts.shape , self.real_erodep_pts.shape[0], ' xxx shape -------- ')
+        
+        tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
+        
+        print(tau_erodep, tau_elev,  ' tau_erodep   tau_elev ----------')
         print(self.real_elev_pts.shape,  self.real_elev_pts, ' self.real_elev_pts,  self.real_elev_pts[0]')
-
-
-        tau_elev =  np.sum(np.square(xxx - self.real_elev_pts)) / self.real_elev_pts.shape[0]
-
-        print(tausq, tau_elev, xxx.shape,  self.real_elev_pts.shape , ' tausq     tau_elev   xxx.shape   self.real_elev_pts.shape[1]  ..   .... ...  .... ...')
+ 
 
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
-        likelihood_erodep = 0
-        likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
+        #likelihood_erodep = 0
+        #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
         
 
-        # likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
+        likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
                 
         # likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep  )
         likelihood = likelihood_elev 
@@ -463,7 +448,7 @@ class ptReplica(multiprocessing.Process):
 
         likelihood = likelihood*(1.0/self.adapttemp)
 
-        print(likelihood_elev, likelihood_erodep, likelihood, rmse_elev_pts, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
+        print(likelihood_elev, likelihood_erodep, likelihood, rmse_elev_pts,   tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
         print(likelihood) # , likelihood_,  self.adapttemp,     ' ----    *** ------------------', 'rmse_elev_pts',rmse_elev_pts)
 
@@ -475,6 +460,39 @@ class ptReplica(multiprocessing.Process):
 
         self.plot3d_plotly(self.real_elev, 'realelev')
         self.plot3d_plotly(self.init_elev, 'expert_inittopo')
+
+
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter_erodep'+ str(int(self.temperature*10))+'_.png' 
+        plt.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], s=2, c = 'b')
+        plt.scatter(self.elev_coords[:,0], self.elev_coords[:,1], s=2, c = 'r')
+        
+        plt.savefig(fnameplot)
+        plt.clf()
+        
+
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter'+ str(int(self.temperature*10))+'_.png' 
+        plt.scatter(self.elev_coords[:,0], self.elev_coords[:,1], s=2)
+        plt.savefig(fnameplot)
+        plt.clf()
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d') 
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_elev'+ str(int(self.temperature*10))+'_.png' 
+        ax.scatter(self.elev_coords[:,0], self.elev_coords[:,1], self.real_elev_pts )
+        plt.savefig(fnameplot)
+        plt.clf()
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d') 
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_erdp'+ str(int(self.temperature*10))+'_.png' 
+        ax.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], self.real_erodep_pts )
+        plt.savefig(fnameplot)
+        plt.clf()        
+         
+
+     
+
+
 
         samples = self.samples
         count_list = [] 
@@ -540,7 +558,7 @@ class ptReplica(multiprocessing.Process):
             outfile.write('\nswap interval:,{0}'.format(self.swap_interval))
             outfile.write('\nsim interval:,{0}'.format(self.sim_interval))
             outfile.write('\nlikelihood_sed (T/F):,{0}'.format(self.check_likelihood_sed))
-            outfile.write('\nerodep_coords:,{0}'.format(self.erodep_coords))
+            outfile.write('\nerodep_coords,elev_coords:,{0}'.format(self.erodep_coords))
             outfile.write('\nsed scaling factor:,{0}'.format(self.sedscalingfactor))
         
         start = time.time() 
@@ -707,6 +725,7 @@ class ptReplica(multiprocessing.Process):
 
             temp = list_erodep_time[i+1,:, :] 
             temp = np.reshape(temp, temp.shape[0]*temp.shape[1]) 
+ 
 
             file_name = self.folder + '/posterior/predicted_topo/sed/chain_' + str(self.temperature) + '.txt'
             with file(file_name ,'a') as outfile:
@@ -738,7 +757,7 @@ class ptReplica(multiprocessing.Process):
 
 class ParallelTempering:
 
-    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance, Bayes_inittopoknowledge):
+    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords,elev_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance, Bayes_inittopoknowledge):
         self.swap_interval = swap_interval
         self.folder = fname
         self.maxtemp = maxtemp
@@ -755,7 +774,8 @@ class ParallelTempering:
         self.init_elev = init_elev
         self.resolu_factor =  resolu_factor
         self.num_param = num_param
-        self.erodep_coords = erodep_coords
+        self.erodep_coords  = erodep_coords 
+        self.elev_coords =  elev_coords
         self.simtime = simtime
         self.sim_interval = siminterval
         self.run_nb =run_nb 
@@ -888,8 +908,8 @@ class ParallelTempering:
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
-                                     #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
+            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords,self.elev_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
+                                     #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords,elev_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
         #print (parameter_queue_2, ", param1:",parameter_queue_1)
         if parameter_queue_2.empty() is False and parameter_queue_1.empty() is False:
@@ -1215,7 +1235,7 @@ def main():
     (problemfolder, xmlinput, simtime, resolu_factor, init_elev, groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, groundtruth_elev_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
-    maxlimits_others, stepsize_ratio, erodep_coords,inittopo_estimated, vec_parameters, minlimits_vec,
+    maxlimits_others, stepsize_ratio, erodep_coords,elev_coords,inittopo_estimated, vec_parameters, minlimits_vec,
     maxlimits_vec) = problem_setup(problem)
     
 
@@ -1306,7 +1326,7 @@ def main():
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
     #-------------------------------------------------------------------------------------
-    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  , init_elev, groundtruth_elev,  groundtruth_erodep_pts , groundtruth_elev_pts,  erodep_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance, Bayes_inittopoknowledge)
+    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  , init_elev, groundtruth_elev,  groundtruth_erodep_pts , groundtruth_elev_pts,  erodep_coords,elev_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance, Bayes_inittopoknowledge)
     
     #-------------------------------------------------------------------------------------
     # intialize the MCMC chains

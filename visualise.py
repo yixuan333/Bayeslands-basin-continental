@@ -105,7 +105,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class results_visualisation:
 
-    def __init__(self, vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev ):
+    def __init__(self, vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev ):
 
    
         self.swap_interval = swap_interval
@@ -122,6 +122,7 @@ class results_visualisation:
         self.real_elev = groundtruth_elev
         self.resolu_factor =  resolu_factor
         self.num_param = num_param
+        self.elev_coords = elev_coords
         self.erodep_coords = erodep_coords
         self.simtime = simtime
         self.sim_interval = sim_interval 
@@ -522,7 +523,10 @@ class results_visualisation:
         accept_list = np.zeros((self.num_chains, self.NumSamples )) 
         topo  = self.real_elev 
 
-        edp_pts_time = self.real_erodep_pts.shape[0] *self.sim_interval.size
+        print('self.real_erodep_pts.shape[1]', self.real_erodep_pts.shape[0])
+        edp_pts_time = self.real_erodep_pts.shape[0]  *self.sim_interval.size
+
+        print(self.real_erodep_pts.shape[0], self.real_erodep_pts.shape,   ' ------------------------------------  ')
 
         erodep_pts = np.zeros(( self.num_chains, self.NumSamples  , edp_pts_time )) 
         combined_erodep = np.zeros((self.num_chains, self.NumSamples, self.real_erodep_pts.shape[0] ))
@@ -577,7 +581,8 @@ class results_visualisation:
         v = 0 
         for name in files: 
             dat = np.loadtxt(path+name) 
-            erodep_pts[v, :, :] = dat[ : erodep_pts.shape[0],: ] 
+            print(dat.shape, ' dat.shape')
+            erodep_pts[v, :, :] = dat[ : erodep_pts.shape[1],: ] 
             v = v +1 
 
         erodep_pts = erodep_pts[:, burnin:, :] 
@@ -895,7 +900,7 @@ class results_visualisation:
             model.input.diffprop = input_vector[rain_regiontime+10]
 
         #Check if it is the mountain problem
-        if problem==10: # needs to be updated
+        '''if problem==10: # needs to be updated
             #Round the input vector 
             k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
 
@@ -908,8 +913,9 @@ class results_visualisation:
             newtect.to_csv(newFile,index=False,header=False)
 
             #Update the model uplift tectonic values
-            model.input.tectFile[0]=newFile
+            model.input.tectFile[0]=newFile'''
 
+       
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()
         erodep_pts_vec = collections.OrderedDict()
@@ -917,18 +923,21 @@ class results_visualisation:
 
         for x in range(len(self.sim_interval)):
             self.simtime = self.sim_interval[x]
-            model.run_to_time(self.simtime, muted=muted)
+            model.run_to_time(self.simtime, muted=True)
 
             elev, erodep = interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
 
-            erodep_pts = np.zeros((self.erodep_coords.shape[0]))
-            elev_pts = np.zeros((self.erodep_coords.shape[0]))
+            erodep_pts = np.zeros(self.erodep_coords.shape[0])
+            elev_pts = np.zeros(self.elev_coords.shape[0])
 
             for count, val in enumerate(self.erodep_coords):
                 erodep_pts[count] = erodep[val[0], val[1]]
-                elev_pts[count] = elev[val[0], val[1]]
 
-            # print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
+            for count, val in enumerate(self.elev_coords):
+                elev_pts[count] = elev[val[0], val[1]]
+ 
+
+            print('Sim time: ', self.simtime  , "   Temperature: ", self.temperature)
             elev_vec[self.simtime] = elev
             erodep_vec[self.simtime] = erodep
             erodep_pts_vec[self.simtime] = erodep_pts
@@ -1050,7 +1059,7 @@ def main():
     (problemfolder, xmlinput, simtime, resolu_factor, init_elev, groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, groundtruth_elev_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
-    maxlimits_others, stepsize_ratio, erodep_coords, inittopo_estimated, vec_parameters, minlimits_vec, maxlimits_vec) = problem_setup(problem)
+    maxlimits_others, stepsize_ratio, erodep_coords,elev_coords, inittopo_estimated, vec_parameters, minlimits_vec, maxlimits_vec) = problem_setup(problem)
 
     rain_timescale = rain_intervals  # to show climate change 
     '''rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
@@ -1074,7 +1083,7 @@ def main():
         sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
-    res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
+    res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
     pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init  = res.results_current()
 
     print('sucessfully sampled') 
@@ -1102,12 +1111,12 @@ def main():
 
     #print(erodep_pts.shape, ' erodep_pts.shape')
 
-    pred_erodep = np.zeros(( groundtruth_erodep_pts.shape[0], groundtruth_erodep_pts.shape[0] )) # just to get the right size
+    pred_erodep = np.zeros(( groundtruth_erodep_pts.shape[0], groundtruth_erodep_pts.shape[1] )) # just to get the right size
 
     for i in range(sim_interval.size): 
 
-        begin = i * groundtruth_erodep_pts.shape[0] # number of points 
-        end = begin + groundtruth_erodep_pts.shape[0] 
+        begin = i * groundtruth_erodep_pts.shape[1] # number of points 
+        end = begin + groundtruth_erodep_pts.shape[1] 
 
         pos_ed = erodep_pts[begin:end, :] 
         pos_ed = pos_ed.T 
