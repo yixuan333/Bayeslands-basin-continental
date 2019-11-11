@@ -340,7 +340,7 @@ class ptReplica(multiprocessing.Process):
         # Adjust precipitation values based on given parameter
         #print(input_vector[0:rain_regiontime] )
         
-        # model.force.rainVal  = input_vector[0:rain_regiontime] 
+        model.force.rainVal  = input_vector[0:rain_regiontime-1] 
 
         # Adjust erodibility based on given parameter
         model.input.SPLero = input_vector[rain_regiontime]  
@@ -435,7 +435,9 @@ class ptReplica(multiprocessing.Process):
 
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
                 
-        # likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep  )
+        
+        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep/4  )
+        
         likelihood = likelihood_elev 
  
         rmse_elev = np.sqrt(tausq)

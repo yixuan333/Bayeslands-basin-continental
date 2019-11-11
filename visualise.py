@@ -920,9 +920,13 @@ class results_visualisation:
 
             for count, val in enumerate(self.erodep_coords):
                 erodep_pts[count] = erodep[val[0], val[1]]
+                #print(erodep_pts[count], ' erodep_pts[count]')
 
             for count, val in enumerate(self.elev_coords):
                 elev_pts[count] = elev[val[0], val[1]]
+                #print(elev_pts[count], ' erodep_pts[count]')
+
+            print('Sim time: ', self.simtime )
  
  
             elev_vec[self.simtime] = elev
@@ -1158,9 +1162,9 @@ def main():
             error_dict[j[0]] = pos_param.T[i,:] 
         else:
             pass
-            # print ('the error was 0.0')
+            print ('the error was 1.0')
 
-    print('min error in dict',min(error_dict))
+    #print('min error in dict',min(error_dict))
     print('error_dict[min(error_dict)] ', error_dict[min(error_dict)])
     variables = error_dict[min(error_dict)]
     
@@ -1223,8 +1227,9 @@ def main():
     fname_remove = fname +'/pos_param.txt'
     print(dir_name)
 
-    # res.vis_badlands(fname)
+ 
     res.visualize_sediments(pred_erodep_opt)    
+    res.vis_badlands(fname)
 
     '''if os.path.isdir(dir_name):
         shutil.rmtree(dir_name)
