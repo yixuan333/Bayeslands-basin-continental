@@ -47,6 +47,16 @@ from plotly.offline.offline import _plot_html
 plotly.offline.init_notebook_mode()
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import argparse
+
+parser=argparse.ArgumentParser(description='Sensitivity')
+
+parser.add_argument('-vstart','--vstart', required=True, dest="vstart",type=int)
+parser.add_argument('-vend', '-vend', required =True, dest="vend", type=int)
+
+args = parser.parse_args()
+vstart = args.vstart
+vend = args.vend
 
 class BayesLands():
     def __init__(self, muted, simtime, sim_interval, samples, real_elev , real_erodep, real_erodep_pts, real_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
@@ -113,6 +123,8 @@ class BayesLands():
 
         # Adjust precipitation values based on given parameter
         #print(input_vector[0:rain_regiontime] )
+        # print('model.force.rainVal', model.force.rainVal)
+
         # model.force.rainVal  = input_vector[0:rain_regiontime] 
 
         # Adjust erodibility based on given parameter
@@ -134,6 +146,8 @@ class BayesLands():
         elev_pts_vec = collections.OrderedDict()
 
         for x in range(len(self.sim_interval)):
+            # print ('Interval ', x )
+            # print('model.force.rainVal', model.force.rainVal, 'simtime', self.simtime)
             self.simtime = self.sim_interval[x]
             model.run_to_time(self.simtime, muted=True)
 
@@ -150,7 +164,7 @@ class BayesLands():
             erodep_vec[self.simtime] = erodep
             erodep_pts_vec[self.simtime] = erodep_pts
             elev_pts_vec[self.simtime] = elev_pts
-            print ('Interval ', x )
+            
  
         return elev_vec, erodep_vec, erodep_pts_vec, elev_pts_vec
 
@@ -235,18 +249,20 @@ class BayesLands():
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector)
            
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
-        # tau_erodep =  np.zeros(self.sim_interval.size)  
+        tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
+
+        print(  tau_elev,  '   tau_elev ----------')
+        print(pred_erodep_pts_vec[self.simtime].shape ,  self.real_erodep_pts.shape , self.real_erodep_pts.shape[0], ' xxx shape -------- ')
         
-        tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]))/ self.real_erodep_pts.shape[1]
-       
-        tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]))/ self.real_elev_pts.shape[1]
+        tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
+        
+        print(tau_erodep, tau_elev,  ' tau_erodep   tau_elev ----------')
+        print(self.real_elev_pts.shape,  self.real_elev_pts, ' self.real_elev_pts,  self.real_elev_pts[0]')
 
-        likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts[0]) / tau_elev )
-        #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
-
+        likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
-
-        likelihood = np.sum(likelihood_elev) +  (likelihood_erodep  )
+        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep/4  )
+        likelihood = likelihood_elev 
 
         rmse_elev = np.sqrt(tausq)
         rmse_erodep = np.sqrt(tau_erodep) 
@@ -278,23 +294,24 @@ class BayesLands():
         
         print ('variables', variables.shape)
 
-        for x in range(len(self.vec_parameters)):
-            
+        for x in range(vstart,vend):
             variables[x,:] = np.linspace(self.minlimits_vec[x], self.maxlimits_vec[x], num = int(math.sqrt(samples)), endpoint = False)
 
-        
         for i, v in enumerate(variables):
             for j, w in enumerate(v):
                 start = time.time()
+                print 'counter i ', i,'\n v',v,' \nw', w ,'\nj  ',j
 
                 v_prop = self.vec_parameters
                 v_prop[i] = j
+
+                print ('v_prop', v_prop)
                 likelihood, rmse_elev, rmse_erodep = self.likelihood_func(v_prop)
                 pos_rmse[i,int(j)] = rmse_elev
                 self.storeParams(i, self.vec_parameters, pos_rmse[i,int(j)])
                 end = time.time()
                 total_time = end - start
-                print 'counter i ', i,'\n v',v,' \nw', w ,'\nj  ',j,'\nTime elapsed:', total_time
+                print '\nTime elapsed:', total_time
 
             # fig = plt.figure(figsize=(15,15))
             # ax = fig.add_subplot(111)
@@ -312,7 +329,7 @@ class BayesLands():
             plt.xlabel('Parameter')
             plt.ylabel('RMSE ')
             fig, ax = plt.subplots()
-            ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%0.0e'))
+            ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%1.2f'))
             plt.savefig('%s/plot_%s_%s.png'% (self.filename,i,int(j)), bbox_inches='tight', dpi=300, transparent=False)
             # plt.show()
             plt.close()
@@ -331,19 +348,19 @@ def main():
     directory = ""
     likl_sed = False
     choice = 1#input("Please choose a Badlands example to run the likelihood surface generator on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
-    samples = 100#input("Please enter number of samples (Make sure it is a perfect square): \n")
+    samples = 36#input("Please enter number of samples (Make sure it is a perfect square): \n")
 
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
-    num_successive_topo = 1
-    simtime = -1.49E+04
+    num_successive_topo = 4
+    simtime = -1.49E+08
     sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
         sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
-    rain_min = 0 
+    rain_min = 0.5 
     rain_max = 3
     # assume 4 regions and 4 time scales
     rain_regiongrid = 1  # how many regions in grid format 
@@ -367,7 +384,7 @@ def main():
 
     final_elev = np.loadtxt('%s/data/final_elev.txt' %(directory))
     final_erodep = np.loadtxt('%s/data/final_erdp.txt' %(directory))
-    final_elev_pts = np.loadtxt('%s/data/final_elev_pts_.txt' %(directory)) 
+    final_elev_pts = np.loadtxt('%s/data/elev_pts_updated.txt' %(directory)) 
     final_erodep_pts = np.loadtxt('%s/data/final_erdp_pts_.txt' %(directory)) 
 
     while os.path.exists('%s/liklSurface_%s' % (directory,run_nb)):
