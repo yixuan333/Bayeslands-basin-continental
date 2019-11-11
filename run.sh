@@ -5,10 +5,10 @@ echo Running all
 problem=2
 replica=8
 
-samples=400
+samples=10000
 swapint=$samples
 maxtemp=2 
-burn=0.1
+burn=0.3
 pt_stage=0.35
 raintimeint=4
 initialtopoep=0.5 # not used anymore
