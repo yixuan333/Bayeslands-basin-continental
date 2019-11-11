@@ -59,7 +59,7 @@ vstart = args.vstart
 vend = args.vend
 
 class BayesLands():
-    def __init__(self, muted, simtime, sim_interval, samples, real_elev , real_erodep, real_erodep_pts, real_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
+    def __init__(self, muted, simtime, sim_interval, samples, real_elev , real_erodep, real_erodep_pts, real_elev_pts, elev_coords, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
         self.filename = filename
         self.input = xmlinput
         self.real_elev = real_elev
@@ -67,6 +67,7 @@ class BayesLands():
         
         self.real_erodep_pts = real_erodep_pts
         self.real_elev_pts = real_elev_pts
+        self.elev_coords = elev_coords
         self.erodep_coords = erodep_coords
         self.likl_sed = likl_sed
 
@@ -153,11 +154,13 @@ class BayesLands():
 
             elev, erodep = self.interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
 
-            erodep_pts = np.zeros((self.erodep_coords.shape[0]))
-            elev_pts = np.zeros((self.erodep_coords.shape[0]))
+            erodep_pts = np.zeros(self.erodep_coords.shape[0])
+            elev_pts = np.zeros(self.elev_coords.shape[0])
 
             for count, val in enumerate(self.erodep_coords):
                 erodep_pts[count] = erodep[val[0], val[1]]
+
+            for count, val in enumerate(self.elev_coords):
                 elev_pts[count] = elev[val[0], val[1]]
 
             elev_vec[self.simtime] = elev
@@ -379,10 +382,14 @@ def main():
     print('num_param', num_param)
 
     likl_sed = True
+
+    elev_coords = np.loadtxt('%s/data/coord_final_elev.txt' %(directory)) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+    elev_coords = np.array(elev_coords, dtype = 'int')
+
     erodep_coords = np.loadtxt('%s/data/erdp_coords.txt' %(directory)) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
     erodep_coords = np.array(erodep_coords, dtype = 'int')
 
-    final_elev = np.loadtxt('%s/data/final_elev.txt' %(directory))
+    final_elev = np.loadtxt('%s/data/final_elev_filtered_ocean.txt' %(directory))
     final_erodep = np.loadtxt('%s/data/final_erdp.txt' %(directory))
     final_elev_pts = np.loadtxt('%s/data/elev_pts_updated.txt' %(directory)) 
     final_erodep_pts = np.loadtxt('%s/data/final_erdp_pts_.txt' %(directory)) 
@@ -398,7 +405,7 @@ def main():
     print '\nInput file shape', final_elev.shape, '\n'
     run_nb_str = 'liklSurface_' + str(run_nb)
 
-    bLands = BayesLands(muted, simtime, sim_interval, samples, final_elev, final_erodep, final_erodep_pts,final_elev_pts, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed)
+    bLands = BayesLands(muted, simtime, sim_interval, samples, final_elev, final_erodep, final_erodep_pts,final_elev_pts, elev_coords, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed)
     bLands.likelihoodSurface()
 
     print 'Results are stored in ', filename
