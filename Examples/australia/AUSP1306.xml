@@ -4,7 +4,7 @@
     <!-- Regular grid structure -->
     <grid>
         <!-- Digital elevation model file path -->
-        <demfile>AUSP1306/Paleotopo/Paleotopo_P100_50km_prec2.csv</demfile>
+        <demfile>Examples/australia/AUSP1306/Paleotopo/Paleotopo_P100_50km_prec2.csv</demfile>
         <!-- Boundary type: flat, slope or wall -->
         <boundary>slope</boundary>
         <!-- Optional parameter (integer) used to decrease TIN resolution.
@@ -45,7 +45,7 @@
         <!--  Relative sea-level position [m]  -->
         <position>0.</position>
         <!--  Sea-level curve - (optional)  -->
-        <curve>AUSP1306/Sea_level/Haq_87_Muller2018_M7.csv</curve>
+        <curve>Examples/australia/AUSP1306/Sea_level/Haq_87_Muller2018_M7.csv</curve>
     </sea>
     
     <!--  Tectonic structure  -->
@@ -63,7 +63,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-145.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_145-150_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_145-150_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -71,7 +71,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-140.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_140-145_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_140-145_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -79,7 +79,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-135.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_135-140_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_135-140_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -87,7 +87,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-129.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_130-135_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_130-135_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -95,7 +95,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-124.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_125-130_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_125-130_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -103,7 +103,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-119.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_120-125_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_120-125_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -111,7 +111,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-114.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_115-120_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_115-120_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -119,7 +119,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-109.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_110-115_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_110-115_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -127,7 +127,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-104.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_105-110_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_105-110_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -135,7 +135,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-99.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_100-105_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_100-105_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -143,7 +143,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-94.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_95-100_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_95-100_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -151,7 +151,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-89.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_90-95_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_90-95_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -159,7 +159,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-84.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_85-90_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_85-90_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -167,7 +167,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-79.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_80-85_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_80-85_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -175,7 +175,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-74.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_74-80_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_74-80_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -183,7 +183,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-69.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_69-74_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_69-74_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -191,7 +191,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-64.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_64-69_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_64-69_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -199,7 +199,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-59.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_59-64_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_59-64_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -207,7 +207,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-54.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_54-59_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_54-59_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -215,7 +215,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-49.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_49-54_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_49-54_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -223,7 +223,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-44.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_44-49_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_44-49_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -231,7 +231,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-39.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_39-44_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_39-44_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -239,7 +239,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-34.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_34-39_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_34-39_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -247,7 +247,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-29.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_29-34_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_29-34_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -255,7 +255,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-24.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_24-29_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_24-29_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -263,7 +263,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-19.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_19-24_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_19-24_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -271,7 +271,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-14.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_14-19_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_14-19_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -279,7 +279,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-9.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_9-14_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_9-14_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -287,7 +287,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-4.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_4-9_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_4-9_Ma_50km.csv</dfile>
         </disp>
         <disp>
             <!--  Displacement start time [a]  -->
@@ -295,7 +295,7 @@
             <!--  Displacement end time [a]  -->
             <dend>-0.e6</dend>
             <!--  Displacement map [m]  -->
-            <dfile>AUSP1306/Uplift/gmcm9c_total_diff_0-4_Ma_50km.csv</dfile>
+            <dfile>Examples/australia/AUSP1306/Uplift/gmcm9c_total_diff_0-4_Ma_50km.csv</dfile>
         </disp>
     </tectonic>
     <!--  Precipitation structure  -->
@@ -398,19 +398,19 @@
         <!-- Variable erodibilities and constant layer thickness -->
         <erolay>
             <!-- Variable erodibilities for the considered layer. -->
-            <eromap>AUSP1306/Erodibility/Erodibility_P300_50km.csv</eromap>
+            <eromap>Examples/australia/AUSP1306/Erodibility/Erodibility_P300_50km.csv</eromap>
             <!-- Uniform thickness value for the considered layer [m]. -->
             <thcst>0.05</thcst>
         </erolay>
         <erolay>
             <!-- Variable erodibilities for the considered layer. -->
-            <eromap>AUSP1306/Erodibility/Erodibility_TasLine_P300_50km.csv</eromap>
+            <eromap>Examples/australia/AUSP1306/Erodibility/Erodibility_TasLine_P300_50km.csv</eromap>
             <!-- Uniform thickness value for the considered layer [m]. -->
             <thcst>5000</thcst>
         </erolay>
         <erolay>
             <!-- Variable erodibilities for the considered layer. -->
-            <eromap>AUSP1306/Erodibility/Erodibility_P300_50km.csv</eromap>
+            <eromap>Examples/australia/AUSP1306/Erodibility/Erodibility_P300_50km.csv</eromap>
             <!-- Uniform thickness value for the considered layer [m]. -->
             <thcst>100000</thcst>
         </erolay>

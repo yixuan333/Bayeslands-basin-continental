@@ -224,7 +224,7 @@ def problem_setup(problem = 1):
 
         stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
         num_param = vec_parameters.size
-        print(vec_parameters, 'vec_parameters') 
+        # print(vec_parameters, 'vec_parameters') 
 
         erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
         print('erdp_coords', erodep_coords.shape)
