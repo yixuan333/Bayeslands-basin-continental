@@ -778,8 +778,9 @@ class results_visualisation:
         strat.loadTIN(stepCounter)
 
         cs=np.zeros((2,2))
-        cs[0,:] = [12,100]  # point 1
-        cs[1,:] = [24,10]  # point 2
+        cs[0,:] = [2137110.46715,7087591.94151]  # point 1
+        cs[1,:] = [-112889.532847,7087591.94151]  # point 2
+
         # Interpolation parameters
         nbpts = 500  
         gfilt = 2  
@@ -1118,7 +1119,7 @@ def main():
         erodep_mean = pos_ed.mean(axis=0)  
         erodep_std = pos_ed.std(axis=0)  
         pred_erodep[i,:] = pos_ed.mean(axis=0)
-  
+        
 
         res.plot_erodeposition(erodep_mean[0:200:20] , erodep_std[ 0:200:20] , groundtruth_erodep_pts[ 0:200:20], sim_interval[i], 'first') 
         res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[200:400:20], sim_interval[i], 'second') 

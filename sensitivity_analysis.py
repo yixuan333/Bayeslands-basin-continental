@@ -46,6 +46,7 @@ from plotly.graph_objs import *
 from plotly.offline.offline import _plot_html
 plotly.offline.init_notebook_mode()
 from matplotlib import cm
+import matplotlib.ticker as mticker
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import argparse
 
@@ -227,22 +228,22 @@ class BayesLands():
         plt.savefig('%s/plot.png'% (fname), bbox_inches='tight', dpi=300, transparent=False)
         plt.show()
 
-    def storeParams(self, count, vec_parameters , pos_rmse):
+    def storeParams(self, count, vec_parameters , pos_rmse, var):
         """
         
         """
         pos_rmse = str(pos_rmse)
         vec_parameters = str(vec_parameters)
 
-        if not os.path.isfile(('%s/exp_data.txt' % (self.filename))):
-            with file(('%s/exp_data.txt' % (self.filename)),'w') as outfile:
+        if not os.path.isfile(('%s/exp_data_%s.txt' % (self.filename, var))):
+            with file(('%s/exp_data_%s.txt' % (self.filename, var)),'w') as outfile:
                 # outfile.write('\n# {0}\t'.format(naccept))
                 outfile.write(vec_parameters)
                 outfile.write('\t')
                 outfile.write(pos_rmse)
                 outfile.write('\n')
         else:
-            with file(('%s/exp_data.txt' % (self.filename)),'a') as outfile:
+            with file(('%s/exp_data_%s.txt' % (self.filename, var)),'a') as outfile:
                 outfile.write(vec_parameters)
                 outfile.write('\t')
                 outfile.write(pos_rmse)
@@ -289,7 +290,7 @@ class BayesLands():
         count_list = []
         font = 9
         width = 1
-        variables = np.zeros((self.vec_parameters.size,int(math.sqrt(samples))))
+        variables = np.zeros((self.vec_parameters.size,samples))
         pos_rmse = np.zeros((variables.shape[0], variables.shape[1]))
         pos_likl = np.zeros((variables.shape[0], variables.shape[1]))
         pos_rmse_elev = np.zeros((variables.shape[0], variables.shape[1]))
@@ -298,45 +299,66 @@ class BayesLands():
         print ('variables', variables.shape)
 
         for x in range(vstart,vend):
-            variables[x,:] = np.linspace(self.minlimits_vec[x], self.maxlimits_vec[x], num = int(math.sqrt(samples)), endpoint = False)
+            variables[x,:] = np.linspace(self.minlimits_vec[x], self.maxlimits_vec[x], num = samples, endpoint = False)
 
-        for i, v in enumerate(variables):
+        for i, v in enumerate(variables[vstart:vend,:]):
             for j, w in enumerate(v):
                 start = time.time()
-                print 'counter i ', i,'\n v',v
+                print ('i ', i,' v',v)
 
                 v_prop = self.vec_parameters
                 v_prop[i] = w
 
                 print ('j', j, 'w', w)
 
-                print ('v_prop', v_prop)
+                # print ('v_prop', v_prop)
                 likelihood, rmse_elev, rmse_erodep = self.likelihood_func(v_prop)
-                pos_rmse[i,int(j)] = rmse_elev
-                self.storeParams(i, self.vec_parameters, pos_rmse[i,int(j)])
+                print ('rmse_elev ', rmse_elev)
+                pos_rmse_elev[i,int(j)] = rmse_elev
+                pos_rmse_erodep[i,int(j)] = rmse_erodep
+                self.storeParams(i, self.vec_parameters, pos_rmse_elev[i,int(j)], 'elev')
+                self.storeParams(i, self.vec_parameters, pos_rmse_erodep[i,int(j)], 'erodep')
                 end = time.time()
                 total_time = end - start
                 print '\nTime elapsed:', total_time
 
-            # fig = plt.figure(figsize=(15,15))
-            # ax = fig.add_subplot(111)
-            # ax.spines['top'].set_color('none')
-            # ax.spines['bottom'].set_color('none')
-            # ax.spines['left'].set_color('none')
-            # ax.spines['right'].set_color('none')
+            font = 20
+            fig = plt.figure(figsize=(15,15))
+            
+            ax = fig.add_subplot(111)
+            ax.spines['top'].set_color('none')
+            ax.spines['bottom'].set_color('none')
+            ax.spines['left'].set_color('none')
+            ax.spines['right'].set_color('none')
+            ax.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
             # ax.tick_params(labelcolor='w')
-            # ax.set_title(' Likelihood', fontsize=  font+2)#, y=1.02)
-            # ax.set_facecolor('#f2f2f3')
-            # ax.plot(variables[i,:], pos_rmse[i,:])
-            # ax.set(xlabel='Parameter', ylabel='Likelihood', title='Pos Param vs Likelihood')
-            # plt.savefig('%s/plot_%s_%s.png'% (self.filename,i,int(j)), bbox_inches='tight', dpi=300, transparent=False)
-            plt.plot(variables[i,:], pos_rmse[i,:])
-            plt.xlabel('Parameter')
-            plt.ylabel('RMSE ')
-            fig, ax = plt.subplots()
-            # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%1.2f'))
-            plt.savefig('%s/plot_%s_%s.png'% (self.filename,i,int(j)), bbox_inches='tight', dpi=300, transparent=False)
-            # plt.show()
+            
+            ax1 = fig.add_subplot(211)
+            ax1.grid(True)
+            ax1.set_facecolor('#f1f1f1')
+            ax1.plot(variables[i,:], pos_rmse_elev[i,:])
+            ax1.set_title(r'Elevation',size=font+2)
+            ax1.set_xlabel('Parameter value', size = font)
+            ax1.set_ylabel('RMSE elev', size = font)
+            ax1.tick_params(axis='both', which='major', labelsize=20)
+            ax1.tick_params(axis='both', which='minor', labelsize=20)
+            ax1.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+            ax1.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+
+
+            ax2 = fig.add_subplot(212)
+            ax2.grid(True)
+            ax2.set_facecolor('#f1f1f1')
+            ax2.plot(variables[i,:], pos_rmse_erodep[i,:])
+            ax2.set_title(r'Erosion Deposition',size=font+2)
+            ax2.set_xlabel('Parameter value', size = font)
+            ax2.set_ylabel('RMSE erodep', size = font)
+            ax2.tick_params(axis='both', which='major', labelsize=20)
+            ax2.tick_params(axis='both', which='minor', labelsize=20)
+            ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.3f'))
+            ax2.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.3f'))
+
+            plt.savefig('%s/plot_%s.png'% (self.filename,i), bbox_inches='tight', dpi=300, transparent=False)
             plt.close()
 
         # Storing RMSE, tau values and adding initial run to accepted list
