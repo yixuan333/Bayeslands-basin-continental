@@ -351,7 +351,7 @@ def main():
     directory = ""
     likl_sed = False
     choice = 1#input("Please choose a Badlands example to run the likelihood surface generator on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
-    samples = 36#input("Please enter number of samples (Make sure it is a perfect square): \n")
+    samples = 400#input("Please enter number of samples (Make sure it is a perfect square): \n")
 
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
@@ -363,8 +363,8 @@ def main():
         sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
-    rain_min = 0.5 
-    rain_max = 3
+    rain_min = 0  
+    rain_max = 2
     # assume 4 regions and 4 time scales
     rain_regiongrid = 1  # how many regions in grid format 
     rain_timescale = 4  # to show climate change 
