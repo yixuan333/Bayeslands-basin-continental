@@ -867,25 +867,25 @@ class results_visualisation:
         # model.force.rainVal  = input_vector[0:rain_regiontime] 
 
         # Adjust erodibility based on given parameter
-        model.input.SPLero = input_vector[rain_regiontime]  
-        model.flow.erodibility.fill(input_vector[rain_regiontime ] )
+        # model.input.SPLero = input_vector[rain_regiontime]  
+        # model.flow.erodibility.fill(input_vector[rain_regiontime ] )
 
-        # Adjust m and n values
-        model.input.SPLm = input_vector[rain_regiontime+1]  
-        model.input.SPLn = input_vector[rain_regiontime+2] 
+        # # Adjust m and n values
+        # model.input.SPLm = input_vector[rain_regiontime+1]  
+        # model.input.SPLn = input_vector[rain_regiontime+2] 
 
-        #Check if it is the etopo extended problem
-        #if problem == 4 or problem == 3:  # will work for more parameters
-        model.input.CDm = input_vector[rain_regiontime+3] # submarine diffusion
-        model.input.CDa = input_vector[rain_regiontime+4] # aerial diffusion
+        # #Check if it is the etopo extended problem
+        # #if problem == 4 or problem == 3:  # will work for more parameters
+        # model.input.CDm = input_vector[rain_regiontime+3] # submarine diffusion
+        # model.input.CDa = input_vector[rain_regiontime+4] # aerial diffusion
 
-        if problem != 1:
-            model.slp_cr = input_vector[rain_regiontime+5]
-            model.perc_dep = input_vector[rain_regiontime+6]
-            model.input.criver = input_vector[rain_regiontime+7]
-            model.input.elasticH = input_vector[rain_regiontime+8]
-            model.input.diffnb = input_vector[rain_regiontime+9]
-            model.input.diffprop = input_vector[rain_regiontime+10]
+        # if problem != 1:
+        #     model.slp_cr = input_vector[rain_regiontime+5]
+        #     model.perc_dep = input_vector[rain_regiontime+6]
+        #     model.input.criver = input_vector[rain_regiontime+7]
+        #     model.input.elasticH = input_vector[rain_regiontime+8]
+        #     model.input.diffnb = input_vector[rain_regiontime+9]
+        #     model.input.diffprop = input_vector[rain_regiontime+10]
 
         #Check if it is the mountain problem
         '''if problem==10: # needs to be updated

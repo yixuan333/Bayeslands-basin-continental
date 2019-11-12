@@ -5,7 +5,6 @@
     <grid>
         <!-- Digital elevation model file path -->
         <demfile>AUSP1306/Paleotopo/Paleotopo_P100_50km_prec2.csv</demfile>
-        <!-- <demfile>AUSP1306/Paleotopo/Paleotopo_P100_50km_prec2.csv</demfile> -->
         <!-- Boundary type: flat, slope or wall -->
         <boundary>slope</boundary>
         <!-- Optional parameter (integer) used to decrease TIN resolution.

@@ -303,10 +303,12 @@ class BayesLands():
         for i, v in enumerate(variables):
             for j, w in enumerate(v):
                 start = time.time()
-                print 'counter i ', i,'\n v',v,' \nw', w ,'\nj  ',j
+                print 'counter i ', i,'\n v',v
 
                 v_prop = self.vec_parameters
-                v_prop[i] = j
+                v_prop[i] = w
+
+                print ('j', j, 'w', w)
 
                 print ('v_prop', v_prop)
                 likelihood, rmse_elev, rmse_erodep = self.likelihood_func(v_prop)
@@ -332,7 +334,7 @@ class BayesLands():
             plt.xlabel('Parameter')
             plt.ylabel('RMSE ')
             fig, ax = plt.subplots()
-            ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%1.2f'))
+            # ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%1.2f'))
             plt.savefig('%s/plot_%s_%s.png'% (self.filename,i,int(j)), bbox_inches='tight', dpi=300, transparent=False)
             # plt.show()
             plt.close()
@@ -351,12 +353,12 @@ def main():
     directory = ""
     likl_sed = False
     choice = 1#input("Please choose a Badlands example to run the likelihood surface generator on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
-    samples = 36#input("Please enter number of samples (Make sure it is a perfect square): \n")
+    samples = 10#input("Please enter number of samples (Make sure it is a perfect square): \n")
 
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
     num_successive_topo = 4
-    simtime = -1.49E+08
+    simtime = -1.49E+04
     sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
