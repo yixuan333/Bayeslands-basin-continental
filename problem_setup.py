@@ -137,7 +137,7 @@ def problem_setup(problem = 1):
         #groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
         # groundtruth_elev_pts = np.loadtxt(problemfolder +'data/final_elev_pts_.txt')
-        groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated.txt')
+        groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated_mt.txt')
  
         inittopo_estimated = [] #np.loadtxt(problemfolder + 'init_expertknowlegeprocess/init_estimated.txt') 
 
@@ -230,7 +230,7 @@ def problem_setup(problem = 1):
         print('erdp_coords', erodep_coords.shape)
         erodep_coords = np.array(erodep_coords, dtype = 'int')
 
-        elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev_mt.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
         print('elev_coords', elev_coords.shape)        
         elev_coords = np.array(elev_coords, dtype = 'int')
 
