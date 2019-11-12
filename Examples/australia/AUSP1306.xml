@@ -480,6 +480,6 @@
     </flexure>
 
      <!-- Output folder path -->
-    <outfolder>/Examples/australia/AUSP1306_output</outfolder>
+    <outfolder>AUSP1306_output</outfolder>
 
 </badlands>

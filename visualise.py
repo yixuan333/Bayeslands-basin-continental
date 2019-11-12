@@ -631,6 +631,8 @@ class results_visualisation:
         np.savetxt(self.folder + '/likelihood.txt', likelihood_vec.T, fmt='%1.5f')
         np.savetxt(self.folder + '/accept_list.txt', accept_list, fmt='%1.2f')
         #np.savetxt(self.folder + '/acceptpercent.txt', [accept], fmt='%1.2f')
+
+        # print ('\n\n\n\nrmse_elev.shape',rmse_elev.shape,'\n\n\n')
         
         return posterior, likelihood_vec, accept_list,   xslice, yslice, rmse_elev, rmse_erodep, erodep_pts
 
@@ -862,30 +864,30 @@ class results_visualisation:
             model.build_mesh(model.input.demfile, verbose=False)
 
         # Adjust precipitation values based on given parameter
-        #print(input_vector[0:rain_regiontime] )
+        # print(input_vector[0:rain_regiontime] )
         
-        # model.force.rainVal  = input_vector[0:rain_regiontime] 
+        model.force.rainVal  = input_vector[0:rain_regiontime] 
 
         # Adjust erodibility based on given parameter
-        # model.input.SPLero = input_vector[rain_regiontime]  
-        # model.flow.erodibility.fill(input_vector[rain_regiontime ] )
+        model.input.SPLero = input_vector[rain_regiontime]  
+        model.flow.erodibility.fill(input_vector[rain_regiontime ] )
 
-        # # Adjust m and n values
-        # model.input.SPLm = input_vector[rain_regiontime+1]  
-        # model.input.SPLn = input_vector[rain_regiontime+2] 
+        # Adjust m and n values
+        model.input.SPLm = input_vector[rain_regiontime+1]  
+        model.input.SPLn = input_vector[rain_regiontime+2] 
 
-        # #Check if it is the etopo extended problem
-        # #if problem == 4 or problem == 3:  # will work for more parameters
-        # model.input.CDm = input_vector[rain_regiontime+3] # submarine diffusion
-        # model.input.CDa = input_vector[rain_regiontime+4] # aerial diffusion
+        #Check if it is the etopo extended problem
+        #if problem == 4 or problem == 3:  # will work for more parameters
+        model.input.CDm = input_vector[rain_regiontime+3] # submarine diffusion
+        model.input.CDa = input_vector[rain_regiontime+4] # aerial diffusion
 
-        # if problem != 1:
-        #     model.slp_cr = input_vector[rain_regiontime+5]
-        #     model.perc_dep = input_vector[rain_regiontime+6]
-        #     model.input.criver = input_vector[rain_regiontime+7]
-        #     model.input.elasticH = input_vector[rain_regiontime+8]
-        #     model.input.diffnb = input_vector[rain_regiontime+9]
-        #     model.input.diffprop = input_vector[rain_regiontime+10]
+        if problem != 1:
+            model.slp_cr = input_vector[rain_regiontime+5]
+            model.perc_dep = input_vector[rain_regiontime+6]
+            model.input.criver = input_vector[rain_regiontime+7]
+            model.input.elasticH = input_vector[rain_regiontime+8]
+            model.input.diffnb = input_vector[rain_regiontime+9]
+            model.input.diffprop = input_vector[rain_regiontime+10]
 
         #Check if it is the mountain problem
         '''if problem==10: # needs to be updated
@@ -911,7 +913,7 @@ class results_visualisation:
 
         for x in range(len(self.sim_interval)):
             self.simtime = self.sim_interval[x]
-            model.run_to_time(self.simtime, muted=True)
+            model.run_to_time(self.simtime, muted=muted)
 
             elev, erodep = interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff)
 
@@ -1077,6 +1079,8 @@ def main():
     res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
     pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init  = res.results_current()
 
+    # print ('\n\n\n\nrmse_elev.shape returned',rmse_elev.shape,'\n\n\n')
+
     print('sucessfully sampled') 
     timer_end = time.time() 
     #likelihood = likehood_rep[:,10:] # just plot proposed likelihood  
@@ -1150,22 +1154,24 @@ def main():
 
     time_total = (timer_end-timer_start)/60
 
-    np.savetxt(fname+'/rmseelev.txt', rmse_elev)
+    
 
 ############################################################################################
+    np.savetxt(fname+'/rmseelev.txt', rmse_elev)
     print ('minimum error', min(rmse_elev))
+
     error_dict = {}
     for i,j in enumerate(rmse_elev):
         # error_dict[j[0]] = pos_param.T[i,:] 
-        if j[0] != 1.0:
+        if j[0] > 1.0:
             print ('\ni : ', i, '  j : ', j[0], '\n')
             error_dict[j[0]] = pos_param.T[i,:] 
         else:
             pass
-            print ('the error was 1.0')
+            print ('the error was ', j[0], i)
 
     #print('min error in dict',min(error_dict))
-    print('error_dict[min(error_dict)] ', error_dict[min(error_dict)])
+    # print('error_dict[min(error_dict)] ', error_dict[min(error_dict)])
     variables = error_dict[min(error_dict)]
     
     np.savetxt('variables.txt', variables)
