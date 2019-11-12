@@ -1277,20 +1277,14 @@ def main():
     #fname = ('sampleresults')
 
     make_directory((fname + '/posterior/pos_parameters')) 
-
     make_directory((fname + '/recons_initialtopo')) 
-
     make_directory((fname + '/pos_plots')) 
     make_directory((fname + '/cross_section')) 
     make_directory((fname + '/sediment_plots')) 
     make_directory((fname + '/posterior/predicted_topo/topo'))  
-
     make_directory((fname + '/posterior/predicted_topo/sed'))  
-
     make_directory((fname + '/posterior/predicted_topo/x_slice'))
-
     make_directory((fname + '/posterior/predicted_topo/y_slice'))
-
     make_directory((fname + '/posterior/posterior/predicted_erodep')) 
     make_directory((fname + '/pred_plots'))
     make_directory((fname + '/sed_visual'))
@@ -1302,14 +1296,7 @@ def main():
     print ('\n\nfolderrrrr --',np.array([fname]), '\n\n')
     np.savetxt('foldername.txt', np.array([fname]), fmt="%s")
 
-
-
- 
- 
-
     run_nb_str =  'results_' + str(run_nb)
- 
-
     timer_start = time.time()
     
     sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography

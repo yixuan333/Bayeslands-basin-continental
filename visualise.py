@@ -1159,19 +1159,19 @@ def main():
 
 ############################################################################################
     np.savetxt(fname+'/rmseelev.txt', rmse_elev)
-    print ('minimum error', min(rmse_elev))
+    # print ('minimum error', min(rmse_elev))
 
     error_dict = {}
     for i,j in enumerate(rmse_elev):
         # error_dict[j[0]] = pos_param.T[i,:] 
         if j[0] > 1.0:
-            print ('\ni : ', i, '  j : ', j[0], '\n')
+            # print ('\ni : ', i, '  j : ', j[0], '\n')
             error_dict[j[0]] = pos_param.T[i,:] 
         else:
             pass
-            print ('the error was ', j[0], i)
+            # print ('the error was ', j[0], i)
 
-    #print('min error in dict',min(error_dict))
+    print('min error in dict',min(error_dict))
     # print('error_dict[min(error_dict)] ', error_dict[min(error_dict)])
     variables = error_dict[min(error_dict)]
     
