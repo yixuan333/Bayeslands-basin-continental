@@ -365,8 +365,8 @@ def main():
         sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
 
-    rain_min = 0.5 
-    rain_max = 3
+    rain_min = 0  
+    rain_max = 2
     # assume 4 regions and 4 time scales
     rain_regiongrid = 1  # how many regions in grid format 
     rain_timescale = 4  # to show climate change 
