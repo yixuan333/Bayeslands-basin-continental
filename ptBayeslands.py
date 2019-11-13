@@ -449,7 +449,9 @@ class ptReplica(multiprocessing.Process):
 
         likelihood = likelihood*(1.0/self.adapttemp)
 
-        self.plot3d_plotly(groundtruth_topo, '/pred_plots/estimated_badlands_'+str(int(rmse_elev_pts)), self.temperature *10)
+        pred_topo_presentday = pred_elev_vec[self.simtime]
+
+        self.plot3d_plotly(pred_topo_presentday, '/pred_plots/estimated_badlands_'+str(int(rmse_elev_pts)), self.temperature *10)
 
         print(likelihood_elev, likelihood_erodep, likelihood, rmse_elev_pts,   tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
  
