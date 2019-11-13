@@ -232,7 +232,7 @@ class ptReplica(multiprocessing.Process):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):
-                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n])*0.5 +  (v_[l][w])*0.5 
+                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n])  +  (v_[l][w]) 
  
 
 
@@ -243,7 +243,7 @@ class ptReplica(multiprocessing.Process):
             w = sub_gridwidth-1
             for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid,  length):
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5   
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])  +  (v_[l][w])    
                         # groundtruth_topo[m][n]   +=  v_[l][w] 
 
         for w in range(0,sub_gridwidth -1): 
@@ -252,7 +252,7 @@ class ptReplica(multiprocessing.Process):
             for m in range(l * len_grid,width):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         # groundtruth_topo[m][n]   +=  v_[l][w]
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5 
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])  +  (v_[l][w]) 
 
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
@@ -362,7 +362,7 @@ class ptReplica(multiprocessing.Process):
             model.input.criver = input_vector[rain_regiontime+7]
             model.input.elasticH = input_vector[rain_regiontime+8]
             model.input.diffnb = input_vector[rain_regiontime+9]
-            model.input.diffprop = input_vector[rain_regiontime+10] 
+            model.input.diffprop = input_vector[rain_regiontime+10]
 
         #Check if it is the mountain problem
         '''if problem==10: # needs to be updated
@@ -420,22 +420,18 @@ class ptReplica(multiprocessing.Process):
         tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
 
         print(  tau_elev,  '   tau_elev ----------')
-
-        print(pred_erodep_pts_vec[self.simtime].shape ,  self.real_erodep_pts.shape , self.real_erodep_pts.shape[0], ' xxx shape -------- ')
-        
+ 
         tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
         
         print(tau_erodep, tau_elev,  ' tau_erodep   tau_elev ----------')
-        print(self.real_elev_pts.shape,  self.real_elev_pts, ' self.real_elev_pts,  self.real_elev_pts[0]')
+        #print(self.real_elev_pts.shape,  self.real_elev_pts, ' self.real_elev_pts,  self.real_elev_pts[0]')
  
 
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
        
         #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
         
-
-        likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
-                
+        likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
         likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep/4  )
         
@@ -450,7 +446,6 @@ class ptReplica(multiprocessing.Process):
         likelihood = likelihood*(1.0/self.adapttemp)
 
         pred_topo_presentday = pred_elev_vec[self.simtime]
-
         self.plot3d_plotly(pred_topo_presentday, '/pred_plots/estimated_badlands_'+str(int(rmse_elev_pts)), self.temperature *10)
 
         print(likelihood_elev, likelihood_erodep, likelihood, rmse_elev_pts,   tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
@@ -509,7 +504,7 @@ class ptReplica(multiprocessing.Process):
         v_proposal = self.vec_parameters # initial param values passed to badlands
         v_current = v_proposal # to give initial value of the chain
  
-        initial_predicted_elev, initial_predicted_erodep, init_pred_erodep_pts_vec, init_pred_elev_pts_vec = self.run_badlands(v_current)
+        #initial_predicted_elev, initial_predicted_erodep, init_pred_erodep_pts_vec, init_pred_elev_pts_vec = self.run_badlands(v_current)
         
         #calc initial likelihood with initial parameters
         [likelihood, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er] = self.likelihood_func(v_current )

@@ -367,7 +367,7 @@ class results_visualisation:
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):
-                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n])*0.5 +  (v_[l][w])*0.5 
+                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n]) +  (v_[l][w]) 
  
 
 
@@ -378,7 +378,7 @@ class results_visualisation:
             w = sub_gridwidth-1
             for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid,  length):
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5   
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n]) +  (v_[l][w])    
                         # groundtruth_topo[m][n]   +=  v_[l][w] 
 
         for w in range(0,sub_gridwidth -1): 
@@ -387,7 +387,7 @@ class results_visualisation:
             for m in range(l * len_grid,width):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
                         # groundtruth_topo[m][n]   +=  v_[l][w]
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])*0.5 +  (v_[l][w])*0.5 
+                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])  +  (v_[l][w])  
 
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 

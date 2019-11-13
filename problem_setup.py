@@ -167,8 +167,8 @@ def problem_setup(problem = 1):
         real_cmarine = 0.005 # Marine diffusion coefficient [m2/a] -->
         real_caerial = 0.001 #aerial diffusion
 
-        rain_min = 0 
-        rain_max = 1.5
+        rain_min = 0.3
+        rain_max = 1.8
 
         #rain_min = 1.45 
         #rain_max = 1.55
@@ -208,8 +208,8 @@ def problem_setup(problem = 1):
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
 
          
-        inittopo_minlimits = np.repeat( -200  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -25  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(25 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------
