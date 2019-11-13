@@ -132,7 +132,7 @@ class ptReplica(multiprocessing.Process):
 
         self.Bayes_inittopoknowledge = Bayes_inittopoknowledge
 
-    def plot3d_plotly(self, zData, fname):
+    def plot3d_plotly(self, zData, fname, replica_id):
 
      
         zmin =  zData.min() 
@@ -153,24 +153,25 @@ class ptReplica(multiprocessing.Process):
  
 
 
-        '''fnameplot = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.png'
+        fnameplot = self.folder +   fname+ str(int(replica_id))+'.png'
 
         print(fnameplot)
 
-        plt.imshow(zData, cmap='hot', interpolation='nearest')
+        im = plt.imshow(zData, cmap='hot', interpolation='nearest')
+        plt.colorbar(im)
         plt.savefig(fnameplot)
         plt.clf()
 
-        fnameplot = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'_.png' 
-        plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
-        plt.savefig(fnameplot)
-        plt.clf()'''
+        #fnameplot = self.folder +   fname+ str(int(self.temperature*10))+'_.png' 
+        #plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
+        #plt.savefig(fnameplot)
+        #plt.clf()
 
 
 
-        fnamedata = self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.txt'
+        #fnamedata = self.folder +  '/recons_initialtopo/'+fname+ str(int(replica_id))+'.txt'
 
-        np.savetxt(fnamedata, zData, fmt='%1.2f')
+        #np.savetxt(fnamedata, zData, fmt='%1.2f')
 
 
 
@@ -191,7 +192,7 @@ class ptReplica(multiprocessing.Process):
         fig = Figure(data=data, layout=layout) 
 
 
-        graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  '/recons_initialtopo/'+fname+ str(int(self.temperature*10))+'.html', validate=False)
+        graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  fname+ str(int(replica_id))+'.html', validate=False)
 
     def process_inittopo(self, inittopo_vec):
  
@@ -263,8 +264,8 @@ class ptReplica(multiprocessing.Process):
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(1 ,1 )) # change sigma to higher values if needed 
 
 
-        self.plot3d_plotly(groundtruth_topo, 'inittopo_smooth_')
-        self.plot3d_plotly(reconstructed_topo, 'inittopo_')
+        self.plot3d_plotly(groundtruth_topo, '/recons_initialtopo/inittopo_smooth_', self.temperature *10)
+        #self.plot3d_plotly(reconstructed_topo, 'inittopo_')
 
     
 
@@ -448,6 +449,8 @@ class ptReplica(multiprocessing.Process):
 
         likelihood = likelihood*(1.0/self.adapttemp)
 
+        self.plot3d_plotly(groundtruth_topo, '/pred_plots/estimated_badlands_'+str(int(rmse_elev_pts)), self.temperature *10)
+
         print(likelihood_elev, likelihood_erodep, likelihood, rmse_elev_pts,   tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
  
 
@@ -457,11 +460,11 @@ class ptReplica(multiprocessing.Process):
 
         #This is a chain that is distributed to many cores. AKA a 'Replica' in Parallel Tempering
 
-        self.plot3d_plotly(self.real_elev, 'realelev')
-        self.plot3d_plotly(self.init_elev, 'expert_inittopo')
+        self.plot3d_plotly(self.real_elev, '/recons_initialtopo/real_evel', 1)
+        self.plot3d_plotly(self.init_elev, '/recons_initialtopo/expert_inittopo', 1)
 
 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter_erodep'+ str(int(self.temperature*10))+'_.png' 
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter_erodep_.png' 
         plt.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], s=2, c = 'b')
         plt.scatter(self.elev_coords[:,0], self.elev_coords[:,1], s=2, c = 'r')
         
@@ -469,21 +472,21 @@ class ptReplica(multiprocessing.Process):
         plt.clf()
         
 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter'+ str(int(self.temperature*10))+'_.png' 
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter_.png' 
         plt.scatter(self.elev_coords[:,0], self.elev_coords[:,1], s=2)
         plt.savefig(fnameplot)
         plt.clf()
 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d') 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_elev'+ str(int(self.temperature*10))+'_.png' 
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_elev_.png' 
         ax.scatter(self.elev_coords[:,0], self.elev_coords[:,1], self.real_elev_pts )
         plt.savefig(fnameplot)
         plt.clf()
         
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d') 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_erdp'+ str(int(self.temperature*10))+'_.png' 
+        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_erdp_.png' 
         ax.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], self.real_erodep_pts )
         plt.savefig(fnameplot)
         plt.clf()        
