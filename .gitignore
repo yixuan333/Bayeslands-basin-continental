@@ -31,7 +31,6 @@ Examples/*/images/*
 Examples/*/*_liklsurf*
 Examples/*/*.zip
 Examples/*/.idea/
-Examples/*/*.ipynb
 pyBadlands/*
 doc/*
 pyBadlands/
