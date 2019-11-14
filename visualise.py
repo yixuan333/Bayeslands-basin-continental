@@ -1095,7 +1095,7 @@ def main():
     size = 15 
 
 
-    plt.plot(rmse_elev.T)
+    plt.plot(rmse_elev)
     plt.title("Elevation RMSE", fontsize = size)
     plt.xlabel(' Number of samples  ', fontsize = size)
     plt.ylabel(' RMSE (meters)', fontsize = size)
@@ -1103,7 +1103,7 @@ def main():
     plt.savefig( fname+'/rmse_elev.pdf')
     plt.clf()
 
-    plt.plot(rmse_erodep.T)
+    plt.plot(rmse_erodep)
     plt.title("Elevation RMSE", fontsize = size)
     plt.xlabel(' Number of samples  ', fontsize = size)
     plt.ylabel(' RMSE (meters)', fontsize = size)
