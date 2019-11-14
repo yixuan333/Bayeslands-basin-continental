@@ -212,8 +212,8 @@ def problem_setup(problem = 1):
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
 
          
-        inittopo_minlimits = np.repeat( -250  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(250 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -400  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(400 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------

@@ -153,14 +153,14 @@ class ptReplica(multiprocessing.Process):
  
 
 
-        fnameplot = self.folder +   fname+ str(int(replica_id))+'.png'
+        '''fnameplot = self.folder +   fname+ str(int(replica_id))+'.png'
 
         print(fnameplot)
 
         im = plt.imshow(zData, cmap='hot', interpolation='nearest')
         plt.colorbar(im)
         plt.savefig(fnameplot)
-        plt.clf()
+        plt.clf()'''
 
         #fnameplot = self.folder +   fname+ str(int(self.temperature*10))+'_.png' 
         #plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
@@ -446,7 +446,7 @@ class ptReplica(multiprocessing.Process):
         likelihood = likelihood*(1.0/self.adapttemp)
 
         pred_topo_presentday = pred_elev_vec[self.simtime]
-        self.plot3d_plotly(pred_topo_presentday, '/pred_plots/estimated_badlands_'+str(int(rmse_elev_pts)), self.temperature *10)
+        self.plot3d_plotly(pred_topo_presentday, '/pred_plots/pred_badlands_', self.temperature *10)
 
         print(likelihood_elev, likelihood_erodep, likelihood, rmse_elev_pts,   tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
  
