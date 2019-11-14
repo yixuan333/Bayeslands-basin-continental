@@ -761,7 +761,7 @@ class results_visualisation:
 
         #---------------------------------------
 
-    def vis_badlands(self, folder):
+    def vis_badlands_timestep(self, folder, timestep):
         # Load the last time step
         file = folder+"/AUSP1306_output/h5"
         stepCounter = len(glob.glob1(folder+"/AUSP1306_output/xmf/","tin.time*"))-1
@@ -772,7 +772,7 @@ class results_visualisation:
         # tin,flow,sea = visu.loadStep(folder+"/AUSP1306_output",stepCounter)
         # visu.view1Step(folder+"/AUSP1306_output", tin, flow, sea, scaleZ=20, maxZ=2500, maxED=200, flowlines=False)
 
-        timestep = 10
+        print ('file :  ', file)
         strat = strata.stratalSection(file,1)
         strat.loadStratigraphy(stepCounter)
         strat.loadTIN(stepCounter)
@@ -785,10 +785,10 @@ class results_visualisation:
         nbpts = 500  
         gfilt = 2  
 
-        strat.plotSectionMap(title='Topography map', xlegend='Distance (m)', ylegend='Distance (m)', 
+        strat.plotSectionMap(folder + '/strat_plots/', title='Topography map', xlegend='Distance (m)', ylegend='Distance (m)', 
                      color=cmo.cm.delta, crange=[-2000,2000], cs=None, size=(6,6))
         strat.buildSection(xo = cs[0,0], yo = cs[0,1], xm = cs[1,0], ym = cs[1,1], pts = nbpts, gfilter = gfilt)
-        strata.viewSection(width = 800, height = 500, cs = strat, 
+        strata.viewSection(folder + '/strat_plots/', width = 800, height = 500, cs = strat, 
             dnlay = 2, rangeX=[2000, 10000], rangeY=[-400,200],
             linesize = 0.5, title='Stratal stacking pattern coloured by time')
                 # Specify the range of water depth for the depositional environments, see the table above
@@ -801,7 +801,7 @@ class results_visualisation:
         # Build an array of depositional environment ID (enviID)
         enviID = np.zeros((strat.nz, len(strat.dist)))
         enviID = strata.buildEnviID(cs = strat, depthID = depthID)
-        strata.viewDepoenvi(folder+ "/AUSP1306_output",width = 8, height = 5, cs = strat, enviID = enviID, dnlay = 2, color = colorDepoenvi, 
+        strata.viewDepoenvi(folder+ '/strat_plots/',width = 8, height = 5, cs = strat, enviID = enviID, dnlay = 2, color = colorDepoenvi, 
                     rangeX=[2000, 12000], rangeY=[-500,100], savefig = 'Yes', figname = 'delta_strata_depoenvi')
         
         start_time = 0.  # the start time of the model run [a]
@@ -817,9 +817,71 @@ class results_visualisation:
         posit = 7000
 
         # Plot the core
-        strata.viewCore(width = 2, height = 5, cs = strat, enviID = enviID, posit = posit, time = layertime, 
+        strata.viewCore(folder+ '/strat_plots/',width = 2, height = 5, cs = strat, enviID = enviID, posit = posit, time = layertime, 
                         color = colorDepoenvi, rangeX = None, rangeY = None, savefig = 'Yes', figname = 'delta_core')
         #---------------------------------------
+
+    def vis_badlands_successive(self, folder):
+        folder = 'case3_aus/output/h5'  # output folder path
+        # Read specific outputs
+        # outputID = np.array([1,   4,  49,  83,  93, 115, 126, 143, 146, 149]).astype(int) # in Myr or Ma
+
+        # Or read outputs with the same time step
+        nbout = 100  # time index of the last output that will be loaded
+        nstep = 5    # time step of reading multiple outputs
+        outputID = np.append(np.arange(0,nbout,nstep),nbout)
+        outputID[0] = 1  # change the index of the first output from 0 to 1
+
+        # Time structure of the model, corresponding to the Time structure in the input.xml file
+        start_time = 0  # the start time of the model run [a]
+        dispTime = 5000  # the display time interval [a], can be obtained from the time structure in input.xml file
+        end_time = start_time + dispTime * nbout  # the time of the loaded output [a]
+
+        layTime = 2500  # the layer time interval [a], can be obtained from the strata structure in input.xml file
+        layID = outputID * (dispTime/layTime)
+
+        outputTime = start_time + outputID * dispTime
+        layerTime = start_time + layID * layTime
+
+        print ('Loaded output index: '+str(outputID))
+        print ('Corresponding to the time at: '+str(outputTime)+' years')
+
+        # Define an array to store the multiple outputs
+        strat_all = {}  
+
+        # Use a for loop to load multiple outputs
+        k = 0
+        for i in outputID:
+            strat_all[k] = strata.stratalSection(folder,1)
+            strat_all[k].loadStratigraphy(i)
+            k += 1
+
+        # Also load TIN files at the last timestep 
+        strat_all[k-1].loadTIN(i)  
+
+        cs=np.zeros((2,2))
+        cs[0,:] = [2137110.46715,7087591.94151]  # point 1
+        cs[1,:] = [-112889.532847,7087591.94151]  # point 2
+
+        # Interpolation parameters
+        nbpts = 500  
+        gfilt = 2  
+
+        # Show the location of the cross-section on the final topography map
+        strat_all[k-1].plotSectionMap(folder + '/strat_plots/',title='Topography map', color=cmo.cm.delta, colorcs='magenta', crange=[-2000,2000], cs=cs, size=(6,6))
+        
+        # Build cross-sections
+        nbcs = len(strat_all)  # number of outputs loaded. Build cross-section for each output.
+        for i in range(0,nbcs):
+            strat_all[i].buildSection(xo = cs[0,0], yo = cs[0,1], xm = cs[1,0], ym = cs[1,1], pts = nbpts, gfilter = gfilt)  
+
+        # Visualize the stratal stacking pattern at the last timestep
+        strata.viewSection(folder + '/strat_plots/',width = 800, height = 500, cs = strat_all[nbcs-1], dnlay = 2, 
+                   rangeX=[0, 12000], rangeY=[-700,700], linesize = 0.5, title='Stratal stacking pattern coloured by time')
+
+        # Plot the temporal stratal layers
+        strata.strataAnimate(width = 7, height = 3, cs = strat_all, nstep = nstep, time = layerTime, rangeX = [2000, 11000], 
+                     rangeY = [-500,200], folder = 'temporal_strata')
 
     def run_badlands(self, input_vector, muted = False):
         #Runs a badlands model with the specified inputs
@@ -1197,8 +1259,10 @@ def main():
     # variables[12:15] = [24000, 5, 0.01]
     # print('variables[:15]',variables[:15])
 
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = True)
 
+
+
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
     # pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(variables, muted = False)
 
     
@@ -1252,9 +1316,9 @@ def main():
     print(dir_name)
 
  
-    res.visualize_sediments(pred_erodep_opt)    
-    res.vis_badlands(fname)
-
+    res.visualize_sediments(pred_erodep_opt) 
+    res.vis_badlands_timestep(fname, 140)
+    res.vis_badlands_successive(fname)   
     '''if os.path.isdir(dir_name):
         shutil.rmtree(dir_name)
 

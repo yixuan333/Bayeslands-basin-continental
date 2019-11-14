@@ -1287,6 +1287,7 @@ def main():
     make_directory((fname + '/posterior/predicted_topo/y_slice'))
     make_directory((fname + '/posterior/posterior/predicted_erodep')) 
     make_directory((fname + '/pred_plots'))
+    make_directory((fname + '/strat_plots'))
     make_directory((fname + '/sed_visual'))
     make_directory((fname + '/performance/lhood'))
     make_directory((fname + '/performance/accept'))

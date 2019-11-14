@@ -113,7 +113,7 @@ def viewData(x0 = None, y0 = None, width = 800, height = 400, linesize = 3, colo
 
     return
 
-def viewSection(width = 800, height = 400, cs = None, dnlay = None,
+def viewSection(folder, width = 800, height = 400, cs = None, dnlay = None,
                 rangeX = None, rangeY = None, linesize = 3, title = 'Cross section'):
     """
     Plot multiple cross-sections data on a graph.
@@ -225,7 +225,7 @@ def viewSection(width = 800, height = 400, cs = None, dnlay = None,
         )
     fig = Figure(data=data, layout=layout)
     plotly.offline.iplot(fig)
-
+    graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= folder+ '/view_crosssection.html', validate=False)
     return
 
 def buildEnviID(cs = None, depthID = None):
@@ -323,7 +323,7 @@ def viewDepoenvi(folder, width = 8, height = 5, cs = None, enviID = None, dnlay 
 
     return
 
-def viewWheeler(width = 8, height = 5, cs = None, enviID = None, time = None, dnlay = 5, color = None, 
+def viewWheeler(folder, width = 8, height = 5, cs = None, enviID = None, time = None, dnlay = 5, color = None, 
                 rangeX = None, rangeY = None, savefig = 'Yes', figname = 'Wheeler_diagram'):
     """
     Plot Wheeler diagram colored by paleo-depositional environments.
@@ -443,12 +443,12 @@ def viewCore(folder, width = 2, height = 5, cs = None, enviID = None, posit = No
     plt.ylabel('Depth (m)')
 
     if savefig == 'Yes':
-        fig.savefig("%s.pdf"%(figname), dpi=300)  # save this figure in the current folder
+        fig.savefig("%s/%s.pdf"%(folder,figname), dpi=300)  # save this figure in the current folder
         
     return
 
-def strataAnimate(width = 7, height = 3, cs = None, dnlay = 5, 
-               rangeX = None, rangeY = None, folder = None, videoname = None):
+def strataAnimate(folder, width = 7, height = 3, cs = None, dnlay = 5, 
+               rangeX = None, rangeY = None, videoname = None):
     """
     Plot temporal stratal layers and create a video.
     Parameters
@@ -626,7 +626,7 @@ class stratalSection:
         
         return
     
-    def plotSectionMap(self, title='Location of the cross-section', xlegend=None, ylegend=None, color=None, colorcs=None, 
+    def plotSectionMap(self, folder, title='Location of the cross-section', xlegend=None, ylegend=None, color=None, colorcs=None, 
                        crange=None, cs=None, ctr='k',size=(8,8)):
         """
         Plot a given set of sections on the map
@@ -671,7 +671,7 @@ class stratalSection:
         cax = divider.append_axes("right", size="2%", pad=0.2)
 
         plt.colorbar(im,cax=cax)
-        plt.savefig(self.folder + "%s.pdf"%('Strata'), dpi=300)
+        plt.savefig(folder + "%s.pdf"%('Strata'), dpi=300)
         plt.close()
 
         return
