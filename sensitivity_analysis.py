@@ -254,15 +254,8 @@ class BayesLands():
            
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
-
-        print(  tau_elev,  '   tau_elev ----------')
-        print(pred_erodep_pts_vec[self.simtime].shape ,  self.real_erodep_pts.shape , self.real_erodep_pts.shape[0], ' xxx shape -------- ')
-        
         tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
         
-        print(tau_erodep, tau_elev,  ' tau_erodep   tau_elev ----------')
-        print(self.real_elev_pts.shape,  self.real_elev_pts, ' self.real_elev_pts,  self.real_elev_pts[0]')
-
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
         likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep/4  )
@@ -314,10 +307,10 @@ class BayesLands():
                 # print ('v_prop', v_prop)
                 likelihood, rmse_elev, rmse_erodep = self.likelihood_func(v_prop)
                 print ('rmse_elev ', rmse_elev)
-                pos_rmse_elev[i,int(j)] = rmse_elev
-                pos_rmse_erodep[i,int(j)] = rmse_erodep
-                self.storeParams(i, self.vec_parameters, pos_rmse_elev[i,int(j)], 'elev')
-                self.storeParams(i, self.vec_parameters, pos_rmse_erodep[i,int(j)], 'erodep')
+                pos_rmse_elev[vstart + i,int(j)] = rmse_elev
+                pos_rmse_erodep[vstart + i,int(j)] = rmse_erodep
+                self.storeParams(i, self.vec_parameters, pos_rmse_elev[vstart + i,int(j)], 'elev')
+                self.storeParams(i, self.vec_parameters, pos_rmse_erodep[vstart + i,int(j)], 'erodep')
                 end = time.time()
                 total_time = end - start
                 print '\nTime elapsed:', total_time
@@ -336,29 +329,29 @@ class BayesLands():
             ax1 = fig.add_subplot(211)
             ax1.grid(True)
             ax1.set_facecolor('#f1f1f1')
-            ax1.plot(variables[i,:], pos_rmse_elev[i,:])
+            ax1.plot(variables[vstart + i,:], pos_rmse_elev[vstart + i,:])
             ax1.set_title(r'Elevation',size=font+2)
             ax1.set_xlabel('Parameter value', size = font)
             ax1.set_ylabel('RMSE elev', size = font)
             ax1.tick_params(axis='both', which='major', labelsize=20)
             ax1.tick_params(axis='both', which='minor', labelsize=20)
             ax1.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
-            ax1.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+            # ax1.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
 
 
             ax2 = fig.add_subplot(212)
             ax2.grid(True)
             ax2.set_facecolor('#f1f1f1')
-            ax2.plot(variables[i,:], pos_rmse_erodep[i,:])
+            ax2.plot(variables[vstart + i,:], pos_rmse_erodep[vstart + i,:])
             ax2.set_title(r'Erosion Deposition',size=font+2)
             ax2.set_xlabel('Parameter value', size = font)
             ax2.set_ylabel('RMSE erodep', size = font)
             ax2.tick_params(axis='both', which='major', labelsize=20)
             ax2.tick_params(axis='both', which='minor', labelsize=20)
-            ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.3f'))
-            ax2.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.3f'))
+            ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+            # ax2.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.3f'))
 
-            plt.savefig('%s/plot_%s.png'% (self.filename,i), bbox_inches='tight', dpi=300, transparent=False)
+            plt.savefig('%s/plot_%s.png'% (self.filename,vstart+ i), bbox_inches='tight', dpi=300, transparent=False)
             plt.close()
 
         # Storing RMSE, tau values and adding initial run to accepted list
@@ -394,8 +387,8 @@ def main():
     rain_timescale = 4  # to show climate change 
     rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale) 
     rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale) 
-    minlimits_others = [5.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 23001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
-    maxlimits_others = [2.e-6, 1 ,  2, 0.2, 0.2, 0.2, 1, 10, 25002, 6, 0.2]
+    minlimits_others = [5.e-7, 0, 0, 0,  0 , 0 , 0 , 0, 23001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+    maxlimits_others = [2.e-6, 1, 2, 0.2, 0.2, 0.2, 1, 10, 25002, 6, 0.2]
     minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
     maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
     
@@ -407,7 +400,7 @@ def main():
 
     likl_sed = True
 
-    elev_coords = np.loadtxt('%s/data/coord_final_elev.txt' %(directory)) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+    elev_coords = np.loadtxt('%s/data/coord_final_elev_mt.txt' %(directory)) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
     elev_coords = np.array(elev_coords, dtype = 'int')
 
     erodep_coords = np.loadtxt('%s/data/erdp_coords.txt' %(directory)) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
@@ -415,7 +408,7 @@ def main():
 
     final_elev = np.loadtxt('%s/data/final_elev_filtered_ocean.txt' %(directory))
     final_erodep = np.loadtxt('%s/data/final_erdp.txt' %(directory))
-    final_elev_pts = np.loadtxt('%s/data/elev_pts_updated.txt' %(directory)) 
+    final_elev_pts = np.loadtxt('%s/data/elev_pts_updated_mt.txt' %(directory)) 
     final_erodep_pts = np.loadtxt('%s/data/final_erdp_pts_.txt' %(directory)) 
 
     while os.path.exists('%s/liklSurface_%s' % (directory,run_nb)):
