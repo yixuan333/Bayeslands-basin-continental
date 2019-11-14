@@ -136,14 +136,15 @@ def problem_setup(problem = 1):
         groundtruth_erodep = np.loadtxt(problemfolder +'data/final_erdp.txt')
         #groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
-        # groundtruth_elev_pts = np.loadtxt(problemfolder +'data/final_elev_pts_.txt')
-        groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated_mt.txt')
+        groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated.txt')
+        #groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated_mt.txt')
 
-        erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", )   
         print('erdp_coords', erodep_coords.shape)
         erodep_coords = np.array(erodep_coords, dtype = 'int')
 
-        elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev_mt.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        #elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev_mt.txt", ) 
+        elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev.txt", )  
         print('elev_coords', elev_coords.shape)        
         elev_coords = np.array(elev_coords, dtype = 'int')
  
@@ -211,8 +212,8 @@ def problem_setup(problem = 1):
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
 
          
-        inittopo_minlimits = np.repeat( -25  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(25 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -250  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(250 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------
