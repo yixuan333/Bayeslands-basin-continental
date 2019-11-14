@@ -1094,6 +1094,23 @@ def main():
 
     size = 15 
 
+
+    plt.plot(rmse_elev.T)
+    plt.title("Elevation RMSE", fontsize = size)
+    plt.xlabel(' Number of samples  ', fontsize = size)
+    plt.ylabel(' RMSE (meters)', fontsize = size)
+    plt.tight_layout()
+    plt.savefig( fname+'/rmse_elev.pdf')
+    plt.clf()
+
+    plt.plot(rmse_erodep.T)
+    plt.title("Elevation RMSE", fontsize = size)
+    plt.xlabel(' Number of samples  ', fontsize = size)
+    plt.ylabel(' RMSE (meters)', fontsize = size)
+    plt.tight_layout()
+    plt.savefig( fname+'/rmse_erodep.pdf')
+    plt.clf()
+
     plt.tick_params(labelsize=size)
     params = {'legend.fontsize': size, 'legend.handlelength': 2}
     plt.rcParams.update(params)
@@ -1180,7 +1197,7 @@ def main():
     # variables[12:15] = [24000, 5, 0.01]
     # print('variables[:15]',variables[:15])
 
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = True)
 
     # pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(variables, muted = False)
 

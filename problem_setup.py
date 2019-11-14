@@ -184,8 +184,11 @@ def problem_setup(problem = 1):
         #minlimits_others = [1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]  # used for Bayeslands environmental params  (stage 2) 
         #maxlimits_others = [1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01] #   429.560216846004 rmse_elev   2921.1315327463903 rmse_erdep
  
-        minlimits_others = [9.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 15001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
-        maxlimits_others = [5.e-6, 1 ,  2, 0.2, 0.02, 0.02, 1, 10, 25002, 10, 0.1]
+        #minlimits_others = [9.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 15001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        #maxlimits_others = [5.e-6, 1 ,  2, 0.2, 0.02, 0.02, 1, 10, 25002, 10, 0.1]
+
+        minlimits_others = [5.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 5001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        maxlimits_others = [5.e-6, 1 ,  2, 0.5, 0.05, 0.05, 1, 20, 25002, 20, 0.2]
  
 
         #variables[:15] = [1.16, 0.9, 1.092, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
