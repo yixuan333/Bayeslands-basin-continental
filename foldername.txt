@@ -1,5 +1,2 @@
-<<<<<<< Updated upstream
-Examples/australia/400Samples_fixedinittopo
-=======
-Examples/australia/results_10
->>>>>>> Stashed changes
+Examples/australia/results_2
+
