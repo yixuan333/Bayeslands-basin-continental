@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 Examples/australia/results_3
+=======
+Examples/australia/results_10
+>>>>>>> master

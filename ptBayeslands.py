@@ -18,7 +18,8 @@ import fnmatch
 import collections
 import numpy as np
 import matplotlib as mpl
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 import matplotlib.mlab as mlab
 import multiprocessing
 import itertools
@@ -412,32 +413,60 @@ class ptReplica(multiprocessing.Process):
     def likelihood_func(self,input_vector): 
 
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector )
+
+        likelihood_elev_ocean = 0
+
+
+        for time in self.sim_interval:
+            p_elev_ocean = pred_elev_vec[time]
+            r_elev_ocean = self.real_elev
+
+            p_elev_ocean[p_elev_ocean<0] = 0 
+            p_elev_ocean[p_elev_ocean>0] = 1
+
+            r_elev_ocean[r_elev_ocean<0] = 0 
+            r_elev_ocean[r_elev_ocean>0] = 1
+
+
+            matches = np.count_nonzero(p_elev_ocean==r_elev_ocean)
+            non_matches = p_elev_ocean.size -matches
+
+            print('\n time ', time, ' matches : ', matches ,'  non matches : ', non_matches, 'percentage non match', (non_matches/p_elev_ocean.size)*100)
+
+            fig = plt.figure()
+            plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
+            plt.savefig('p_elev_ocean.png')
+            plt.close()
+
+            fig = plt.figure()
+            plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
+            plt.savefig('r_elev_ocean.png')
+            plt.close()
+
+            tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
+            likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
+
+        print('likelihood_elev_ocean', likelihood_elev_ocean)
+
+
+
+
            
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
-        # tau_erodep =  np.zeros(self.sim_interval.size)  
- 
-
         tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
-
-        print(  tau_elev,  '   tau_elev ----------')
- 
         tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
-        
+
         print(tau_erodep, tau_elev,  ' tau_erodep   tau_elev ----------')
-        #print(self.real_elev_pts.shape,  self.real_elev_pts, ' self.real_elev_pts,  self.real_elev_pts[0]')
- 
 
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
-       
-        #likelihood_elev_  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )
-        
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
-        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep/4  )
+        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep/4) + likelihood_elev_ocean/10
         
         likelihood = likelihood_elev 
  
         rmse_elev = np.sqrt(tausq)
+        rmse_elev_ocean = np.sqrt(tausq_ocean)
         rmse_erodep = np.sqrt(tau_erodep) 
         rmse_elev_pts = np.sqrt(tau_elev)
         avg_rmse_er = 0#np.average(rmse_erodep)
@@ -448,9 +477,9 @@ class ptReplica(multiprocessing.Process):
         pred_topo_presentday = pred_elev_vec[self.simtime]
         self.plot3d_plotly(pred_topo_presentday, '/pred_plots/pred_badlands_', self.temperature *10)
 
-        print(likelihood_elev, likelihood_erodep, likelihood, rmse_elev_pts,   tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
+        print('likelihood_elev ',likelihood_elev, 'likelihood_erodep', likelihood_erodep, 'likelihood_elev_ocean',likelihood_elev_ocean,'likelihood_total', likelihood_)
+        print('rmse elev', rmse_elev, 'rmse_erodep', rmse,erodep, 'rmse_elev_ocean', rmse_elev_ocean)
  
-
         return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep]
 
     def run(self):
@@ -716,7 +745,7 @@ class ptReplica(multiprocessing.Process):
             with file(('%s/performance/accept/stream_res_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile,np.array([accept_list[i+1]]), fmt='%1.2f')
 
-            with file(('%s/performance/rmse_edep/stream_res_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
+            with file(('%s/performance/rmse_erdp/stream_res_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile,np.array([rmse_erodep[i+1,]]), fmt='%1.2f')
 
             with file(('%s/performance/rmse_elev/stream_res_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
@@ -1242,30 +1271,13 @@ def main():
 
     rain_timescale = rain_intervals  # to show climate change 
 
-    '''rain_minlimits = np.repeat(rain_min, rain_regiongrid*rain_timescale)
-    rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale)
-    minlimits_vec = np.append(rain_minlimits,minlimits_others)
-    maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)
-    vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec)''' #  draw intial values for each of the free parameters
     true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
     stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
     num_param = vec_parameters.size
-
-    #print(maxlimits_vec, ' maxlimits ')
-    #print(vec_parameters)
-
-
+ 
     Bayes_inittopoknowledge = False # True means that you are using revised expert knowledge. False means you are making adjustment to expert knowledge  # NOT USED ANYMORE
 
-    '''if Bayes_inittopoknowledge == True:  
-        mean_pos = np.loadtxt('Examples/australia/stage1_100samples_carmen'+'/mean_pos.txt')
-        x = np.reshape(mean_pos[15:], (20, -1) )
-        #print(x, ' x')
-
-        inittopo_expertknow = inittopo_expertknow  + x  # all values after environmental params are init topo estimates of expert knowledge uncertainity 
-        #print(inittopo_expertknow, ' inittopo_expertknow') '''
-
-
+    
     fname = ""
     run_nb = 0
     while os.path.exists( problemfolder+ 'results_%s' % (run_nb)):
@@ -1291,24 +1303,23 @@ def main():
     make_directory((fname + '/sed_visual'))
     make_directory((fname + '/performance/lhood'))
     make_directory((fname + '/performance/accept'))
-    make_directory((fname + '/performance/rmse_edep'))
+    make_directory((fname + '/performance/rmse_erdp'))
     make_directory((fname + '/performance/rmse_elev'))
 
-    print ('\n\nfolderrrrr --',np.array([fname]), '\n\n')
+    print ('\n\nfolder --',np.array([fname]), '\n\n')
     np.savetxt('foldername.txt', np.array([fname]), fmt="%s")
 
     run_nb_str =  'results_' + str(run_nb)
     timer_start = time.time()
     
-    sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    # sim_interval = [0, -25000 , -4.0e06, -2.0e07 ,  -5.0e07 , -1.0e08,-1.49e08]
+
+    sim_interval = np.array([0, -2500 , -4000, -5700 ,-6000 , -7200 ,-8700 , -10000, -1.49e04])
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
         sim_interval = sim_interval[::-1]
     print("Simulation time interval", sim_interval)
-
-
-
-
 
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
@@ -1325,20 +1336,8 @@ def main():
     #-------------------------------------------------------------------------------------
     pred_topofinal, swap_perc, accept  = pt.run_chains()
 
-
     print('sucessfully sampled') 
     timer_end = time.time()  
-
-    '''dir_name = fname + '/posterior'
-    fname_remove = fname +'/pos_param.txt'
-    print(dir_name)
-    if os.path.isdir(dir_name):
-        shutil.rmtree(dir_name)
-
-    if os.path.exists(fname_remove):  # comment if you wish to keep pos file
-        os.remove(fname_remove)'''
-
-
 
     #stop()
 if __name__ == "__main__": main()
