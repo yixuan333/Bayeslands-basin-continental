@@ -1,5 +1,1 @@
-Examples/australia/results_2
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
+Examples/australia/results_3
