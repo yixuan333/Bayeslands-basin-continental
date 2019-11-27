@@ -416,6 +416,10 @@ class ptReplica(multiprocessing.Process):
 
         likelihood_elev_ocean = 0
 
+        rmse_ocean = np.zeros(self.sim_interval.size)
+
+        i = 0
+
 
         for time in self.sim_interval:
             p_elev_ocean = pred_elev_vec[time]
@@ -444,9 +448,13 @@ class ptReplica(multiprocessing.Process):
             plt.close()
 
             tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
+            rmse_ocean[i] = tausq_ocean
             likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
+            i = i+ 1
 
         print('likelihood_elev_ocean', likelihood_elev_ocean)
+
+        print(rmse_ocean, ' rmse_ocean')
 
 
 
@@ -461,10 +469,8 @@ class ptReplica(multiprocessing.Process):
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
-        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep/4) + likelihood_elev_ocean/10
-        
-        likelihood = likelihood_elev 
- 
+        likelihood = np.sum(likelihood_elev) +  (likelihood_erodep/4) #+ likelihood_elev_ocean/10
+         
         rmse_elev = np.sqrt(tausq)
         rmse_elev_ocean = np.sqrt(tausq_ocean)
         rmse_erodep = np.sqrt(tau_erodep) 
@@ -477,10 +483,10 @@ class ptReplica(multiprocessing.Process):
         pred_topo_presentday = pred_elev_vec[self.simtime]
         self.plot3d_plotly(pred_topo_presentday, '/pred_plots/pred_badlands_', self.temperature *10)
 
-        print('likelihood_elev ',likelihood_elev, 'likelihood_erodep', likelihood_erodep, 'likelihood_elev_ocean',likelihood_elev_ocean,'likelihood_total', likelihood_)
-        print('rmse elev', rmse_elev, 'rmse_erodep', rmse,erodep, 'rmse_elev_ocean', rmse_elev_ocean)
+        print('likelihood_elev ',likelihood_elev, 'likelihood_erodep', likelihood_erodep, 'likelihood_elev_ocean',likelihood_elev_ocean,'likelihood_total', likelihood)
+        print('rmse elev', rmse_elev, 'rmse_erodep', rmse_erodep, 'rmse_elev_ocean', rmse_elev_ocean)
  
-        return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep]
+        return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep, rmse_ocean, rmse_elev_ocean ]
 
     def run(self):
 
@@ -536,7 +542,7 @@ class ptReplica(multiprocessing.Process):
         #initial_predicted_elev, initial_predicted_erodep, init_pred_erodep_pts_vec, init_pred_elev_pts_vec = self.run_badlands(v_current)
         
         #calc initial likelihood with initial parameters
-        [likelihood, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er] = self.likelihood_func(v_current )
+        [likelihood, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er, rmse_ocean, rmse_elev_ocean] = self.likelihood_func(v_current )
 
         print('\tinitial likelihood:', likelihood)
 
@@ -600,7 +606,7 @@ class ptReplica(multiprocessing.Process):
 
             if i == pt_samples and init_count ==0: # move to MCMC canonical
                 self.adapttemp = 1
-                [likelihood, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er] = self.likelihood_func(v_proposal) 
+                [likelihood, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er, rmse_ocean, rmse_elev_ocean] = self.likelihood_func(v_proposal) 
                 init_count = 1
 
                 print('  * adapttemp --------------------------------------- 1 **** ***** ***')
@@ -621,7 +627,7 @@ class ptReplica(multiprocessing.Process):
 
             #print(v_proposal)  
             # Passing paramters to calculate likelihood and rmse with new tau
-            [likelihood_proposal, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er] = self.likelihood_func(v_proposal)
+            [likelihood_proposal, predicted_elev,  pred_erodep_pts, likl_without_temp, avg_rmse_el, avg_rmse_er, rmse_ocean, rmse_elev_ocean] = self.likelihood_func(v_proposal)
 
             final_predtopo= predicted_elev[self.simtime]
             pred_erodep = pred_erodep_pts[self.simtime]
@@ -750,6 +756,11 @@ class ptReplica(multiprocessing.Process):
 
             with file(('%s/performance/rmse_elev/stream_res_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile,np.array([rmse_elev[i+1,]]), fmt='%1.2f')
+
+            with file(('%s/performance/rmse_elev/stream_res_ocean%s.txt' % (self.folder, self.temperature)),'a') as outfile:
+                np.savetxt(outfile, rmse_elev_ocean, fmt='%1.2f', newline='\n')
+
+                
 
             temp = list_erodep_time[i+1,:, :] 
             temp = np.reshape(temp, temp.shape[0]*temp.shape[1]) 
@@ -1313,9 +1324,9 @@ def main():
     timer_start = time.time()
     
     # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
-    # sim_interval = [0, -25000 , -4.0e06, -2.0e07 ,  -5.0e07 , -1.0e08,-1.49e08]
+    sim_interval = [0, -25000 , -4.0e06, -2.0e07 ,  -5.0e07 , -1.0e08,-1.49e08]
 
-    sim_interval = np.array([0, -2500 , -4000, -5700 ,-6000 , -7200 ,-8700 , -10000, -1.49e04])
+    #sim_interval = np.array([0, -2500 , -4000, -5700 ,-6000 , -7200 ,-8700 , -10000, -1.49e04])
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
         sim_interval = sim_interval[::-1]
