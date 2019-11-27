@@ -1324,7 +1324,7 @@ def main():
     timer_start = time.time()
     
     # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
-    sim_interval = [0, -25000 , -4.0e06, -2.0e07 ,  -5.0e07 , -1.0e08,-1.49e08]
+    sim_interval = np.array([0, -25000 , -4.0e06, -2.0e07 ,  -5.0e07 , -1.0e08,-1.49e08])
 
     #sim_interval = np.array([0, -2500 , -4000, -5700 ,-6000 , -7200 ,-8700 , -10000, -1.49e04])
     print ('Simulation time interval before',sim_interval)
