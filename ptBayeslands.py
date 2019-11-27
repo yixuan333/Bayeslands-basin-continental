@@ -758,7 +758,7 @@ class ptReplica(multiprocessing.Process):
                 np.savetxt(outfile,np.array([rmse_elev[i+1,]]), fmt='%1.2f')
 
             with file(('%s/performance/rmse_elev/stream_res_ocean%s.txt' % (self.folder, self.temperature)),'a') as outfile:
-                np.savetxt(outfile, rmse_elev_ocean, fmt='%1.2f', newline='\n')
+                np.savetxt(outfile, np.array([rmse_elev_ocean]), fmt='%1.2f', newline='\n')
 
                 
 
