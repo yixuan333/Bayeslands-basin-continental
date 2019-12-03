@@ -1348,8 +1348,8 @@ def main():
 
     ocean_t = np.zeros((sim_interval.size,groundtruth_elev.shape[0], groundtruth_elev.shape[1]))
 
-    for i in range(sim_interval.size): 
-        temp = np.loadtxt(problemfolder+ '/data/ocean/marine_%s.txt' %(i))
+    for i, val in enumerate(filename_ocean): 
+        temp = np.loadtxt(problemfolder+ '/data/ocean/marine_%s.txt' %(val))
         ocean_t[i,:,:] = temp
 
     # print(ocean_t, 'ocean_t')
