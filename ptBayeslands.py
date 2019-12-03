@@ -437,43 +437,41 @@ class ptReplica(multiprocessing.Process):
 
             print('\n time ', time, ' matches : ', matches ,'  non matches : ', non_matches, 'percentage non match', (non_matches/p_elev_ocean.size)*100)
 
-            fig = plt.figure()
-            plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
-            plt.savefig('p_elev_ocean_original.png')
-            plt.close()
+            # fig = plt.figure()
+            # plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
+            # plt.savefig('p_elev_ocean_original.png')
+            # plt.close()
 
-            fig = plt.figure()
-            plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
-            plt.savefig('r_elev_ocean.png')
-            plt.close()
+            # fig = plt.figure()
+            # plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
+            # plt.savefig('r_elev_ocean.png')
+            # plt.close()
 
-            p_elev_ocean[p_elev_ocean<0] = 1 
             p_elev_ocean[p_elev_ocean>0] = 0
+            p_elev_ocean[p_elev_ocean<0] = 1 
 
-            fig = plt.figure()
-            plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
-            plt.savefig('p_elev_ocean_>0.png')
-            plt.close()
+            # fig = plt.figure()
+            # plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
+            # plt.savefig('p_elev_ocean_>0.png')
+            # plt.close()
 
             tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
             rmse_ocean[i] = tausq_ocean
             likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
             i = i+ 1
 
-        print('likelihood_elev_ocean', likelihood_elev_ocean)
-
-        print(rmse_ocean, ' rmse_ocean')
+        print('rmse_ocean', rmse_ocean)
 
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
         tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
 
-        print(tau_erodep, tau_elev,  ' tau_erodep   tau_elev ----------')
+        # print(tau_erodep, tau_elev,  ' tau_erodep   tau_elev ----------')
 
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
-        likelihood = np.sum(likelihood_elev) +  (likelihood_erodep/4) + likelihood_elev_ocean/10
+        likelihood = np.sum((likelihood_elev/4) +  (likelihood_erodep/4) + (likelihood_elev_ocean/10))
          
         rmse_elev = np.sqrt(tausq)
         rmse_elev_ocean = np.sqrt(tausq_ocean)
@@ -487,8 +485,8 @@ class ptReplica(multiprocessing.Process):
         pred_topo_presentday = pred_elev_vec[self.simtime]
         self.plot3d_plotly(pred_topo_presentday, '/pred_plots/pred_badlands_', self.temperature *10)
 
-        print('likelihood_elev ',likelihood_elev, 'likelihood_erodep', likelihood_erodep, 'likelihood_elev_ocean',likelihood_elev_ocean,'likelihood_total', likelihood)
-        print('rmse elev', rmse_elev, 'rmse_erodep', rmse_erodep, 'rmse_elev_ocean', rmse_elev_ocean)
+        print('LIKELIHOOD :--: Elev: ',likelihood_elev, '\tErdp: ', likelihood_erodep, '\tOcean:',likelihood_elev_ocean,'\tTotal: ', likelihood)
+        print('RMSE :--: Elev ', rmse_elev, 'Erdp', rmse_erodep, 'Ocean', rmse_elev_ocean)
  
         return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep, rmse_ocean, rmse_elev_ocean ]
 
