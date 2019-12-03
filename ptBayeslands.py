@@ -85,7 +85,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class ptReplica(multiprocessing.Process):
     
-    def __init__(self,   num_param, vec_parameters,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, init_elev, real_elev,  real_erodep_pts, real_elev_pts, erodep_coords,elev_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance, Bayes_inittopoknowledge):
+    def __init__(self, num_param, vec_parameters, ocean_t,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, init_elev, real_elev,  real_erodep_pts, real_elev_pts, erodep_coords,elev_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance, Bayes_inittopoknowledge):
 
         multiprocessing.Process.__init__(self)
         self.processID = tempr      
@@ -111,6 +111,7 @@ class ptReplica(multiprocessing.Process):
         self.real_elev_pts = real_elev_pts
         self.elev_coords = elev_coords
         self.erodep_coords = erodep_coords
+        self.ocean_t = ocean_t
         self.init_elev = init_elev
         self.real_elev = real_elev
         self.runninghisto = True  
@@ -421,15 +422,14 @@ class ptReplica(multiprocessing.Process):
         i = 0
 
 
-        for time in self.sim_interval:
+        for i, time in enumerate(self.sim_interval):
             p_elev_ocean = pred_elev_vec[time]
-            r_elev_ocean = self.real_elev
+            # r_elev_ocean = self.real_elev
+            r_elev_ocean = self.ocean_t[i,:,:]
 
-            p_elev_ocean[p_elev_ocean<0] = 0 
-            p_elev_ocean[p_elev_ocean>0] = 1
 
-            r_elev_ocean[r_elev_ocean<0] = 0 
-            r_elev_ocean[r_elev_ocean>0] = 1
+            # r_elev_ocean[r_elev_ocean<0] = 0 
+            # r_elev_ocean[r_elev_ocean>0] = 1
 
 
             matches = np.count_nonzero(p_elev_ocean==r_elev_ocean)
@@ -439,12 +439,20 @@ class ptReplica(multiprocessing.Process):
 
             fig = plt.figure()
             plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
-            plt.savefig('p_elev_ocean.png')
+            plt.savefig('p_elev_ocean_original.png')
             plt.close()
 
             fig = plt.figure()
             plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
             plt.savefig('r_elev_ocean.png')
+            plt.close()
+
+            p_elev_ocean[p_elev_ocean<0] = 1 
+            p_elev_ocean[p_elev_ocean>0] = 0
+
+            fig = plt.figure()
+            plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
+            plt.savefig('p_elev_ocean_>0.png')
             plt.close()
 
             tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
@@ -456,10 +464,6 @@ class ptReplica(multiprocessing.Process):
 
         print(rmse_ocean, ' rmse_ocean')
 
-
-
-
-           
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
         tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
@@ -469,7 +473,7 @@ class ptReplica(multiprocessing.Process):
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
-        likelihood = np.sum(likelihood_elev) +  (likelihood_erodep/4) #+ likelihood_elev_ocean/10
+        likelihood = np.sum(likelihood_elev) +  (likelihood_erodep/4) + likelihood_elev_ocean/10
          
         rmse_elev = np.sqrt(tausq)
         rmse_elev_ocean = np.sqrt(tausq_ocean)
@@ -796,7 +800,7 @@ class ptReplica(multiprocessing.Process):
 
 class ParallelTempering:
 
-    def __init__(self,  vec_parameters, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords,elev_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance, Bayes_inittopoknowledge):
+    def __init__(self,  vec_parameters, ocean_t, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords,elev_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance, Bayes_inittopoknowledge):
         self.swap_interval = swap_interval
         self.folder = fname
         self.maxtemp = maxtemp
@@ -811,6 +815,7 @@ class ParallelTempering:
         self.real_elev_pts = elev_pts
         self.real_elev = real_elev
         self.init_elev = init_elev
+        self.ocean_t = ocean_t
         self.resolu_factor =  resolu_factor
         self.num_param = num_param
         self.erodep_coords  = erodep_coords 
@@ -947,7 +952,7 @@ class ParallelTempering:
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords,self.elev_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
+            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.ocean_t, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords,self.elev_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
                                      #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords,elev_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
         #print (parameter_queue_2, ", param1:",parameter_queue_1)
@@ -1324,18 +1329,35 @@ def main():
     timer_start = time.time()
     
     # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
-    sim_interval = np.array([0, -25000 , -4.0e06, -2.0e07 ,  -5.0e07 , -1.0e08,-1.49e08])
+    
+    ### 149 MA
+    # sim_interval = np.array([0, -5.0e06 , -25.0e06, -50.0e06 , -75.0e06 , -100.0e06, -125.0e06, -1.49e08])
+    # filename_ocean = np.array([0, 5 , 25 , 50, 75, 100, 125, 149])
 
-    #sim_interval = np.array([0, -2500 , -4000, -5700 ,-6000 , -7200 ,-8700 , -10000, -1.49e04])
+    ### 1 MA
+    sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
+    filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
+
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
         sim_interval = sim_interval[::-1]
+        filename_ocean = filename_ocean[::-1]
+
     print("Simulation time interval", sim_interval)
+    print()
+
+    ocean_t = np.zeros((sim_interval.size,groundtruth_elev.shape[0], groundtruth_elev.shape[1]))
+
+    for i in range(sim_interval.size): 
+        temp = np.loadtxt(problemfolder+ '/data/ocean/marine_%s.txt' %(i))
+        ocean_t[i,:,:] = temp
+
+    # print(ocean_t, 'ocean_t')
 
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
     #-------------------------------------------------------------------------------------
-    pt = ParallelTempering(vec_parameters, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  , init_elev, groundtruth_elev,  groundtruth_erodep_pts , groundtruth_elev_pts,  erodep_coords,elev_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance, Bayes_inittopoknowledge)
+    pt = ParallelTempering(vec_parameters, ocean_t, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  , init_elev, groundtruth_elev,  groundtruth_erodep_pts , groundtruth_elev_pts,  erodep_coords,elev_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance, Bayes_inittopoknowledge)
     
     #-------------------------------------------------------------------------------------
     # intialize the MCMC chains
