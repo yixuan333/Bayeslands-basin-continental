@@ -424,13 +424,13 @@ class ptReplica(multiprocessing.Process):
 
         for i, time in enumerate(self.sim_interval):
             p_elev_ocean = pred_elev_vec[time]
-            # r_elev_ocean = self.real_elev
             r_elev_ocean = self.ocean_t[i,:,:]
-
 
             # r_elev_ocean[r_elev_ocean<0] = 0 
             # r_elev_ocean[r_elev_ocean>0] = 1
 
+            p_elev_ocean[p_elev_ocean>0] = 0
+            p_elev_ocean[p_elev_ocean<0] = 1 
 
             matches = np.count_nonzero(p_elev_ocean==r_elev_ocean)
             non_matches = p_elev_ocean.size -matches
@@ -447,8 +447,6 @@ class ptReplica(multiprocessing.Process):
             # plt.savefig('r_elev_ocean.png')
             # plt.close()
 
-            p_elev_ocean[p_elev_ocean>0] = 0
-            p_elev_ocean[p_elev_ocean<0] = 1 
 
             # fig = plt.figure()
             # plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
@@ -1329,12 +1327,12 @@ def main():
     # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     
     ### 149 MA
-    # sim_interval = np.array([0, -5.0e06 , -25.0e06, -50.0e06 , -75.0e06 , -100.0e06, -125.0e06, -1.49e08])
-    # filename_ocean = np.array([0, 5 , 25 , 50, 75, 100, 125, 149])
+    sim_interval = np.array([0, -5.0e06 , -25.0e06, -50.0e06 , -75.0e06 , -100.0e06, -125.0e06, -1.49e08])
+    filename_ocean = np.array([0, 5 , 25 , 50, 75, 100, 125, 149])
 
     ### 1 MA
-    sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
-    filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
+    # sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
+    # filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
 
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
