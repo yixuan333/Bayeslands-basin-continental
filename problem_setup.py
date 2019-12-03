@@ -125,7 +125,7 @@ def problem_setup(problem = 1):
         
         print(inittopo_expertknow, ' * **************** inittopo_expertknow ********************** ')
          
-        simtime = -1.49e06
+        simtime = -1.49e08
         resolu_factor = 1 
 
         init_elev = np.loadtxt(problemfolder+ 'data/initial_elev.txt')
