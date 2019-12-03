@@ -424,7 +424,7 @@ class ptReplica(multiprocessing.Process):
 
         for i, time in enumerate(self.sim_interval):
             p_elev_ocean = pred_elev_vec[time]
-            r_elev_ocean = self.ocean_t[-i,:,:]
+            r_elev_ocean = self.ocean_t[i,:,:]
 
             # r_elev_ocean[r_elev_ocean<0] = 0 
             # r_elev_ocean[r_elev_ocean>0] = 1
