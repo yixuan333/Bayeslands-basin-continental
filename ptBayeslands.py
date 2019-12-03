@@ -439,12 +439,12 @@ class ptReplica(multiprocessing.Process):
 
             fig = plt.figure()
             plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
-            plt.savefig(self.folder +'/pred_plots/'+ str(int(self.temperature*10)) +'_'+ str(time) +'p_elev_ocean_original.png')
+            plt.savefig(self.folder +'/pred_plots/'+ str(time) +'p_elev_ocean_original.png')
             plt.close()
 
             fig = plt.figure()
             plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
-            plt.savefig(self.folder +'/pred_plots/'+ str(int(self.temperature*10))+'_'+ str(time) +'r_elev_ocean.png')
+            plt.savefig(self.folder +'/pred_plots/' + str(time) +'r_elev_ocean.png')
             plt.close()
 
 
@@ -1327,8 +1327,8 @@ def main():
     # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     
     ### 149 MA
-    sim_interval = np.array([0, -5.0e06 , -25.0e06, -50.0e06 , -75.0e06 , -100.0e06, -125.0e06, -1.49e08])
-    filename_ocean = np.array([0, 5 , 25 , 50, 75, 100, 125, 149])
+    sim_interval = np.array([0, -5.0e06 , -25.0e06, -30.0e06,  -40.0e06, -50.0e06 , -75.0e06 , -100.0e06,  -115.0e06, -125.0e06, -1.40e08,  -1.49e08])
+    filename_ocean = np.array([0, 5 , 25 , 30, 40, 50, 75, 100, 115,  125, 140, 149])
 
     ### 1 MA 
     # sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
