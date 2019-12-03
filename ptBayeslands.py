@@ -424,7 +424,7 @@ class ptReplica(multiprocessing.Process):
 
         for i, time in enumerate(self.sim_interval):
             p_elev_ocean = pred_elev_vec[time]
-            r_elev_ocean = self.ocean_t[i,:,:]
+            r_elev_ocean = self.ocean_t[-i,:,:]
 
             # r_elev_ocean[r_elev_ocean<0] = 0 
             # r_elev_ocean[r_elev_ocean>0] = 1
@@ -437,15 +437,15 @@ class ptReplica(multiprocessing.Process):
 
             print('\n time ', time, ' matches : ', matches ,'  non matches : ', non_matches, 'percentage non match', (non_matches/p_elev_ocean.size)*100)
 
-            # fig = plt.figure()
-            # plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
-            # plt.savefig('p_elev_ocean_original.png')
-            # plt.close()
+            fig = plt.figure()
+            plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
+            plt.savefig(self.folder +'/pred_plots/'+ str(int(self.temperature*10)) +'_'+ str(time) +'p_elev_ocean_original.png')
+            plt.close()
 
-            # fig = plt.figure()
-            # plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
-            # plt.savefig('r_elev_ocean.png')
-            # plt.close()
+            fig = plt.figure()
+            plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
+            plt.savefig(self.folder +'/pred_plots/'+ str(int(self.temperature*10))+'_'+ str(time) +'r_elev_ocean.png')
+            plt.close()
 
 
             # fig = plt.figure()
@@ -469,7 +469,7 @@ class ptReplica(multiprocessing.Process):
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
-        likelihood = np.sum((likelihood_elev/4) +  (likelihood_erodep/4) + (likelihood_elev_ocean/10))
+        likelihood =  (likelihood_elev/4) +  (likelihood_erodep/8) + (likelihood_elev_ocean/10) 
          
         rmse_elev = np.sqrt(tausq)
         rmse_elev_ocean = np.sqrt(tausq_ocean)
@@ -1330,9 +1330,13 @@ def main():
     sim_interval = np.array([0, -5.0e06 , -25.0e06, -50.0e06 , -75.0e06 , -100.0e06, -125.0e06, -1.49e08])
     filename_ocean = np.array([0, 5 , 25 , 50, 75, 100, 125, 149])
 
-    ### 1 MA
+    ### 1 MA 
     # sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
     # filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
+ 
+    #sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
+    #filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
+ 
 
     print ('Simulation time interval before',sim_interval)
     if simtime < 0:
