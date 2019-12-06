@@ -60,7 +60,7 @@ vstart = args.vstart
 vend = args.vend
 
 class BayesLands():
-    def __init__(self, muted, simtime, sim_interval, samples, real_elev , real_erodep, real_erodep_pts, real_elev_pts, elev_coords, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed):
+    def __init__(self, muted, simtime, sim_interval, samples, real_elev , real_erodep, real_erodep_pts, real_elev_pts, elev_coords, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb, likl_sed, ocean_t):
         self.filename = filename
         self.input = xmlinput
         self.real_elev = real_elev
@@ -83,6 +83,7 @@ class BayesLands():
         self.simtime = simtime
         self.sim_interval = sim_interval
         self.burn_in = 0.0
+        self.ocean_t = ocean_t
 
     def run_badlands(self, input_vector):
         #Runs a badlands model with the specified inputs
@@ -250,26 +251,64 @@ class BayesLands():
                 outfile.write('\n')
 
     def likelihood_func(self,input_vector): 
+        
         pred_elev_vec, pred_erodep_vec, pred_erodep_pts_vec, pred_elev_pts_vec = self.run_badlands(input_vector)
-           
+
+        likelihood_elev_ocean = 0
+        rmse_ocean = np.zeros(self.sim_interval.size)
+        i = 0
+
+        for i, time in enumerate(self.sim_interval):
+            p_elev_ocean = pred_elev_vec[time]
+            r_elev_ocean = self.ocean_t[-i,:,:]
+
+            # r_elev_ocean[r_elev_ocean<0] = 0 
+            # r_elev_ocean[r_elev_ocean>0] = 1
+
+            p_elev_ocean[p_elev_ocean>0] = 0
+            p_elev_ocean[p_elev_ocean<0] = 1 
+
+            matches = np.count_nonzero(p_elev_ocean==r_elev_ocean)
+            non_matches = p_elev_ocean.size - matches
+            
+            print('\n time ', time, ' matches : ', matches ,'  non matches : ', non_matches, 'percentage non match', (float(non_matches)/float(p_elev_ocean.size))*100)
+
+            # fig = plt.figure()
+            # plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
+            # plt.savefig(self.filename +'/pred_plots/'+ str(time) +'p_elev_ocean_original.png')
+            # plt.close()
+
+            # fig = plt.figure()
+            # plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
+            # plt.savefig(self.filename +'/pred_plots/'+ str(time) +'r_elev_ocean.png')
+            # plt.close()
+
+            tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
+            rmse_ocean[i] = tausq_ocean
+            likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
+            i = i+ 1
+
+        print('rmse_ocean', rmse_ocean)
+
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
         tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
         
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
-        likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep
-        likelihood_ = np.sum(likelihood_elev) +  (likelihood_erodep/4  )
-        likelihood = likelihood_elev 
-
+        likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
+        likelihood =  (likelihood_elev/4) +  (likelihood_erodep/8) + (likelihood_elev_ocean/10) 
+         
         rmse_elev = np.sqrt(tausq)
+        rmse_elev_ocean = np.average(rmse_ocean)
         rmse_erodep = np.sqrt(tau_erodep) 
         rmse_elev_pts = np.sqrt(tau_elev)
         avg_rmse_er = 0#np.average(rmse_erodep)
         avg_rmse_el = 0#np.average(rmse_elev_pts)
+        rmse_total = rmse_elev_pts + rmse_erodep + rmse_elev_ocean
 
         # print(likelihood_elev, likelihood_erodep, likelihood, tau_elev, rmse_elev, tau_erodep, rmse_erodep, '   likelihood_elev, likelihood_erodep, self.sedscalingfactor')
 
-        return likelihood, rmse_elev_pts, rmse_erodep
+        return likelihood, rmse_elev_pts, rmse_erodep, rmse_elev_ocean, rmse_total
 
     def likelihoodSurface(self):
         
@@ -288,7 +327,9 @@ class BayesLands():
         pos_likl = np.zeros((variables.shape[0], variables.shape[1]))
         pos_rmse_elev = np.zeros((variables.shape[0], variables.shape[1]))
         pos_rmse_erodep = np.zeros((variables.shape[0], variables.shape[1]))
-        
+        pos_rmse_elev_ocean = np.zeros((variables.shape[0], variables.shape[1]))
+        pos_rmse_total = np.zeros((variables.shape[0], variables.shape[1]))
+
         print ('variables', variables.shape)
 
         for x in range(vstart,vend):
@@ -305,12 +346,18 @@ class BayesLands():
                 print ('j', j, 'w', w)
 
                 # print ('v_prop', v_prop)
-                likelihood, rmse_elev, rmse_erodep = self.likelihood_func(v_prop)
+                likelihood, rmse_elev, rmse_erodep, rmse_elev_ocean, rmse_total = self.likelihood_func(v_prop)
                 print ('rmse_elev ', rmse_elev)
                 pos_rmse_elev[vstart + i,int(j)] = rmse_elev
                 pos_rmse_erodep[vstart + i,int(j)] = rmse_erodep
+                pos_rmse_elev_ocean[vstart + i,int(j)] = rmse_elev_ocean
+                pos_rmse_total[vstart + i,int(j)] = rmse_total
+                
                 self.storeParams(i, self.vec_parameters, pos_rmse_elev[vstart + i,int(j)], 'elev')
                 self.storeParams(i, self.vec_parameters, pos_rmse_erodep[vstart + i,int(j)], 'erodep')
+                self.storeParams(i, self.vec_parameters, pos_rmse_elev_ocean[vstart + i,int(j)], 'elev_ocean')
+                self.storeParams(i, self.vec_parameters, pos_rmse_total[vstart + i,int(j)], 'total')
+
                 end = time.time()
                 total_time = end - start
                 print '\nTime elapsed:', total_time
@@ -351,7 +398,44 @@ class BayesLands():
             ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
             # ax2.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.3f'))
 
-            plt.savefig('%s/plot_%s.png'% (self.filename,vstart+ i), bbox_inches='tight', dpi=300, transparent=False)
+            plt.savefig('%s/plot_%s_elev_erdp.png'% (self.filename,vstart+ i), bbox_inches='tight', dpi=300, transparent=False)
+            plt.close()
+
+            fig = plt.figure(figsize=(15,15))
+            
+            ax = fig.add_subplot(111)
+            ax.spines['top'].set_color('none')
+            ax.spines['bottom'].set_color('none')
+            ax.spines['left'].set_color('none')
+            ax.spines['right'].set_color('none')
+            ax.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+            # ax.tick_params(labelcolor='w')
+            
+            ax1 = fig.add_subplot(211)
+            ax1.grid(True)
+            ax1.set_facecolor('#f1f1f1')
+            ax1.plot(variables[vstart + i,:], pos_rmse_elev_ocean[vstart + i,:])
+            ax1.set_title(r'Ocean',size=font+2)
+            ax1.set_xlabel('Parameter value', size = font)
+            ax1.set_ylabel('RMSE ocean', size = font)
+            ax1.tick_params(axis='both', which='major', labelsize=20)
+            ax1.tick_params(axis='both', which='minor', labelsize=20)
+            ax1.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.4f'))
+            # ax1.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+
+
+            ax2 = fig.add_subplot(212)
+            ax2.grid(True)
+            ax2.set_facecolor('#f1f1f1')
+            ax2.plot(variables[vstart + i,:], pos_rmse_total[vstart + i,:])
+            ax2.set_title(r'Total',size=font+2)
+            ax2.set_xlabel('Parameter value', size = font)
+            ax2.set_ylabel('RMSE Total', size = font)
+            ax2.tick_params(axis='both', which='major', labelsize=20)
+            ax2.tick_params(axis='both', which='minor', labelsize=20)
+            ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+
+            plt.savefig('%s/plot_%s_ocean_total.png'% (self.filename,vstart+ i), bbox_inches='tight', dpi=300, transparent=False)
             plt.close()
 
         # Storing RMSE, tau values and adding initial run to accepted list
@@ -373,12 +457,12 @@ def main():
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
     num_successive_topo = 4
-    simtime = -1.49E+04
-    sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
-    print ('Simulation time interval before',sim_interval)
-    if simtime < 0:
-        sim_interval = sim_interval[::-1]
-    print("Simulation time interval", sim_interval)
+    simtime = -1.49E+06
+    # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+    # print ('Simulation time interval before',sim_interval)
+    # if simtime < 0:
+    #     sim_interval = sim_interval[::-1]
+    # print("Simulation time interval", sim_interval)
 
     rain_min = 0  
     rain_max = 2
@@ -406,7 +490,7 @@ def main():
     erodep_coords = np.loadtxt('%s/data/erdp_coords.txt' %(directory)) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
     erodep_coords = np.array(erodep_coords, dtype = 'int')
 
-    final_elev = np.loadtxt('%s/data/final_elev_filtered_ocean.txt' %(directory))
+    final_elev = np.loadtxt('%s/data/final_elev.txt' %(directory))
     final_erodep = np.loadtxt('%s/data/final_erdp.txt' %(directory))
     final_elev_pts = np.loadtxt('%s/data/elev_pts_updated_mt.txt' %(directory)) 
     final_erodep_pts = np.loadtxt('%s/data/final_erdp_pts_.txt' %(directory)) 
@@ -422,7 +506,30 @@ def main():
     print '\nInput file shape', final_elev.shape, '\n'
     run_nb_str = 'liklSurface_' + str(run_nb)
 
-    bLands = BayesLands(muted, simtime, sim_interval, samples, final_elev, final_erodep, final_erodep_pts,final_elev_pts, elev_coords, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed)
+
+    # sim_interval = np.array([0, -5.0e06 , -25.0e06, -30.0e06,  -40.0e06, -50.0e06 , -75.0e06 , -100.0e06,  -115.0e06, -125.0e06, -1.40e08,  -1.49e08])
+    # filename_ocean = np.array([0, 5 , 25 , 30, 40, 50, 75, 100, 115,  125, 140, 149])
+
+    ## 1 MA 
+    sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
+    filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
+ 
+    print ('Simulation time interval before',sim_interval)
+    if simtime < 0:
+        sim_interval = sim_interval[::-1]
+        filename_ocean = filename_ocean[::-1]
+
+    print("Simulation time interval", sim_interval)
+    print()
+
+    ocean_t = np.zeros((sim_interval.size,final_elev.shape[0], final_elev.shape[1]))
+
+    for i, val in enumerate(filename_ocean): 
+        temp = np.loadtxt(directory+ '/data/ocean/marine_%s.txt' %(val))
+        ocean_t[i,:,:] = temp
+
+
+    bLands = BayesLands(muted, simtime, sim_interval, samples, final_elev, final_erodep, final_erodep_pts,final_elev_pts, elev_coords, erodep_coords, filename, xmlinput, minlimits_vec, maxlimits_vec, vec_parameters, run_nb_str, likl_sed, ocean_t)
     bLands.likelihoodSurface()
 
     print 'Results are stored in ', filename
