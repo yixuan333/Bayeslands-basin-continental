@@ -121,11 +121,8 @@ def problem_setup(problem = 1):
 
         problemfolder = 'Examples/australia/'
         xmlinput = problemfolder + 'AUSP1306.xml'
-
         inittopo_expertknow = np.loadtxt(problemfolder + 'data/init_topo_fused.txt')  # no expert knowledge as simulated init topo
-
-
-
+        
         print(inittopo_expertknow, ' * **************** inittopo_expertknow ********************** ')
          
         simtime = -1.49e08
@@ -136,22 +133,20 @@ def problem_setup(problem = 1):
         groundtruth_erodep = np.loadtxt(problemfolder +'data/final_erdp.txt')
         #groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
-        # groundtruth_elev_pts = np.loadtxt(problemfolder +'data/final_elev_pts_.txt')
-        groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated_mt.txt')
+        groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated.txt')
+        #groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated_mt.txt')
 
-        erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", )   
         print('erdp_coords', erodep_coords.shape)
         erodep_coords = np.array(erodep_coords, dtype = 'int')
 
-        elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev_mt.txt", ) #np.array([[60,60],[52,67],[74,76],[62,45],[72,66],[85,73],[90,75],[44,86],[100,80],[88,69]])
+        #elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev_mt.txt", ) 
+        elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev.txt", )  
         print('elev_coords', elev_coords.shape)        
         elev_coords = np.array(elev_coords, dtype = 'int')
  
         inittopo_estimated = [] #np.loadtxt(problemfolder + 'init_expertknowlegeprocess/init_estimated.txt') 
-
         res_summaryfile = '/results.txt'
-
-
         inittopo_expertknow = inittopo_expertknow  # no expert knowledge as simulated init topo
 
         #true_parameter_vec = np.loadtxt(problemfolder + 'data/true_values.txt')
@@ -170,9 +165,6 @@ def problem_setup(problem = 1):
         rain_min = 0.3
         rain_max = 1.8
 
-        #rain_min = 1.45 
-        #rain_max = 1.55
-
         # assume 4 regions and 4 time scales
         rain_regiongrid = 1  # how many regions in grid format 
         rain_timescale = 4  # to show climate change 
@@ -184,32 +176,28 @@ def problem_setup(problem = 1):
         #minlimits_others = [1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]  # used for Bayeslands environmental params  (stage 2) 
         #maxlimits_others = [1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01] #   429.560216846004 rmse_elev   2921.1315327463903 rmse_erdep
  
-        minlimits_others = [9.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 15001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
-        maxlimits_others = [5.e-6, 1 ,  2, 0.2, 0.02, 0.02, 1, 10, 25002, 10, 0.1]
- 
+        #minlimits_others = [9.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 15001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        #maxlimits_others = [5.e-6, 1 ,  2, 0.2, 0.02, 0.02, 1, 10, 25002, 10, 0.1]
 
+        minlimits_others = [5.e-7, 0, 0 , 0  ,  0 , 0 , 0 , 0, 5001, 4, 0 ]  # used for Bayeslands environmental params  (stage 2) 
+        maxlimits_others = [5.e-6, 1 ,  2, 0.5, 0.05, 0.05, 1, 20, 25002, 20, 0.2]
+ 
         #variables[:15] = [1.16, 0.9, 1.092, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
  
  
         #----------------------------------------InitTOPO
 
-        #inittopo_gridlen = 20  # should be of same format as @   inittopo_expertknow
-        #inittopo_gridwidth = 20
-
         epsilon = 0.5 
-
         inittopo_gridlen = 20  # should be of same format as @   inittopo_expertknow
         inittopo_gridwidth = 20
-
 
         len_grid = int(groundtruth_elev.shape[0]/inittopo_gridlen)  # take care of left over
         wid_grid = int(groundtruth_elev.shape[1]/inittopo_gridwidth)   # take care of left over
 
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
-
          
         inittopo_minlimits = np.repeat( -25  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(25 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(50 , inittopo_gridlen*inittopo_gridwidth)
  
 
         #--------------------------------------------------------
@@ -217,8 +205,6 @@ def problem_setup(problem = 1):
 
         minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
         maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
-
-
 
         temp_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
         minlimits_vec = np.append(temp_vec, inittopo_minlimits)
@@ -234,7 +220,6 @@ def problem_setup(problem = 1):
         num_param = vec_parameters.size
         # print(vec_parameters, 'vec_parameters') 
 
-      
 
     return (problemfolder, xmlinput, simtime, resolu_factor, init_elev ,groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, groundtruth_elev_pts,  res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 

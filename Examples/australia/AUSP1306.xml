@@ -45,7 +45,8 @@
         <!--  Relative sea-level position [m]  -->
         <position>0.</position>
         <!--  Sea-level curve - (optional)  -->
-        <curve>Examples/australia/AUSP1306/Sea_level/Haq_87_Muller2018_M7.csv</curve>
+        <!-- <curve>Examples/australia/AUSP1306/Sea_level/Haq_87_Muller2018_M7.csv</curve> -->
+        <curve>Examples/australia/AUSP1307/Sea_level/Haq_87_Muller2018_M6.csv</curve>
     </sea>
     
     <!--  Tectonic structure  -->
