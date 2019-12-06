@@ -472,7 +472,7 @@ class ptReplica(multiprocessing.Process):
         likelihood =  (likelihood_elev/4) +  (likelihood_erodep/8) + (likelihood_elev_ocean/10) 
          
         rmse_elev = np.sqrt(tausq)
-        rmse_elev_ocean = np.sqrt(tausq_ocean)
+        rmse_elev_ocean = np.average(rmse_ocean)
         rmse_erodep = np.sqrt(tau_erodep) 
         rmse_elev_pts = np.sqrt(tau_elev)
         avg_rmse_er = 0#np.average(rmse_erodep)

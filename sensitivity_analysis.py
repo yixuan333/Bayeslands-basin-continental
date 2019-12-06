@@ -452,7 +452,7 @@ def main():
     directory = ""
     likl_sed = False
     choice = 1#input("Please choose a Badlands example to run the likelihood surface generator on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
-    samples = 10#input("Please enter number of samples (Make sure it is a perfect square): \n")
+    samples = 100#input("Please enter number of samples (Make sure it is a perfect square): \n")
 
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
