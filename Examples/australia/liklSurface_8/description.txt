@@ -1,0 +1,13 @@
+
+	samples: 100
+	erod_limits: [5e-07, 1.5e-06]
+	rain_limits: [0.5, 2.0]
+	erdp coords: [[ 0  3]
+ [42 94]
+ [42 95]
+ ...
+ [96 78]
+ [96 79]
+ [96 80]]
+	likl_sed: True
+	filename: Examples/australia/liklSurface_8

@@ -1,0 +1,4 @@
+
+	samples: 100
+	erod_limits: [3e-06, 7e-06]
+	rain_limits: [0.0, 3.0]
