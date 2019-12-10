@@ -576,7 +576,7 @@ class results_visualisation:
         erodep_pts = erodep_pts[:, burnin:, :] 
         
         erodep_pts = erodep_pts.transpose(2,0,1).reshape(edp_pts_time,-1) 
-        # print(erodep_pts.shape, ' ed   ***')
+        print(erodep_pts.shape, ' ed   ***')
  
 
         path = self.folder +'/performance/lhood/' 
@@ -600,7 +600,7 @@ class results_visualisation:
             v = v +1 
         #accept_list = accept_list[:, burnin: ] 
 
-        path = self.folder +'/performance/rmse_edep/' 
+        path = self.folder +'/performance/rmse_erdp/' 
         files = os.listdir(path) 
         v = 0 
         for name in files: 
@@ -1134,11 +1134,31 @@ def main():
     fname = fname[0].rstrip()
     run_nb_str = fname
     timer_start = time.time()
-    sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
-    if simtime <= 0:
-        sim_interval = sim_interval[::-1]
-    print("Simulation time interval", sim_interval)
+    
+    sim_interval = np.array([0, -5.0e06 , -25.0e06, -30.0e06,  -40.0e06, -50.0e06 , -75.0e06 , -100.0e06,  -115.0e06, -125.0e06, -1.40e08,  -1.49e08])
+    filename_ocean = np.array([0, 5 , 25 , 30, 40, 50, 75, 100, 115,  125, 140, 149])
 
+    ### 1 MA 
+    # sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
+    # filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
+ 
+    #sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
+    #filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
+ 
+
+    print ('Simulation time interval before',sim_interval)
+    if simtime < 0:
+        sim_interval = sim_interval[::-1]
+        filename_ocean = filename_ocean[::-1]
+
+    print("Simulation time interval", sim_interval)
+    print()
+
+    ocean_t = np.zeros((sim_interval.size,groundtruth_elev.shape[0], groundtruth_elev.shape[1]))
+
+    for i, val in enumerate(filename_ocean): 
+        temp = np.loadtxt(problemfolder+ '/data/ocean/marine_%s.txt' %(val))
+        ocean_t[i,:,:] = temp
     res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
     pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init  = res.results_current()
 
