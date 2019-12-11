@@ -512,7 +512,7 @@ class results_visualisation:
         topo  = self.real_elev 
 
         print('self.real_erodep_pts.shape[1]', self.real_erodep_pts.shape[0])
-        edp_pts_time = self.real_erodep_pts.shape[0]  *self.sim_interval.size
+        edp_pts_time = self.real_erodep_pts.shape[0]  #*self.sim_interval.size
 
         print(self.real_erodep_pts.shape[0], self.real_erodep_pts.shape,   ' ------------------------------------  ')
 

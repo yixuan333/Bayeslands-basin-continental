@@ -469,7 +469,7 @@ class ptReplica(multiprocessing.Process):
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
-        likelihood =  (likelihood_elev/4) +  (likelihood_erodep/8) + (likelihood_elev_ocean/10) 
+        likelihood =  (likelihood_elev/4) +  (likelihood_erodep/8) + (likelihood_elev_ocean/5) 
          
         rmse_elev = np.sqrt(tausq)
         rmse_elev_ocean = np.average(rmse_ocean)
@@ -757,13 +757,17 @@ class ptReplica(multiprocessing.Process):
             with file(('%s/performance/rmse_elev/stream_res_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile,np.array([rmse_elev[i+1,]]), fmt='%1.2f')
 
-            with file(('%s/performance/rmse_elev/stream_res_ocean%s.txt' % (self.folder, self.temperature)),'a') as outfile:
+            with file(('%s/performance/rmse_ocean/stream_res_ocean%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile, np.array([rmse_elev_ocean]), fmt='%1.2f', newline='\n')
 
                 
 
-            temp = list_erodep_time[i+1,:, :] 
-            temp = np.reshape(temp, temp.shape[0]*temp.shape[1]) 
+            #temp = list_erodep_time[i+1,:, :] 
+            #temp = np.reshape(temp, temp.shape[0]*temp.shape[1]) 
+
+
+            temp = list_erodep_time[i+1,-1,:] 
+            temp = np.reshape(temp, temp.shape[1]*1) 
  
 
             file_name = self.folder + '/posterior/predicted_topo/sed/chain_' + str(self.temperature) + '.txt'
@@ -1317,6 +1321,7 @@ def main():
     make_directory((fname + '/performance/accept'))
     make_directory((fname + '/performance/rmse_erdp'))
     make_directory((fname + '/performance/rmse_elev'))
+    make_directory((fname + '/performance/rmse_ocean'))
 
     print ('\n\nfolder --',np.array([fname]), '\n\n')
     np.savetxt('foldername.txt', np.array([fname]), fmt="%s")
