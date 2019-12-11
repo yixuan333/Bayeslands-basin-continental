@@ -105,7 +105,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class results_visualisation:
 
-    def __init__(self, vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev ):
+    def __init__(self, vec_parameters, ocean_t, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev ):
 
    
         self.swap_interval = swap_interval
@@ -142,7 +142,7 @@ class results_visualisation:
         self.inittopo_expertknow =  inittopo_expertknow 
         self.inittopo_estimated = inittopo_estimated
         self.init_elev = init_elev
-
+        self.ocean_t = ocean_t
 
         self.Bayes_inittopoknowledge = True
 
@@ -512,7 +512,7 @@ class results_visualisation:
         topo  = self.real_elev 
 
         print('self.real_erodep_pts.shape[1]', self.real_erodep_pts.shape[0])
-        edp_pts_time = self.real_erodep_pts.shape[0]  #*self.sim_interval.size
+        edp_pts_time = self.real_erodep_pts.shape[0]*self.sim_interval.size
 
         print(self.real_erodep_pts.shape[0], self.real_erodep_pts.shape,   ' ------------------------------------  ')
 
@@ -952,22 +952,6 @@ class results_visualisation:
             model.input.diffnb = input_vector[rain_regiontime+9]
             model.input.diffprop = input_vector[rain_regiontime+10]
 
-        #Check if it is the mountain problem
-        '''if problem==10: # needs to be updated
-            #Round the input vector 
-            k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
-
-            #Load the current tectonic uplift parameters
-            tectonicValues=pandas.read_csv(str(model.input.tectFile[0]),sep=r'\s+',header=None,dtype=np.float).values
-        
-            #Adjust the parameters by our value k, and save them out
-            newFile = "Examples/mountain/tect/uplift"+str(self.temperature)+"_"+str(k)+".csv"
-            newtect = pandas.DataFrame(tectonicValues*k)
-            newtect.to_csv(newFile,index=False,header=False)
-
-            #Update the model uplift tectonic values
-            model.input.tectFile[0]=newFile'''
-
        
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()
@@ -999,6 +983,47 @@ class results_visualisation:
             erodep_pts_vec[self.simtime] = erodep_pts
             elev_pts_vec[self.simtime] = elev_pts
  
+
+
+        likelihood_elev_ocean = 0
+        rmse_ocean = np.zeros(self.sim_interval.size)
+        i = 0
+
+
+        for i, time in enumerate(self.sim_interval):
+            p_elev_ocean = elev_vec[time]
+            r_elev_ocean = self.ocean_t[i,:,:]
+
+            p_elev_ocean[p_elev_ocean>0] = 0
+            p_elev_ocean[p_elev_ocean<0] = 1 
+
+            matches = np.count_nonzero(p_elev_ocean==r_elev_ocean)
+            non_matches = p_elev_ocean.size -matches
+
+            print('\n time ', time, ' matches : ', matches ,'  non matches : ', non_matches, 'percentage non match', (non_matches/p_elev_ocean.size)*100)
+
+            fig = plt.figure()
+            plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
+            plt.savefig(self.folder +'/pred_plots/'+ str(time) +'p_elev_ocean_original.png')
+            plt.close()
+
+            fig = plt.figure()
+            plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
+            plt.savefig(self.folder +'/pred_plots/' + str(time) +'r_elev_ocean.png')
+            plt.close()
+
+
+            # fig = plt.figure()
+            # plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
+            # plt.savefig('p_elev_ocean_>0.png')
+            # plt.close()
+
+            tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
+            rmse_ocean[i] = tausq_ocean
+            likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
+            i = i+ 1
+
+
         return elev_vec, erodep_vec, erodep_pts_vec, elev_pts_vec
 
     def viewGrid(self, width=1000, height=1000, zmin=None, zmax=None, zData=None, title='Predicted Topography', time_frame=None, filename=None):
@@ -1159,7 +1184,7 @@ def main():
     for i, val in enumerate(filename_ocean): 
         temp = np.loadtxt(problemfolder+ '/data/ocean/marine_%s.txt' %(val))
         ocean_t[i,:,:] = temp
-    res = results_visualisation(  vec_parameters, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
+    res = results_visualisation(  vec_parameters, ocean_t, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
     pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init  = res.results_current()
 
     # print ('\n\n\n\nrmse_elev.shape returned',rmse_elev.shape,'\n\n\n')
@@ -1337,8 +1362,8 @@ def main():
 
  
     res.visualize_sediments(pred_erodep_opt) 
-    res.vis_badlands_timestep(fname, 140)
-    res.vis_badlands_successive(fname)   
+    res.vis_badlands_timestep(fname, 149)
+    # res.vis_badlands_successive(fname)   
     '''if os.path.isdir(dir_name):
         shutil.rmtree(dir_name)
 
