@@ -353,10 +353,10 @@ class BayesLands():
                 pos_rmse_elev_ocean[vstart + i,int(j)] = rmse_elev_ocean
                 pos_rmse_total[vstart + i,int(j)] = rmse_total
                 
-                self.storeParams(i, self.vec_parameters, pos_rmse_elev[vstart + i,int(j)], 'elev')
-                self.storeParams(i, self.vec_parameters, pos_rmse_erodep[vstart + i,int(j)], 'erodep')
-                self.storeParams(i, self.vec_parameters, pos_rmse_elev_ocean[vstart + i,int(j)], 'elev_ocean')
-                self.storeParams(i, self.vec_parameters, pos_rmse_total[vstart + i,int(j)], 'total')
+                self.storeParams(i, self.vec_parameters, pos_rmse_elev[vstart + i,int(j)], 'elev_%s' %(i))
+                self.storeParams(i, self.vec_parameters, pos_rmse_erodep[vstart + i,int(j)], 'erodep%s' %(i))
+                self.storeParams(i, self.vec_parameters, pos_rmse_elev_ocean[vstart + i,int(j)], 'elev_ocean%s' %(i))
+                self.storeParams(i, self.vec_parameters, pos_rmse_total[vstart + i,int(j)], 'total%s' %(i))
 
                 end = time.time()
                 total_time = end - start
@@ -438,7 +438,54 @@ class BayesLands():
             plt.savefig('%s/plot_%s_ocean_total.png'% (self.filename,vstart+ i), bbox_inches='tight', dpi=300, transparent=False)
             plt.close()
 
-        # Storing RMSE, tau values and adding initial run to accepted list
+
+        font = 20
+        fig = plt.figure(figsize=(15,15))
+        
+        ax = fig.add_subplot(111)
+        ax.spines['top'].set_color('none')
+        ax.spines['bottom'].set_color('none')
+        ax.spines['left'].set_color('none')
+        ax.spines['right'].set_color('none')
+        ax.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
+        # ax.tick_params(labelcolor='w')
+        
+        ax1 = fig.add_subplot(211)
+        ax1.grid(True)
+        ax1.set_facecolor('#f1f1f1')
+
+        x = np.arange(pos_rmse_elev.shape[1])
+        print('pos_rmse_elev.shape', pos_rmse_elev.shape, 'y', pos_rmse_elev[1,:].shape)
+        for y in range(vend):
+            ax1.plot(x, pos_rmse_elev[y,:])
+        
+        ax1.set_title(r'Elevation',size=font+2)
+        ax1.set_xlabel('Parameter value', size = font)
+        ax1.set_ylabel('RMSE elev', size = font)
+        ax1.tick_params(axis='both', which='major', labelsize=20)
+        ax1.tick_params(axis='both', which='minor', labelsize=20)
+        ax1.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+        # ax1.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+
+
+        ax2 = fig.add_subplot(212)
+        ax2.grid(True)
+        ax2.set_facecolor('#f1f1f1')
+        
+        x = np.arange(pos_rmse_elev.shape[1])
+        for y in range(vend):
+            ax2.plot(x, pos_rmse_erodep[y,:])
+
+        ax2.set_title(r'Erosion Deposition',size=font+2)
+        ax2.set_xlabel('Parameter value', size = font)
+        ax2.set_ylabel('RMSE erodep', size = font)
+        ax2.tick_params(axis='both', which='major', labelsize=20)
+        ax2.tick_params(axis='both', which='minor', labelsize=20)
+        ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
+        # ax2.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.3f'))
+
+        plt.savefig('%s/plot_sensitivity.png'% (self.filename), bbox_inches='tight', dpi=300, transparent=False)
+        plt.close()
 
         print 'counter', i, '\nTime elapsed:', total_time, '\npos_rmse.shape', pos_rmse.shape
         
@@ -454,12 +501,12 @@ def main():
     choice = 1#input("Please choose a Badlands example to run the likelihood surface generator on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
     samples = 100#input("Please enter number of samples (Make sure it is a perfect square): \n")
 
-    samples = 50 #input("Please enter number of samples (Make sure it is a perfect square): \n")
+    samples = 6 #input("Please enter number of samples (Make sure it is a perfect square): \n")
 
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
     num_successive_topo = 4
-    simtime = -1.49E+08
+    simtime = -1.49E+04
 
 
     rain_min = 0  
