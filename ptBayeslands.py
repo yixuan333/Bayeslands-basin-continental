@@ -437,7 +437,7 @@ class ptReplica(multiprocessing.Process):
 
             print('\n time ', time, ' matches : ', matches ,'  non matches : ', non_matches, 'percentage non match', (non_matches/p_elev_ocean.size)*100)
 
-            fig = plt.figure()
+            '''fig = plt.figure()
             plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
             plt.savefig(self.folder +'/pred_plots/'+ str(time) +'p_elev_ocean_original.png')
             plt.close()
@@ -445,13 +445,8 @@ class ptReplica(multiprocessing.Process):
             fig = plt.figure()
             plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
             plt.savefig(self.folder +'/pred_plots/' + str(time) +'r_elev_ocean.png')
-            plt.close()
-
-
-            # fig = plt.figure()
-            # plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
-            # plt.savefig('p_elev_ocean_>0.png')
-            # plt.close()
+            plt.close()'''
+ 
 
             tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
             rmse_ocean[i] = tausq_ocean
@@ -469,7 +464,7 @@ class ptReplica(multiprocessing.Process):
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
-        likelihood =  (likelihood_elev/4) +  (likelihood_erodep/8) + (likelihood_elev_ocean/5) 
+        likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
          
         rmse_elev = np.sqrt(tausq)
         rmse_elev_ocean = np.average(rmse_ocean)
@@ -478,12 +473,12 @@ class ptReplica(multiprocessing.Process):
         avg_rmse_er = 0#np.average(rmse_erodep)
         avg_rmse_el = 0#np.average(rmse_elev_pts)
 
-        likelihood = likelihood*(1.0/self.adapttemp)
+        likelihood = likelihood_*(1.0/self.adapttemp)
 
         pred_topo_presentday = pred_elev_vec[self.simtime]
         self.plot3d_plotly(pred_topo_presentday, '/pred_plots/pred_badlands_', self.temperature *10)
 
-        print('LIKELIHOOD :--: Elev: ',likelihood_elev, '\tErdp: ', likelihood_erodep, '\tOcean:',likelihood_elev_ocean,'\tTotal: ', likelihood)
+        print('LIKELIHOOD :--: Elev: ',likelihood_elev, '\tErdp: ', likelihood_erodep, '\tOcean:',likelihood_elev_ocean,'\tTotal: ', likelihood_, likelihood)
         print('RMSE :--: Elev ', rmse_elev, 'Erdp', rmse_erodep, 'Ocean', rmse_elev_ocean)
  
         return [likelihood, pred_elev_vec, pred_erodep_pts_vec, likelihood, rmse_elev_pts, rmse_erodep, rmse_ocean, rmse_elev_ocean ]
@@ -767,7 +762,8 @@ class ptReplica(multiprocessing.Process):
 
 
             temp = list_erodep_time[i+1,-1,:] 
-            temp = np.reshape(temp, temp.shape[1]*1) 
+            print(temp.shape, ' ********** 8***888888 888888888**************')
+            temp = np.reshape(temp, temp.shape[0]*1) 
  
 
             file_name = self.folder + '/posterior/predicted_topo/sed/chain_' + str(self.temperature) + '.txt'
