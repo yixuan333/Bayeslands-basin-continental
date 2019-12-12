@@ -512,7 +512,7 @@ class results_visualisation:
         topo  = self.real_elev 
 
         print('self.real_erodep_pts.shape[1]', self.real_erodep_pts.shape[0])
-        edp_pts_time = self.real_erodep_pts.shape[0]*self.sim_interval.size
+        edp_pts_time = self.real_erodep_pts.shape[0]#*self.sim_interval.size
 
         print(self.real_erodep_pts.shape[0], self.real_erodep_pts.shape,   ' ------------------------------------  ')
 
@@ -1233,21 +1233,28 @@ def main():
 
     pred_erodep = np.zeros((  sim_interval.size, groundtruth_erodep_pts.shape[0])) # just to get the right size
 
-    for i in range(3, sim_interval.size): 
+    #for i in range(10, sim_interval.size): 
 
-        begin = i * groundtruth_erodep_pts.shape[0] # number of points 
-        end = begin + groundtruth_erodep_pts.shape[0]
+        #begin = i * groundtruth_erodep_pts.shape[0] # number of points 
+        #end = begin + groundtruth_erodep_pts.shape[0]
 
-        pos_ed = erodep_pts[begin:end, :] 
-        pos_ed = pos_ed.T 
-        erodep_mean = pos_ed.mean(axis=0)  
-        erodep_std = pos_ed.std(axis=0)  
-        pred_erodep[i,:] = pos_ed.mean(axis=0)
+
+
+    begin =   0# number of points 
+    end =   groundtruth_erodep_pts.shape[0]
+
+    pos_ed = erodep_pts[begin:end, :] 
+    pos_ed = pos_ed.T 
+    erodep_mean = pos_ed.mean(axis=0)  
+    erodep_std = pos_ed.std(axis=0)  
+    pred_erodep[i,:] = pos_ed.mean(axis=0)
         
 
-        res.plot_erodeposition(erodep_mean[0:200:20] , erodep_std[ 0:200:20] , groundtruth_erodep_pts[ 0:200:20], sim_interval[i], 'first') 
-        res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[200:400:20], sim_interval[i], 'second') 
-        res.plot_erodeposition(erodep_mean[400:600:20], erodep_std[400:600:20], groundtruth_erodep_pts[400:600:20], sim_interval[i], 'third')
+    res.plot_erodeposition(erodep_mean[0:200:20] , erodep_std[ 0:200:20] , groundtruth_erodep_pts[ 0:200:20], sim_interval[i], 'first') 
+    res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[200:400:20], sim_interval[i], 'second') 
+    res.plot_erodeposition(erodep_mean[400:600:20], erodep_std[400:600:20], groundtruth_erodep_pts[400:600:20], sim_interval[i], 'third') 
+    res.plot_erodeposition(erodep_mean[600:800:20], erodep_std[600:800:20], groundtruth_erodep_pts[600:800:20], sim_interval[i], 'forth')
+ 
     print(pred_erodep.shape, ' pred_erodep') 
          
     pred_elev = np.array([])
@@ -1307,28 +1314,29 @@ def main():
 
 
 
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted = False)
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted =True )
     # pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(variables, muted = False)
 
     
-    for i in range(sim_interval.size):
-        print(pred_erodep_opt[sim_interval[i]], ' pred_erodep_opt[i]')
-        np.savetxt(fname+'/sediment_plots/erodep_' +str(i)+'_.txt', pred_erodep_opt[sim_interval[i]],  fmt='%1.2f' )
-        np.savetxt(fname+'/sediment_plots/elev_' +str(i)+'_.txt', pred_elev_opt[sim_interval[i]],  fmt='%1.2f' )
+    #for i in range(sim_interval.size):
+    i= 'final'
+    print(pred_erodep_opt[sim_interval[-1]], ' pred_erodep_opt[i]')
+    np.savetxt(fname+'/sediment_plots/erodep_' +str(i)+'_.txt', pred_erodep_opt[sim_interval[-1]],  fmt='%1.2f' )
+    np.savetxt(fname+'/sediment_plots/elev_' +str(i)+'_.txt', pred_elev_opt[sim_interval[-1]],  fmt='%1.2f' )
 
-        fnameplot = fname +  '/sediment_plots/sediment_map'+str(i) +'_.png' 
-        im = plt.imshow(pred_erodep_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
-        plt.colorbar(im) 
-        plt.savefig(fnameplot)
-        plt.clf()
+    fnameplot = fname +  '/sediment_plots/sediment_map'+str(i) +'_.png' 
+    im = plt.imshow(pred_erodep_opt[sim_interval[-1]], cmap='hot', interpolation='nearest')
+    plt.colorbar(im) 
+    plt.savefig(fnameplot)
+    plt.clf()
 
-        fnameplot = fname +  '/sediment_plots/elev_map'+str(i) +'_.png' 
-        im = plt.imshow(pred_elev_opt[sim_interval[i]], cmap='hot', interpolation='nearest')
-        plt.colorbar(im) 
-        plt.savefig(fnameplot)
-        plt.clf()
+    fnameplot = fname +  '/sediment_plots/elev_map'+str(i) +'_.png' 
+    im = plt.imshow(pred_elev_opt[sim_interval[-1]], cmap='hot', interpolation='nearest')
+    plt.colorbar(im) 
+    plt.savefig(fnameplot)
+    plt.clf()
 
-        res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[i]], title='Predicted Topography ', time_frame=res.sim_interval[i],  filename= 'optimal')
+    res.viewGrid(width=1000, height=1000, zmin=None, zmax=None, zData=pred_elev_opt[res.sim_interval[-1]], title='Predicted Topography ', time_frame=res.sim_interval[-1],  filename= 'optimal')
 
 
 
