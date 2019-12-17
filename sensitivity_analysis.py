@@ -229,26 +229,33 @@ class BayesLands():
         plt.savefig('%s/plot.png'% (fname), bbox_inches='tight', dpi=300, transparent=False)
         plt.show()
 
-    def storeParams(self, count, vec_parameters , pos_rmse, var):
+    def storeParams(self, count, w , pos_rmse, var):
         """
         
         """
         pos_rmse = str(pos_rmse)
-        vec_parameters = str(vec_parameters)
+        w = str(w)
 
-        if not os.path.isfile(('%s/exp_data_%s.txt' % (self.filename, var))):
-            with file(('%s/exp_data_%s.txt' % (self.filename, var)),'w') as outfile:
+        if not os.path.isfile(('%s/prediction_data/%s.txt' % (self.filename, var))):
+            with file(('%s/prediction_data/%s.txt' % (self.filename, var)),'w') as outfile:
                 # outfile.write('\n# {0}\t'.format(naccept))
-                outfile.write(vec_parameters)
-                outfile.write('\t')
                 outfile.write(pos_rmse)
                 outfile.write('\n')
         else:
-            with file(('%s/exp_data_%s.txt' % (self.filename, var)),'a') as outfile:
-                outfile.write(vec_parameters)
-                outfile.write('\t')
+            with file(('%s/prediction_data/%s.txt' % (self.filename, var)),'a') as outfile:
                 outfile.write(pos_rmse)
                 outfile.write('\n')
+
+        if not os.path.isfile(('%s/prediction_data/w%s.txt' % (self.filename, var))):
+            with file(('%s/prediction_data/w%s.txt' % (self.filename, var)),'w') as outfile:
+                # outfile.write('\n# {0}\t'.format(naccept))
+                outfile.writelines(w)
+                outfile.write('\n')
+        else:
+            with file(('%s/prediction_data/w%s.txt' % (self.filename, var)),'a') as outfile:
+                outfile.writelines(w)
+                outfile.write('\n')
+
 
     def likelihood_func(self,input_vector): 
         
@@ -353,10 +360,10 @@ class BayesLands():
                 pos_rmse_elev_ocean[vstart + i,int(j)] = rmse_elev_ocean
                 pos_rmse_total[vstart + i,int(j)] = rmse_total
                 
-                self.storeParams(i, self.vec_parameters, pos_rmse_elev[vstart + i,int(j)], 'elev_%s' %(i))
-                self.storeParams(i, self.vec_parameters, pos_rmse_erodep[vstart + i,int(j)], 'erodep%s' %(i))
-                self.storeParams(i, self.vec_parameters, pos_rmse_elev_ocean[vstart + i,int(j)], 'elev_ocean%s' %(i))
-                self.storeParams(i, self.vec_parameters, pos_rmse_total[vstart + i,int(j)], 'total%s' %(i))
+                self.storeParams(i, w, pos_rmse_elev[vstart + i,int(j)], 'elev_%s' %(i))
+                self.storeParams(i, w, pos_rmse_erodep[vstart + i,int(j)], 'erodep%s' %(i))
+                # self.storeParams(i, self.vec_parameters, pos_rmse_elev_ocean[vstart + i,int(j)], 'elev_ocean%s' %(i))
+                # self.storeParams(i, self.vec_parameters, pos_rmse_total[vstart + i,int(j)], 'total%s' %(i))
 
                 end = time.time()
                 total_time = end - start
@@ -399,43 +406,6 @@ class BayesLands():
             # ax2.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.3f'))
 
             plt.savefig('%s/plot_%s_elev_erdp.png'% (self.filename,vstart+ i), bbox_inches='tight', dpi=300, transparent=False)
-            plt.close()
-
-            fig = plt.figure(figsize=(15,15))
-            
-            ax = fig.add_subplot(111)
-            ax.spines['top'].set_color('none')
-            ax.spines['bottom'].set_color('none')
-            ax.spines['left'].set_color('none')
-            ax.spines['right'].set_color('none')
-            ax.tick_params(labelcolor='w', top=False, bottom=False, left=False, right=False)
-            # ax.tick_params(labelcolor='w')
-            
-            ax1 = fig.add_subplot(211)
-            ax1.grid(True)
-            ax1.set_facecolor('#f1f1f1')
-            ax1.plot(variables[vstart + i,:], pos_rmse_elev_ocean[vstart + i,:])
-            ax1.set_title(r'Ocean',size=font+2)
-            ax1.set_xlabel('Parameter value', size = font)
-            ax1.set_ylabel('RMSE ocean', size = font)
-            ax1.tick_params(axis='both', which='major', labelsize=20)
-            ax1.tick_params(axis='both', which='minor', labelsize=20)
-            ax1.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.4f'))
-            # ax1.xaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
-
-
-            ax2 = fig.add_subplot(212)
-            ax2.grid(True)
-            ax2.set_facecolor('#f1f1f1')
-            ax2.plot(variables[vstart + i,:], pos_rmse_total[vstart + i,:])
-            ax2.set_title(r'Total',size=font+2)
-            ax2.set_xlabel('Parameter value', size = font)
-            ax2.set_ylabel('RMSE Total', size = font)
-            ax2.tick_params(axis='both', which='major', labelsize=20)
-            ax2.tick_params(axis='both', which='minor', labelsize=20)
-            ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter('%1.2f'))
-
-            plt.savefig('%s/plot_%s_ocean_total.png'% (self.filename,vstart+ i), bbox_inches='tight', dpi=300, transparent=False)
             plt.close()
 
 
@@ -499,14 +469,13 @@ def main():
     directory = ""
     likl_sed = False
     choice = 1#input("Please choose a Badlands example to run the likelihood surface generator on:\n 1) crater_fast\n 2) crater\n 3) etopo_fast\n 4) etopo\n")
-    samples = 100#input("Please enter number of samples (Make sure it is a perfect square): \n")
 
-    samples = 6 #input("Please enter number of samples (Make sure it is a perfect square): \n")
+    samples = 100 #input("Please enter number of samples (Make sure it is a perfect square): \n")
 
     directory = 'Examples/australia'
     xmlinput = '%s/AUSP1306.xml' %(directory)
     num_successive_topo = 4
-    simtime = -1.49E+04
+    simtime = -1.49E+08
 
 
     rain_min = 0  
