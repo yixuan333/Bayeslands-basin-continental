@@ -419,11 +419,13 @@ class ptReplica(multiprocessing.Process):
 
         rmse_ocean = np.zeros(self.sim_interval.size)
 
-        i = 0
+        '''i = 0
+
+        pred_elev_vec_ = pred_elev_vec.copy()
 
 
         for i, time in enumerate(self.sim_interval):
-            p_elev_ocean = pred_elev_vec[time]
+            p_elev_ocean = pred_elev_vec_[time]
             r_elev_ocean = self.ocean_t[i,:,:]
 
             # r_elev_ocean[r_elev_ocean<0] = 0 
@@ -437,7 +439,7 @@ class ptReplica(multiprocessing.Process):
 
             print('\n time ', time, ' matches : ', matches ,'  non matches : ', non_matches, 'percentage non match', (non_matches/p_elev_ocean.size)*100)
 
-            '''fig = plt.figure()
+            fig = plt.figure()
             plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
             plt.savefig(self.folder +'/pred_plots/'+ str(time) +'p_elev_ocean_original.png')
             plt.close()
@@ -445,15 +447,14 @@ class ptReplica(multiprocessing.Process):
             fig = plt.figure()
             plt.imshow(r_elev_ocean, cmap='hot', interpolation='nearest')
             plt.savefig(self.folder +'/pred_plots/' + str(time) +'r_elev_ocean.png')
-            plt.close()'''
+            plt.close()
  
 
             tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
             rmse_ocean[i] = tausq_ocean
             likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
-            i = i+ 1
-
-        print('rmse_ocean', rmse_ocean)
+            i = i+ 1'''
+ 
 
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
@@ -465,9 +466,13 @@ class ptReplica(multiprocessing.Process):
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
         likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
+
+        likelihood_elev_ocean = 0
+
+        rmse_ocean = 0
          
         rmse_elev = np.sqrt(tausq)
-        rmse_elev_ocean = np.average(rmse_ocean)
+        rmse_elev_ocean = 0#np.average(rmse_ocean)
         rmse_erodep = np.sqrt(tau_erodep) 
         rmse_elev_pts = np.sqrt(tau_elev)
         avg_rmse_er = 0#np.average(rmse_erodep)
@@ -572,6 +577,8 @@ class ptReplica(multiprocessing.Process):
         num_accepted = 0
         num_div = 0 
 
+        initial_samples = 5
+
         pt_samplesratio = 0.35 # this means pt will be used in begiining and then mcmc with temp of 1 will take place
 
         pt_samples = int(pt_samplesratio * samples)
@@ -612,7 +619,11 @@ class ptReplica(multiprocessing.Process):
                 # v_proposal = v_current + np.dot(self.cholesky,v_proposal)
             else:
                 # Update by perturbing all the  parameters via "random-walk" sampler and check limits
-                v_proposal =  np.random.normal(v_current,stepsize_vec)
+
+                if i < initial_samples: 
+                    v_proposal = np.random.uniform(self.minlimits_vec, self.maxlimits_vec) 
+                else:
+                    v_proposal =  np.random.normal(v_current,stepsize_vec)
 
             for j in range(v_current.size):
                 if v_proposal[j] > self.maxlimits_vec[j]:
@@ -1335,7 +1346,7 @@ def main():
     # sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
     # filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
  
-    #sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
+    #sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e05,  -5.49e05,  -0.49e06,  -1.19e06,  -1.49e06])
     #filename_ocean = np.array([0, 5, 25, 50, 75, 100, 125, 149])
  
 
