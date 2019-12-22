@@ -465,7 +465,10 @@ class ptReplica(multiprocessing.Process):
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
         
-        likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
+        #likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
+
+        likelihood_ =  (likelihood_elev/2) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
+
 
         likelihood_elev_ocean = 0
 
