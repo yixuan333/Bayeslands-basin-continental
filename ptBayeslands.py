@@ -365,23 +365,7 @@ class ptReplica(multiprocessing.Process):
             model.input.elasticH = input_vector[rain_regiontime+8]
             model.input.diffnb = input_vector[rain_regiontime+9]
             model.input.diffprop = input_vector[rain_regiontime+10]
-
-        #Check if it is the mountain problem
-        '''if problem==10: # needs to be updated
-            #Round the input vector 
-            k=round(input_vector[rain_regiontime+5],1) #to closest 0.1  @Nathan we need to fix this
-
-            #Load the current tectonic uplift parameters
-            tectonicValues=pandas.read_csv(str(model.input.tectFile[0]),sep=r'\s+',header=None,dtype=np.float).values
-        
-            #Adjust the parameters by our value k, and save them out
-            newFile = "Examples/mountain/tect/uplift"+str(self.temperature)+"_"+str(k)+".csv"
-            newtect = pandas.DataFrame(tectonicValues*k)
-            newtect.to_csv(newFile,index=False,header=False)
-
-            #Update the model uplift tectonic values
-            model.input.tectFile[0]=newFile'''
-
+ 
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()
         erodep_pts_vec = collections.OrderedDict()
@@ -464,10 +448,9 @@ class ptReplica(multiprocessing.Process):
 
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
         likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
-        
-        #likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
+         
 
-        likelihood_ =  (likelihood_elev/2) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
+        likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
 
 
         likelihood_elev_ocean = 0
@@ -602,6 +585,10 @@ class ptReplica(multiprocessing.Process):
         
         start = time.time() 
 
+
+        self.event.clear()
+
+
         for i in range(samples-1):
 
             print ("Temperature: ", self.temperature, ' Sample: ', i ,"/",samples, pt_samples)
@@ -722,23 +709,18 @@ class ptReplica(multiprocessing.Process):
                 self.parameter_queue.put(param)
                 
                 #signal main process to start and start waiting for signal for main
-                self.signal_main.set()              
+                self.signal_main.set()  
+                self.event.clear()         
                 self.event.wait()
-                
-                # retrieve parametsrs fom ques if it has been swapped
-                if not self.parameter_queue.empty() : 
-                    try:
-                        result =  self.parameter_queue.get()
-                        v_current= result[0:v_current.size]     
-                        likelihood = result[v_current.size]
 
-                    except:
-                        print ('error')
-                else:
-                    pass
-                    # print("empty  ")
-                    
-                self.event.clear()
+
+                result =  self.parameter_queue.get()
+                v_current= result[0:v_current.size]     
+                likelihood = result[v_current.size]
+                 
+
+
+                 
 
             save_res =  np.array([i, num_accepted, likelihood, likelihood_proposal, rmse_elev[i+1,], rmse_erodep[i+1,]])  
 
@@ -775,8 +757,7 @@ class ptReplica(multiprocessing.Process):
             #temp = np.reshape(temp, temp.shape[0]*temp.shape[1]) 
 
 
-            temp = list_erodep_time[i+1,-1,:] 
-            print(temp.shape, ' ********** 8***888888 888888888**************')
+            temp = list_erodep_time[i+1,-1,:]  
             temp = np.reshape(temp, temp.shape[0]*1) 
  
 
@@ -784,17 +765,23 @@ class ptReplica(multiprocessing.Process):
             with file(file_name ,'a') as outfile:
                 np.savetxt(outfile, np.array([temp]), fmt='%1.2f') 
 
+ 
+
+        others = np.asarray([ likelihood])
+        param = np.concatenate([v_current,others,np.asarray([self.temperature])])  
+
+
+        self.parameter_queue.put(param) 
+        self.signal_main.set()  
+
+
         accepted_count =  len(count_list) 
         accept_ratio = accepted_count / (samples * 1.0) * 100
-        others = np.asarray([ likelihood])
-        param = np.concatenate([v_current,others,np.asarray([self.temperature])])   
 
-        # print("param first:",param)
-        # print("v_current",v_current)
-        # print("others",others)
-        # print("temp",np.asarray([self.temperature]))
-        
-        self.parameter_queue.put(param)
+        print(accept_ratio, ' accept_ratio ')
+
+ 
+ 
 
         for k, v in sum_elev.items():
             sum_elev[k] = np.divide(sum_elev[k], num_div)
@@ -805,9 +792,7 @@ class ptReplica(multiprocessing.Process):
 
             file_name = self.folder + '/posterior/predicted_topo/topo/chain_' + str(k) + '_' + str(self.temperature) + '.txt'
             np.savetxt(file_name, mean_pred_elevation, fmt='%.2f')
-
-        self.signal_main.set()
-
+ 
 class ParallelTempering:
 
     def __init__(self,  vec_parameters, ocean_t, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords,elev_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance, Bayes_inittopoknowledge):
@@ -963,109 +948,111 @@ class ParallelTempering:
         
         for i in xrange(0, self.num_chains):
             self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.ocean_t, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords,self.elev_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
-                                     #self,  num_param, vec_parameters, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, real_elev,  real_erodep_pts, erodep_coords,elev_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in):
+                                     
+
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
-        #print (parameter_queue_2, ", param1:",parameter_queue_1)
-        if parameter_queue_2.empty() is False and parameter_queue_1.empty() is False:
+        # if parameter_queue_2.empty() is False and parameter_queue_1.empty() is False:
             param1 = parameter_queue_1.get()
             param2 = parameter_queue_2.get()
-            lhood1 = param1[self.num_param]
+            
+            w1 = param1[0:self.num_param] 
+            lhood1 = param1[self.num_param+1]
             T1 = param1[self.num_param+1]
-            lhood2 = param2[self.num_param]
+            w2 = param2[0:self.num_param] 
+            lhood2 = param2[self.num_param+1]
             T2 = param2[self.num_param+1]
 
-            #SWAPPING PROBABILITIES
-            #old method
-            swap_proposal =  (lhood1/[1 if lhood2 == 0 else lhood2])*(1/T1 * 1/T2)
+
+            try:
+                swap_proposal =  min(1,0.5*np.exp(min(709, lhood2 - lhood1)))
+            except OverflowError:
+                swap_proposal = 1
             u = np.random.uniform(0,1)
-            
-            #new method (sandbridge et al.)
-            #try:
-            #    swap_proposal = min(1, 0.5*math.exp(lhood1-lhood2))
-            #except OverflowError as e:
-            #    print("overflow for swap prop, setting to 1")
-            #    swap_proposal = 1
-            
+            swapped = False
             if u < swap_proposal: 
                 self.total_swap_proposals += 1
                 self.num_swap += 1
                 param_temp =  param1
                 param1 = param2
                 param2 = param_temp
-            return param1, param2 
+                swapped = True
+            else:
+                swapped = False
+                self.total_swap_proposals += 1
+            return param1, param2,swapped
 
-        else:
-            self.total_swap_proposals += 1
-            return
+
+
     
     def run_chains (self ):
-        
-        # only adjacent chains can be swapped therefore, the number of proposals is ONE less num_chains
+         
+
+
         swap_proposal = np.ones(self.num_chains-1) 
-        
         # create parameter holders for paramaters that will be swapped
         replica_param = np.zeros((self.num_chains, self.num_param))  
         lhood = np.zeros(self.num_chains)
-
         # Define the starting and ending of MCMC Chains
         start = 0
         end = self.NumSamples-1
         number_exchange = np.zeros(self.num_chains)
-
         filen = open(self.folder + '/num_exchange.txt', 'a')
-
-        #-------------------------------------------------------------------------------------
-        # run the MCMC chains
-        #-------------------------------------------------------------------------------------
+        #RUN MCMC CHAINS
         for l in range(0,self.num_chains):
             self.chains[l].start_chain = start
             self.chains[l].end = end
-        
-        #-------------------------------------------------------------------------------------
-        # run the MCMC chains
-        #-------------------------------------------------------------------------------------
         for j in range(0,self.num_chains):        
+            self.wait_chain[j].clear()
+            self.event[j].clear()
             self.chains[j].start()
+        #SWAP PROCEDURE
 
-
-        swaps_appected_main = 0
-        total_swaps_main = 0 
+        swaps_appected_main =0
+        total_swaps_main =0
         for i in range(int(self.NumSamples/self.swap_interval)):
+            count = 0
+            for index in range(self.num_chains):
+                if not self.chains[index].is_alive():
+                    count+=1
+                    self.wait_chain[index].set()
+                    print(str(self.chains[index].temperature) +" Dead")
+
+            if count == self.num_chains:
+                break
+            print("Waiting")
             timeout_count = 0
             for index in range(0,self.num_chains):
-                #print("Waiting for chain: {}".format(index+1))
-                flag = self.wait_chain[index].wait(timeout=500)
+                print("Waiting for chain: {}".format(index+1))
+                flag = self.wait_chain[index].wait()
                 if flag:
-                    # print("Signal from chain: {}".format(index+1))
+                    print("Signal from chain: {}".format(index+1))
                     timeout_count += 1
-                
-            if timeout_count == self.num_chains:
-                #print("Skipping the swap!")
-                #continue
-                # print("Event occured")
-                for index in range(0,self.num_chains-1):
-                    # print('starting swap')
-                    try:
-                        param_1, param_2, swapped = self.swap_procedure(self.parameter_queue[index],self.parameter_queue[index+1])
-                        self.parameter_queue[index].put(param_1)
-                        self.parameter_queue[index+1].put(param_2)
-                        if index == 0:
-                            if swapped:
-                                swaps_appected_main += 1
-                            total_swaps_main += 1
-                    except:
-                        pass
-                        # print("Nothing Returned by swap method!")
-            for index in range (self.num_chains):
-                self.event[index].set()
-                self.wait_chain[index].clear()
 
-        # print("Joining processes")
+            if timeout_count != self.num_chains:
+                print("Skipping the swap!")
+                continue
+            print("Event occured")
+            for index in range(0,self.num_chains-1):
+                print('starting swap')
+                param_1, param_2, swapped = self.swap_procedure(self.parameter_queue[index],self.parameter_queue[index+1])
+                self.parameter_queue[index].put(param_1)
+                self.parameter_queue[index+1].put(param_2)
+                if index == 0:
+                    if swapped:
+                        swaps_appected_main += 1
+                    total_swaps_main += 1
+            for index in range (self.num_chains):
+                    self.event[index].set()
+                    self.wait_chain[index].clear()
+
+        print("Joining processes")
 
         #JOIN THEM TO MAIN PROCESS
         for index in range(0,self.num_chains):
             self.chains[index].join()
         self.chain_queue.join()
+
+        
 
         print(number_exchange, 'num_exchange, process ended')
 
