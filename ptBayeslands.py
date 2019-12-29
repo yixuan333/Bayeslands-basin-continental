@@ -441,13 +441,23 @@ class ptReplica(multiprocessing.Process):
  
 
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
-        tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
-        tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
 
-        # print(tau_erodep, tau_elev,  ' tau_erodep   tau_elev ----------')
+        likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )  
 
-        likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
-        likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep        
+
+        if problem ==2:
+            tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
+            tau_erodep  =  np.sum(np.square(pred_erodep_pts_vec[self.simtime] - self.real_erodep_pts))/ self.real_erodep_pts.shape[0]
+  
+            likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tau_elev ) - 0.5 * np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts) / tau_elev )
+            likelihood_erodep  = np.sum(-0.5 * np.log(2 * math.pi * tau_erodep ) - 0.5 * np.square(pred_erodep_pts_vec[self.sim_interval[len(self.sim_interval)-1]] - self.real_erodep_pts[0]) / tau_erodep ) # only considers point or core of erodep    
+        else:
+            likelihood_erodep  = 0
+            tau_elev = tausq
+            tau_erodep = 1
+
+
+
          
 
         likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
@@ -481,34 +491,33 @@ class ptReplica(multiprocessing.Process):
         self.plot3d_plotly(self.real_elev, '/recons_initialtopo/real_evel', 1)
         self.plot3d_plotly(self.init_elev, '/recons_initialtopo/expert_inittopo', 1)
 
+        if problem ==2: 
+            fnameplot = self.folder +  '/recons_initialtopo/'+'scatter_erodep_.png' 
+            plt.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], s=2, c = 'b')
+            plt.scatter(self.elev_coords[:,0], self.elev_coords[:,1], s=2, c = 'r') 
+            plt.savefig(fnameplot)
+            plt.clf()
+            
 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter_erodep_.png' 
-        plt.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], s=2, c = 'b')
-        plt.scatter(self.elev_coords[:,0], self.elev_coords[:,1], s=2, c = 'r')
-        
-        plt.savefig(fnameplot)
-        plt.clf()
-        
+            fnameplot = self.folder +  '/recons_initialtopo/'+'scatter_.png' 
+            plt.scatter(self.elev_coords[:,0], self.elev_coords[:,1], s=2)
+            plt.savefig(fnameplot)
+            plt.clf()
 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter_.png' 
-        plt.scatter(self.elev_coords[:,0], self.elev_coords[:,1], s=2)
-        plt.savefig(fnameplot)
-        plt.clf()
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d') 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_elev_.png' 
-        ax.scatter(self.elev_coords[:,0], self.elev_coords[:,1], self.real_elev_pts )
-        plt.savefig(fnameplot)
-        plt.clf()
-        
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d') 
-        fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_erdp_.png' 
-        ax.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], self.real_erodep_pts )
-        plt.savefig(fnameplot)
-        plt.clf()        
-         
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d') 
+            fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_elev_.png' 
+            ax.scatter(self.elev_coords[:,0], self.elev_coords[:,1], self.real_elev_pts )
+            plt.savefig(fnameplot)
+            plt.clf()
+            
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d') 
+            fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_erdp_.png' 
+            ax.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], self.real_erodep_pts )
+            plt.savefig(fnameplot)
+            plt.clf()        
+             
 
      
 
@@ -716,7 +725,7 @@ class ptReplica(multiprocessing.Process):
 
                 result =  self.parameter_queue.get()
                 v_current= result[0:v_current.size]     
-                likelihood = result[v_current.size]
+                #likelihood = result[v_current.size]
                  
 
 
@@ -759,6 +768,7 @@ class ptReplica(multiprocessing.Process):
 
             temp = list_erodep_time[i+1,-1,:]  
             temp = np.reshape(temp, temp.shape[0]*1) 
+ 
  
 
             file_name = self.folder + '/posterior/predicted_topo/sed/chain_' + str(self.temperature) + '.txt'
@@ -1329,8 +1339,17 @@ def main():
     # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     
     ### 149 MA
-    sim_interval = np.array([0, -5.0e06 , -25.0e06, -30.0e06,  -40.0e06, -50.0e06 , -75.0e06 , -100.0e06,  -115.0e06, -125.0e06, -1.40e08,  -1.49e08])
-    filename_ocean = np.array([0, 5 , 25 , 30, 40, 50, 75, 100, 115,  125, 140, 149])
+
+    if problem ==1:
+
+        num_successive_topo = 4 
+
+        sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
+        filename_ocean = np.array([0, 5 , 25 , 30, 40 ])
+
+    else:
+        sim_interval = np.array([0, -5.0e06 , -25.0e06, -30.0e06,  -40.0e06, -50.0e06 , -75.0e06 , -100.0e06,  -115.0e06, -125.0e06, -1.40e08,  -1.49e08])
+        filename_ocean = np.array([0, 5 , 25 , 30, 40, 50, 75, 100, 115,  125, 140, 149])
 
     ### 1 MA 
     # sim_interval = np.array([0, -5.0e04 , -25.0e04, -50.0e04 , -75.0e04 , -100.0e04, -125.0e04, -1.49e06])
@@ -1350,9 +1369,10 @@ def main():
 
     ocean_t = np.zeros((sim_interval.size,groundtruth_elev.shape[0], groundtruth_elev.shape[1]))
 
-    for i, val in enumerate(filename_ocean): 
-        temp = np.loadtxt(problemfolder+ '/data/ocean/marine_%s.txt' %(val))
-        ocean_t[i,:,:] = temp
+    if problem ==2: 
+        for i, val in enumerate(filename_ocean): 
+            temp = np.loadtxt(problemfolder+ '/data/ocean/marine_%s.txt' %(val))
+            ocean_t[i,:,:] = temp
 
     # print(ocean_t, 'ocean_t')
 
