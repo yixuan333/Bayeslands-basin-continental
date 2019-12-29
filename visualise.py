@@ -1181,9 +1181,9 @@ def main():
 
     ocean_t = np.zeros((sim_interval.size,groundtruth_elev.shape[0], groundtruth_elev.shape[1]))
 
-    for i, val in enumerate(filename_ocean): 
+    '''for i, val in enumerate(filename_ocean): 
         temp = np.loadtxt(problemfolder+ '/data/ocean/marine_%s.txt' %(val))
-        ocean_t[i,:,:] = temp
+        ocean_t[i,:,:] = temp'''
     res = results_visualisation(  vec_parameters, ocean_t, inittopo_expertknow, inittopo_estimated, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, num_param  ,  groundtruth_elev,  groundtruth_erodep_pts , erodep_coords, elev_coords, simtime, sim_interval, resolu_factor,  xmlinput,  run_nb_str, init_elev)
     pos_param, likehood_rep, accept_list, xslice, yslice, rmse_elev, rmse_erodep, erodep_pts, rmse_slice_init  = res.results_current()
 
@@ -1247,16 +1247,14 @@ def main():
     pos_ed = pos_ed.T 
     erodep_mean = pos_ed.mean(axis=0)  
     erodep_std = pos_ed.std(axis=0)  
-    pred_erodep[i,:] = pos_ed.mean(axis=0)
+    #pred_erodep[i,:] = pos_ed.mean(axis=0)
         
 
-    res.plot_erodeposition(erodep_mean[0:200:20] , erodep_std[ 0:200:20] , groundtruth_erodep_pts[ 0:200:20], sim_interval[i], 'first') 
-    res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[200:400:20], sim_interval[i], 'second') 
-    res.plot_erodeposition(erodep_mean[400:600:20], erodep_std[400:600:20], groundtruth_erodep_pts[400:600:20], sim_interval[i], 'third') 
-    res.plot_erodeposition(erodep_mean[600:800:20], erodep_std[600:800:20], groundtruth_erodep_pts[600:800:20], sim_interval[i], 'forth')
- 
-    print(pred_erodep.shape, ' pred_erodep') 
-         
+    res.plot_erodeposition(erodep_mean[0:200:20] , erodep_std[ 0:200:20] , groundtruth_erodep_pts[ 0:200:20], sim_interval[sim_interval.size-1], 'first') 
+    res.plot_erodeposition(erodep_mean[200:400:20], erodep_std[200:400:20], groundtruth_erodep_pts[200:400:20], sim_interval[sim_interval.size-1], 'second') 
+    res.plot_erodeposition(erodep_mean[400:600:20], erodep_std[400:600:20], groundtruth_erodep_pts[400:600:20], sim_interval[sim_interval.size-1], 'third') 
+    res.plot_erodeposition(erodep_mean[600:800:20], erodep_std[600:800:20], groundtruth_erodep_pts[600:800:20], sim_interval[sim_interval.size-1], 'forth')
+  
     pred_elev = np.array([])
     rmse_sed= mean_sqerror(  pred_erodep,  groundtruth_erodep_pts)
     rmse = 0
