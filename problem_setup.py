@@ -26,19 +26,13 @@ def problem_setup(problem = 1):
 
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt') # just used as placevalue - we dont use erdep points in likelihood
 
-
-
-
         groundtruth_elev_pts = np.loadtxt(problemfolder + 'data/final_elev_pts.txt')
         res_summaryfile = '/results.txt'
         #inittopo_expertknow = np.loadtxt(problemfolder + 'data/inittopo_groundtruthfine.txt') #  expert knowledge  20 x 20
         inittopo_expertknow = np.loadtxt(problemfolder + 'data/init_topo_20_20.txt') #  expert knowledge 10 x 10
  
         inittopo_estimated = []
-
         inittopo_expertknow = inittopo_expertknow 
-
-        
          
         simtime = 1000000
         resolu_factor = 1
@@ -67,34 +61,19 @@ def problem_setup(problem = 1):
         rain_maxlimits = np.repeat(rain_max, rain_regiongrid*rain_timescale)
         minlimits_others = [3.e-6, 0, 0, 0 ,  0, 0, 0, 0, 15000, 0, 0]  # make some extra space for future param (last 5)
         maxlimits_others = [7.e-6, 1, 2, 0.1, 0.1, 1, 1, 10, 30000, 10, 1]
- 
-
-
         epsilon = 0.5 
 
         inittopo_gridlen = 20  # should be of same format as @   inittopo_expertknow
         inittopo_gridwidth = 20
 
-
         len_grid = int(groundtruth_elev.shape[0]/inittopo_gridlen)  # take care of left over
         wid_grid = int(groundtruth_elev.shape[1]/inittopo_gridwidth)   # take care of left over
-
-
-
-
-
          
         inittopo_minlimits = np.repeat( -25   , inittopo_gridlen*inittopo_gridwidth)
         inittopo_maxlimits = np.repeat(50 , inittopo_gridlen*inittopo_gridwidth)
- 
-
         #--------------------------------------------------------
-
-
         minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
         maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
-
-
 
         temp_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
         minlimits_vec = np.append(temp_vec, inittopo_minlimits)
@@ -117,13 +96,9 @@ def problem_setup(problem = 1):
         num_param = vec_parameters.size
         print(vec_parameters) 
         #erodep_coords = np.array([[42,10],[39,8],[75,51],[59,13],[40,5],[6,20],[14,66],[4,40],[72,73],[46,64]])  # need to hand pick given your problem
-
-
         erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", )   # we use same from Aus problem, it does not matter much for CM
         print('erdp_coords', erodep_coords.shape)
         erodep_coords = np.array(erodep_coords, dtype = 'int') 
-
-
  
         elev_coords = np.loadtxt(problemfolder +"data/coord_final_elev.txt", )  
         print('elev_coords', elev_coords.shape)        
@@ -193,7 +168,6 @@ def problem_setup(problem = 1):
  
         #variables[:15] = [1.16, 0.9, 1.092, 1.0, 1.e-6, 0.5, 1.0, 0.005, 0.001, 0.001, 0.5, 5, 24000, 5, 0.01]
  
- 
         #----------------------------------------InitTOPO
 
         epsilon = 0.5 
@@ -207,11 +181,7 @@ def problem_setup(problem = 1):
          
         inittopo_minlimits = np.repeat( -25  , inittopo_gridlen*inittopo_gridwidth)
         inittopo_maxlimits = np.repeat(50 , inittopo_gridlen*inittopo_gridwidth)
- 
-
         #--------------------------------------------------------
-
-
         minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
         maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
 

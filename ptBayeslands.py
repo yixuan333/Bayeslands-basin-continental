@@ -135,11 +135,8 @@ class ptReplica(multiprocessing.Process):
         self.Bayes_inittopoknowledge = Bayes_inittopoknowledge
 
     def plot3d_plotly(self, zData, fname, replica_id):
-
-     
         zmin =  zData.min() 
         zmax =  zData.max()
-
         tickvals= [0,50,75,-50]
         height=1000
         width=1000
@@ -151,32 +148,6 @@ class ptReplica(multiprocessing.Process):
 
         xx = np.around(xx, decimals=0)
         yy = np.around(yy, decimals=0) 
-
- 
-
-
-        '''fnameplot = self.folder +   fname+ str(int(replica_id))+'.png'
-
-        print(fnameplot)
-
-        im = plt.imshow(zData, cmap='hot', interpolation='nearest')
-        plt.colorbar(im)
-        plt.savefig(fnameplot)
-        plt.clf()'''
-
-        #fnameplot = self.folder +   fname+ str(int(self.temperature*10))+'_.png' 
-        #plt.imshow(self.inittopo_expertknow, cmap='hot', interpolation='nearest')
-        #plt.savefig(fnameplot)
-        #plt.clf()
-
-
-
-        #fnamedata = self.folder +  '/recons_initialtopo/'+fname+ str(int(replica_id))+'.txt'
-
-        #np.savetxt(fnamedata, zData, fmt='%1.2f')
-
-
-
 
         data = Data([Surface(x= zData.shape[0] , y= zData.shape[1] , z=zData, colorscale='YlGnBu')])
 
@@ -197,7 +168,6 @@ class ptReplica(multiprocessing.Process):
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  fname+ str(int(replica_id))+'.html', validate=False)
 
     def process_inittopo(self, inittopo_vec):
- 
 
         length = self.real_elev.shape[0]
         width = self.real_elev.shape[1]
@@ -216,28 +186,20 @@ class ptReplica(multiprocessing.Process):
             reconstructed_topo  = self.init_elev.copy()  # to define the size 
             groundtruth_topo = self.init_elev.copy()
 
-        
-
         if problem == 1:  
             inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec  
 
         else:
             inittopo_vec =     inittopo_vec 
 
-
-
         v_ = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
   
-
-      
         for l in range(0,sub_gridlen-1):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):
                         reconstructed_topo[m][n]  = (reconstructed_topo[m][n])  +  (v_[l][w]) 
  
-
-
         width = reconstructed_topo.shape[0]
         length = reconstructed_topo.shape[1]
  
@@ -265,13 +227,8 @@ class ptReplica(multiprocessing.Process):
  
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(1 ,1 )) # change sigma to higher values if needed 
 
-
         self.plot3d_plotly(groundtruth_topo, '/recons_initialtopo/inittopo_smooth_', self.temperature *10)
         #self.plot3d_plotly(reconstructed_topo, 'inittopo_')
-
-    
-
-
 
         return groundtruth_topo
  
@@ -283,10 +240,6 @@ class ptReplica(multiprocessing.Process):
 
         cov_noise_old = (self.stepratio_vec * self.stepratio_vec)*np.identity(cov_mat.shape[0], dtype = float)
         cov_noise = self.stepsize_vec*np.identity(cov_mat.shape[0], dtype = float)
-        
-        # print ('\ncov_noise_old', cov_noise_old)
-        # print ('cov_noise_new', cov_noise, '\n')
-
         covariance = np.add(cov_mat, cov_noise)        
         L = np.linalg.cholesky(covariance)
         self.cholesky = L
@@ -305,15 +258,7 @@ class ptReplica(multiprocessing.Process):
         # Load the XmL input file
         model.load_xml(str(self.run_nb), self.input, muted=True)
 
-        # prob = [0,1,2]
-        # if  problem in prob: #problem==1 or problem==2 : # when you have initial topo (problem is global variable)
-        #if problem == 0 or problem ==1 or problem ==2 or problem==3:
-         #   init = False
-        #else:
-         #   init = True # when you need to estimate initial topo
-
         init = True
-
 
         if init == True:
 
@@ -322,8 +267,8 @@ class ptReplica(multiprocessing.Process):
             filename=self.input.split("/")
             problem_folder=filename[0]+"/"+filename[1]+"/"
 
-            #Update the initial topography
             #Use the coordinates from the original dem file
+            #Update the initial topography 
             xi=int(np.shape(model.recGrid.rectX)[0]/model.recGrid.nx)
             yi=int(np.shape(model.recGrid.rectY)[0]/model.recGrid.ny)
             #And put the demfile on a grid we can manipulate easily
@@ -342,7 +287,6 @@ class ptReplica(multiprocessing.Process):
 
         # Adjust precipitation values based on given parameter
         #print(input_vector[0:rain_regiontime] )
-        
         model.force.rainVal  = input_vector[0:rain_regiontime-1] 
 
         # Adjust erodibility based on given parameter
@@ -439,11 +383,8 @@ class ptReplica(multiprocessing.Process):
             likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
             i = i+ 1'''
  
-
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
-
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )  
-
 
         if problem ==2:
             tau_elev =  np.sum(np.square(pred_elev_pts_vec[self.simtime] - self.real_elev_pts)) / self.real_elev_pts.shape[0]
@@ -456,12 +397,7 @@ class ptReplica(multiprocessing.Process):
             tau_elev = tausq
             tau_erodep = 1
 
-
-
-         
-
         likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
-
 
         likelihood_elev_ocean = 0
 
@@ -517,12 +453,7 @@ class ptReplica(multiprocessing.Process):
             ax.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], self.real_erodep_pts )
             plt.savefig(fnameplot)
             plt.clf()        
-             
-
      
-
-
-
         samples = self.samples
         count_list = [] 
         stepsize_vec = np.zeros(self.maxlimits_vec.size)
@@ -573,11 +504,8 @@ class ptReplica(multiprocessing.Process):
         num_div = 0 
 
         initial_samples = 5
-
         pt_samplesratio = 0.35 # this means pt will be used in begiining and then mcmc with temp of 1 will take place
-
         pt_samples = int(pt_samplesratio * samples)
-
 
         with file(('%s/experiment_setting.txt' % (self.folder)),'a') as outfile:
             outfile.write('\nsamples_per_chain:,{0}'.format(self.samples))
@@ -593,10 +521,7 @@ class ptReplica(multiprocessing.Process):
             outfile.write('\nsed scaling factor:,{0}'.format(self.sedscalingfactor))
         
         start = time.time() 
-
-
         self.event.clear()
-
 
         for i in range(samples-1):
 
@@ -726,11 +651,7 @@ class ptReplica(multiprocessing.Process):
                 result =  self.parameter_queue.get()
                 v_current= result[0:v_current.size]     
                 #likelihood = result[v_current.size]
-                 
-
-
-                 
-
+         
             save_res =  np.array([i, num_accepted, likelihood, likelihood_proposal, rmse_elev[i+1,], rmse_erodep[i+1,]])  
 
             with file(('%s/posterior/pos_parameters/stream_chain_%s.txt' % (self.folder, self.temperature)),'a') as outfile:
@@ -760,38 +681,23 @@ class ptReplica(multiprocessing.Process):
             with file(('%s/performance/rmse_ocean/stream_res_ocean%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile, np.array([rmse_elev_ocean]), fmt='%1.2f', newline='\n')
 
-                
-
-            #temp = list_erodep_time[i+1,:, :] 
-            #temp = np.reshape(temp, temp.shape[0]*temp.shape[1]) 
-
-
             temp = list_erodep_time[i+1,-1,:]  
             temp = np.reshape(temp, temp.shape[0]*1) 
- 
- 
 
             file_name = self.folder + '/posterior/predicted_topo/sed/chain_' + str(self.temperature) + '.txt'
             with file(file_name ,'a') as outfile:
                 np.savetxt(outfile, np.array([temp]), fmt='%1.2f') 
 
- 
-
         others = np.asarray([ likelihood])
         param = np.concatenate([v_current,others,np.asarray([self.temperature])])  
 
-
         self.parameter_queue.put(param) 
         self.signal_main.set()  
-
 
         accepted_count =  len(count_list) 
         accept_ratio = accepted_count / (samples * 1.0) * 100
 
         print(accept_ratio, ' accept_ratio ')
-
- 
- 
 
         for k, v in sum_elev.items():
             sum_elev[k] = np.divide(sum_elev[k], num_div)
@@ -928,14 +834,7 @@ class ParallelTempering:
         return betas
         
     def assign_temperatures(self):
-        # #Linear Spacing
-        # temp = 2
-        # for i in range(0,self.num_chains):
-        #   self.temperatures.append(temp)
-        #   temp += 2.5 #(self.maxtemp/self.num_chains)
-        #   print (self.temperatures[i])
         #Geometric Spacing
-
         if self.geometric == True:
             betas = self.default_beta_ladder(2, ntemps=self.num_chains, Tmax=self.maxtemp)      
             for i in range(0, self.num_chains):         
@@ -972,7 +871,6 @@ class ParallelTempering:
             lhood2 = param2[self.num_param+1]
             T2 = param2[self.num_param+1]
 
-
             try:
                 swap_proposal =  min(1,0.5*np.exp(min(709, lhood2 - lhood1)))
             except OverflowError:
@@ -991,12 +889,7 @@ class ParallelTempering:
                 self.total_swap_proposals += 1
             return param1, param2,swapped
 
-
-
-    
     def run_chains (self ):
-         
-
 
         swap_proposal = np.ones(self.num_chains-1) 
         # create parameter holders for paramaters that will be swapped
@@ -1062,8 +955,6 @@ class ParallelTempering:
             self.chains[index].join()
         self.chain_queue.join()
 
-        
-
         print(number_exchange, 'num_exchange, process ended')
 
         combined_topo, accept, pred_topofinal, combined_topo = self.show_results('chain_')
@@ -1078,32 +969,20 @@ class ParallelTempering:
 
         self.full_crosssection(simulated_topofinal, self.real_elev) 
 
-
-
-
-
         return (pred_topofinal, swap_perc, accept)
-
 
     def full_crosssection(self,  simulated_topo, real_elev):
 
         ymid = int( real_elev.shape[1]/2)  
 
         x = np.linspace(0, real_elev.shape[0], num=real_elev.shape[0])
-
-        
-
         x_m = np.arange(0,real_elev.shape[0], 10)
-
- 
 
         for i in x_m:
             xmid = i 
 
             real = real_elev[0:real_elev.shape[0], i]  
             pred = simulated_topo[0:real_elev.shape[0], i]
- 
-
             size = 15
 
             plt.tick_params(labelsize=size)
@@ -1121,27 +1000,7 @@ class ParallelTempering:
             plt.savefig(self.folder+'/cross_section/'+str(i)+'_cross-sec.pdf')
             plt.clf()
 
-        '''fnameplot = self.folder +  '/cross_section/realmap_.png' 
-        plt.imshow(real_elev, cmap='hot', interpolation='nearest')
-        plt.savefig(fnameplot)
-        plt.clf()
-
-        fnameplot = self.folder +  '/cross_section/predmap_.png' 
-        plt.imshow(simulated_topo, cmap='hot', interpolation='nearest')
-        plt.savefig(fnameplot)
-        plt.clf()
-
-        fnameplot = self.folder +  '/cross_section/diffmap_.png' 
-        plt.imshow(real_elev- simulated_topo, cmap='hot', interpolation='nearest')
-        plt.savefig(fnameplot)
-        plt.clf()'''
-
-
-
-
-
-
-
+     
     # Merge different MCMC chains y stacking them on top of each other
     def show_results(self, filename):
 
@@ -1162,9 +1021,7 @@ class ParallelTempering:
             for i in range(self.num_chains):
                 combined_topo[j,:,:] += replica_topo[j,i,:,:]  
             combined_topo[j,:,:] = combined_topo[j,:,:]/self.num_chains
-
             # dx = combined_erodep[j,:,:,:].transpose(2,0,1).reshape(self.real_erodep_pts.shape[1],-1)
-
             # timespan_erodep[j,:,:] = dx.T
 
         accept = np.sum(accept_percent)/self.num_chains
@@ -1339,11 +1196,8 @@ def main():
     # sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
     
     ### 149 MA
-
     if problem ==1:
-
         num_successive_topo = 4 
-
         sim_interval = np.arange(0,  simtime+1, simtime/num_successive_topo) # for generating successive topography
         filename_ocean = np.array([0, 5 , 25 , 30, 40 ])
 

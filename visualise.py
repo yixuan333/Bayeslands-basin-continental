@@ -234,12 +234,7 @@ class results_visualisation:
         ymid = int( real_elev.shape[1]/2)  
 
         x = np.linspace(0, real_elev.shape[0], num=real_elev.shape[0])
-
-        
-
         x_m = np.arange(0,real_elev.shape[0], 10)
-
- 
 
         for i in x_m:
             xmid = i 
@@ -300,14 +295,8 @@ class results_visualisation:
         xx = np.around(xx, decimals=0)
         yy = np.around(yy, decimals=0)
          
-        # range = [0,zData.shape[0]* self.resolu_factor]
-        #range = [0,zData.shape[1]* self.resolu_factor],
-
-
-
         fnameplot = self.folder +  '/recons_initialtopo/'+fname+'.png'
  
-
         plt.imshow(zData, cmap='hot', interpolation='nearest')
         plt.savefig(fnameplot)
         plt.clf()
@@ -349,28 +338,20 @@ class results_visualisation:
             reconstructed_topo  = self.init_elev.copy()  # to define the size 
             groundtruth_topo = self.init_elev.copy()
 
-        
-
         if problem == 1:  
             inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec  
 
         else:
             inittopo_vec =     inittopo_vec 
 
-
-
         v_ = np.reshape(inittopo_vec, (sub_gridlen, -1)   )#np.random.rand(len_grid,wid_grid) 
   
-
-      
         for l in range(0,sub_gridlen-1):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):
                         reconstructed_topo[m][n]  = (reconstructed_topo[m][n]) +  (v_[l][w]) 
  
-
-
         width = reconstructed_topo.shape[0]
         length = reconstructed_topo.shape[1]
  
@@ -406,19 +387,8 @@ class results_visualisation:
         ymid = int(self.real_elev.shape[1]/2) 
         xmid = int(self.real_elev.shape[0]/2)
 
-        #x_m = np.arange(20,80, 10)
-        #y_m = np.arange(20,80, 5)
-  
-        
-        # list_xslice = list_xslice[20:120,:]
-        # list_yslice = list_yslice[20:100,:]
         self.real_elev_ = self.real_elev
-        # self.real_elev_ = self.real_elev[20:100, 20:120]
-        # self.init_elev = self.init_elev[20:100, 20:120]
-        #for i in x_m:
-            #xmid = i
-            #ymid = i
-
+        
         x_ymid_real = self.real_elev_[xmid, :] 
         y_xmid_real = self.real_elev_[:, ymid ]
         #x_ymid_init = self.init_elev[xmid, :]
@@ -533,12 +503,8 @@ class results_visualisation:
             #print (dat)
             # print(v, name, ' is v')
             v = v +1
-             
-
 
         posterior = pos_param.transpose(2,0,1).reshape(self.num_param,-1)  
- 
-
         path = self.folder +'/posterior/predicted_topo/x_slice/' 
         files = os.listdir(path)
         v = 0 
@@ -547,9 +513,7 @@ class results_visualisation:
             list_xslice[v, :, :] = dat[ : list_xslice.shape[1],: ] 
             v = v +1
 
-
         list_xslice = list_xslice[:, burnin:, :]
-
         xslice = list_xslice.transpose(2,0,1).reshape(self.real_elev.shape[1],-1) 
 
         path = self.folder +'/posterior/predicted_topo/y_slice/' 
@@ -622,7 +586,6 @@ class results_visualisation:
 
         likelihood_vec = likehood_rep 
         accept_list = accept_list 
-
         rmse_elev = rmse_elev.reshape(self.num_chains*(self.NumSamples -burnin ),1)
         rmse_erodep = rmse_erodep.reshape(self.num_chains*(self.NumSamples -burnin  ),1) 
 
@@ -630,9 +593,6 @@ class results_visualisation:
         np.savetxt(self.folder + '/pos_param.txt', posterior.T) 
         np.savetxt(self.folder + '/likelihood.txt', likelihood_vec.T, fmt='%1.5f')
         np.savetxt(self.folder + '/accept_list.txt', accept_list, fmt='%1.2f')
-        #np.savetxt(self.folder + '/acceptpercent.txt', [accept], fmt='%1.2f')
-
-        # print ('\n\n\n\nrmse_elev.shape',rmse_elev.shape,'\n\n\n')
         
         return posterior, likelihood_vec, accept_list,   xslice, yslice, rmse_elev, rmse_erodep, erodep_pts
 
@@ -737,8 +697,6 @@ class results_visualisation:
         wid_grid = self.wid_grid
         sub_gridlen = 30 #int(length/len_grid)  # 25
         sub_gridwidth = 30 # int(width/wid_grid) # 25
-        #new_length =len_grid * sub_gridlen 
-        #new_width =wid_grid *  sub_gridwidth 
         sed = sediment.copy()
         grid = sediment 
         len_num = 4
@@ -746,21 +704,10 @@ class results_visualisation:
  
         len_grid = int(sediment.shape[0]/len_num)  # take care of left over
         wid_grid = int(sediment.shape[1]/wid_num)   # take care of left over
-        # print(len_grid, wid_grid, ' len_grid, wid_grid ')
-   
         i = 0
 
         sed_list = grid.flatten()
  
-        # print(grid.shape, ' grid ')
-        # print(sed_list, ' sed list ')
-
-        # self.plot_sed(sed_list, 'region_x')
-        # self.heatmap_sed(grid, 'map_x')
-
-
-        #---------------------------------------
-
     def vis_badlands_timestep(self, folder, timestep):
         # Load the last time step
         file = folder+"/AUSP1306_output/h5"
@@ -1012,12 +959,6 @@ class results_visualisation:
             plt.savefig(self.folder +'/pred_plots/' + str(time) +'r_elev_ocean.png')
             plt.close()
 
-
-            # fig = plt.figure()
-            # plt.imshow(p_elev_ocean, cmap='hot', interpolation='nearest')
-            # plt.savefig('p_elev_ocean_>0.png')
-            # plt.close()
-
             tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
             rmse_ocean[i] = tausq_ocean
             likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
@@ -1111,16 +1052,6 @@ class results_visualisation:
         plt.tight_layout()
         plt.savefig( self.folder+'/sediment_plots/pos_erodep_'+str( sim_interval) +fname+'_.pdf')
         plt.clf()    
-
-# class  above this line -------------------------------------------------------------------------------------------------------
-
-
-'''def mean_sqerror(  pred_erodep, pred_elev,  real_elev,  real_erodep_pts):
-        
-        elev = np.sqrt(np.sum(np.square(pred_elev -  real_elev))  / real_elev.size)  
-        sed =  np.sqrt(  np.sum(np.square(pred_erodep -  real_erodep_pts)) / real_erodep_pts.size  ) 
-
-        return elev + sed, sed'''
 
 def mean_sqerror(  pred_erodep,   real_erodep_pts):
         
