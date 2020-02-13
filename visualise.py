@@ -1068,7 +1068,7 @@ def main():
 
     random.seed(time.time()) 
 
-    (problemfolder, xmlinput, simtime, resolu_factor, init_elev, groundtruth_elev, groundtruth_erodep,
+    (problemfolder, xmlinput, simtime, resolu_factor, sea_level, init_elev, groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, groundtruth_elev_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords,elev_coords, inittopo_estimated, vec_parameters, minlimits_vec, maxlimits_vec) = problem_setup(problem)
@@ -1243,7 +1243,7 @@ def main():
 
 
 
-    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted =False )
+    pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(error_dict[min(error_dict)], muted =True )
     # pred_elev_opt, pred_erodep_opt, pred_erodep_pts_opt, pred_elev_pts_opt = res.run_badlands(variables, muted = False)
 
     

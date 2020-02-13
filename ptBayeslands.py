@@ -85,7 +85,7 @@ method = 1 # type of formaltion for inittopo construction (Method 1 showed bette
 
 class ptReplica(multiprocessing.Process):
     
-    def __init__(self, num_param, vec_parameters, ocean_t,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, init_elev, real_elev,  real_erodep_pts, real_elev_pts, erodep_coords,elev_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance, Bayes_inittopoknowledge):
+    def __init__(self, num_param, vec_parameters, sea_level, ocean_t,  inittopo_expertknow, rain_region, rain_time, len_grid, wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,   check_likelihood_sed ,  swap_interval, sim_interval, simtime, samples, init_elev, real_elev,  real_erodep_pts, real_elev_pts, erodep_coords,elev_coords, filename, xmlinput,  run_nb, tempr, parameter_queue,event , main_proc,   burn_in, inittopo_estimated, covariance, Bayes_inittopoknowledge):
 
         multiprocessing.Process.__init__(self)
         self.processID = tempr      
@@ -131,6 +131,8 @@ class ptReplica(multiprocessing.Process):
         self.use_cov = covariance
         self.cov_counter = 0
         self.repeated_proposal = False
+
+        self.sealevel_data = sea_level
 
         self.Bayes_inittopoknowledge = Bayes_inittopoknowledge
 
@@ -246,6 +248,16 @@ class ptReplica(multiprocessing.Process):
         self.cov_init = True
         # self.cov_counter += 1 
 
+    def process_sealevel(self):
+
+
+        y = self.sealevel_data[:,1]
+
+
+        return y
+
+
+
     def run_badlands(self, input_vector):
         #Runs a badlands model with the specified inputs
  
@@ -262,8 +274,11 @@ class ptReplica(multiprocessing.Process):
 
         if init == True:
 
-            geoparam  = rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
+            geoparam  = num_sealevel_coef + rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
+
+
             inittopo_vec = input_vector[geoparam:]
+
             filename=self.input.split("/")
             problem_folder=filename[0]+"/"+filename[1]+"/"
 
@@ -274,7 +289,11 @@ class ptReplica(multiprocessing.Process):
             #And put the demfile on a grid we can manipulate easily
             elev=np.reshape(model.recGrid.rectZ,(xi,yi)) 
 
-            inittopo_estimate = self.process_inittopo(inittopo_vec)  
+
+
+            inittopo_estimate = self.process_inittopo(inittopo_vec)     #------------------------------------------
+
+
             inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  # bug fix but not good fix - temp @ 
 
             #Put it back into 'Badlands' format and then re-load the model
@@ -309,6 +328,14 @@ class ptReplica(multiprocessing.Process):
             model.input.elasticH = input_vector[rain_regiontime+8]
             model.input.diffnb = input_vector[rain_regiontime+9]
             model.input.diffprop = input_vector[rain_regiontime+10]
+
+
+        sealevel_coeff = input_vector[rain_regiontime+10 : rain_regiontime+10+ num_sealevel_coef] 
+
+
+
+
+        #model.sea.curve = 
  
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()
@@ -452,7 +479,30 @@ class ptReplica(multiprocessing.Process):
             fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_erdp_.png' 
             ax.scatter(self.erodep_coords[:,0], self.erodep_coords[:,1], self.real_erodep_pts )
             plt.savefig(fnameplot)
-            plt.clf()        
+            plt.clf()    
+ 
+            x = np.arange(0, self.sealevel_data.shape[0], 1)
+            fig, ax =  plt.subplots() 
+
+
+
+            #print(x, ' xxx')
+
+            y = self.sealevel_data[:,1]
+
+
+            print(y, ' sea_level')
+
+
+
+            fnameplot = self.folder +  '/recons_initialtopo/'+'sealevel_data.png' 
+            ax.plot(x, y)
+            plt.savefig(fnameplot)
+            plt.clf()    
+
+            #self.sealevel_data   
+             
+
      
         samples = self.samples
         count_list = [] 
@@ -711,7 +761,7 @@ class ptReplica(multiprocessing.Process):
  
 class ParallelTempering:
 
-    def __init__(self,  vec_parameters, ocean_t, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords,elev_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance, Bayes_inittopoknowledge):
+    def __init__(self,  vec_parameters, sea_level, ocean_t, inittopo_expertknow, rain_region, rain_time,  len_grid,  wid_grid, num_chains, maxtemp,NumSample,swap_interval, fname, realvalues_vec, num_param, init_elev, real_elev, erodep_pts, elev_pts, erodep_coords,elev_coords, simtime, siminterval, resolu_factor, run_nb, inputxml,inittopo_estimated, covariance, Bayes_inittopoknowledge):
         self.swap_interval = swap_interval
         self.folder = fname
         self.maxtemp = maxtemp
@@ -737,6 +787,8 @@ class ParallelTempering:
         self.xmlinput = inputxml
         self.vec_parameters = vec_parameters
         self.realvalues  =  realvalues_vec 
+
+        self.sealevel_data = sea_level
 
         # create queues for transfer of parameters between process chain
         #self.chain_parameters = [multiprocessing.Queue() for i in range(0, self.num_chains) ]
@@ -856,7 +908,7 @@ class ParallelTempering:
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
-            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.ocean_t, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords,self.elev_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
+            self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.sealevel_data, self.ocean_t, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords,self.elev_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
                                      
 
     def swap_procedure(self, parameter_queue_1, parameter_queue_2):
@@ -1140,7 +1192,7 @@ def main():
 
     random.seed(time.time()) 
 
-    (problemfolder, xmlinput, simtime, resolu_factor, init_elev, groundtruth_elev, groundtruth_erodep,
+    (problemfolder, xmlinput, simtime, resolu_factor, sea_level, init_elev, groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, groundtruth_elev_pts, res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords,elev_coords,inittopo_estimated, vec_parameters, minlimits_vec,
@@ -1233,7 +1285,7 @@ def main():
     #-------------------------------------------------------------------------------------
     #Create A a Patratellel Tempring object instance 
     #-------------------------------------------------------------------------------------
-    pt = ParallelTempering(vec_parameters, ocean_t, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  , init_elev, groundtruth_elev,  groundtruth_erodep_pts , groundtruth_elev_pts,  erodep_coords,elev_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance, Bayes_inittopoknowledge)
+    pt = ParallelTempering(vec_parameters, sea_level, ocean_t, inittopo_expertknow, rain_regiongrid, rain_timescale, len_grid,  wid_grid, num_chains, maxtemp, samples,swap_interval,fname, true_parameter_vec, num_param  , init_elev, groundtruth_elev,  groundtruth_erodep_pts , groundtruth_elev_pts,  erodep_coords,elev_coords, simtime, sim_interval, resolu_factor, run_nb_str, xmlinput, inittopo_estimated, covariance, Bayes_inittopoknowledge)
     
     #-------------------------------------------------------------------------------------
     # intialize the MCMC chains
