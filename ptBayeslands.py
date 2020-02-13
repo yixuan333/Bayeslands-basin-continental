@@ -169,6 +169,12 @@ class ptReplica(multiprocessing.Process):
 
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  fname+ str(int(replica_id))+'.html', validate=False)
 
+
+
+
+
+
+
     def process_inittopo(self, inittopo_vec):
 
         length = self.real_elev.shape[0]
@@ -248,13 +254,81 @@ class ptReplica(multiprocessing.Process):
         self.cov_init = True
         # self.cov_counter += 1 
 
-    def process_sealevel(self):
+    def process_sealevel(self, coeff):
 
 
         y = self.sealevel_data[:,1]
+        timeframes = self.sealevel_data[:,0]
+
+        first = y[0:50] # sea leavel for 0 - 49 Ma to be untouched 
+        second = y[50:] # this will be changed by sea level coeefecients proposed by MCMC 
+
+        second_mat = np.reshape(second, (10, 10)) 
+
+        updated_mat = second_mat
+
+        #print(coeff, ' coeff -----------------')
+
+        for l in range(0,second_mat.shape[0]):
+            for w in range(0,second_mat.shape[1]): 
+                updated_mat[l][w] =  (second_mat[l][w] * coeff[w]) +  second_mat[l][w] 
+
+        #print(updated_mat, '   updated ----------------------------- ')
 
 
-        return y
+        reformed_sl = updated_mat.flatten()
+
+        combined_sl = np.concatenate([first, reformed_sl]) 
+
+
+
+
+        #print(proposed_sealevel, proposed_sealevel.shape,  '  proposed_sealevel  proposed_sealevel.shape            ----------------------------- ')
+
+        #https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter
+
+        yhat = self.smooth(combined_sl, 20)
+
+
+        fig, ax =  plt.subplots()  
+        fnameplot = self.folder +  '/recons_initialtopo/'+str(int(self.temperature*10))+'_sealevel_data.png' 
+        ax.plot(timeframes, y, 'k--', label='original')
+        ax.plot(timeframes, combined_sl, label='perturbed')
+        ax.plot(timeframes, yhat, label='smoothened')
+        plt.savefig(fnameplot)
+        plt.clf()    
+
+
+        proposed_sealevel = np.vstack([timeframes, yhat])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return proposed_sealevel
+
+
+
+    def smooth(self, y, box_pts):
+        #https://stackoverflow.com/questions/20618804/how-to-smooth-a-curve-in-the-right-way
+        #print(y.shape, y, ' ++ y ')
+        box = np.ones(box_pts)/box_pts
+        y_smooth = np.convolve(y, box, mode='same')
+        return y_smooth
+
 
 
 
@@ -336,7 +410,7 @@ class ptReplica(multiprocessing.Process):
 
 
 
-        model.input.curve = self.sealevel_data 
+        model.input.curve = self.process_sealevel(sealevel_coeff)
  
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()

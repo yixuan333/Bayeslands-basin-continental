@@ -186,9 +186,9 @@ def problem_setup(problem = 1):
         inittopo_minlimits = np.repeat( 0  , inittopo_gridlen*inittopo_gridwidth)
         inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
 
-        sealevel_max = [0.2,0.2,0.4,0.4,0.6,0.6,0.8,0.8,1,1] 
+        sealevel_max = [0.2,0.2,0.4,0.4,0.5,0.5,0.5,0.6,0.6,0.6] 
  
-        sealevel_min = [0,0,0,0,0,0,0,0,0,0.1]
+        sealevel_min = [-0.2,-0.2,-0.4,-0.4,-0.5,-0.5,-0.5,-0.6,-0.6,-0.6]
 
         #--------------------------------------------------------
 
