@@ -272,6 +272,8 @@ class ptReplica(multiprocessing.Process):
 
         init = True
 
+        num_sealevel_coef = 10
+
         if init == True:
 
             geoparam  = num_sealevel_coef + rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
@@ -288,8 +290,7 @@ class ptReplica(multiprocessing.Process):
             yi=int(np.shape(model.recGrid.rectY)[0]/model.recGrid.ny)
             #And put the demfile on a grid we can manipulate easily
             elev=np.reshape(model.recGrid.rectZ,(xi,yi)) 
-
-
+ 
 
             inittopo_estimate = self.process_inittopo(inittopo_vec)     #------------------------------------------
 
@@ -335,7 +336,7 @@ class ptReplica(multiprocessing.Process):
 
 
 
-        #model.sea.curve = 
+        model.input.curve = self.sealevel_data 
  
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()
@@ -469,6 +470,8 @@ class ptReplica(multiprocessing.Process):
 
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d') 
+
+            print(self.real_elev_pts.shape, '  self.real_elev_pts')
             fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_elev_.png' 
             ax.scatter(self.elev_coords[:,0], self.elev_coords[:,1], self.real_elev_pts )
             plt.savefig(fnameplot)
