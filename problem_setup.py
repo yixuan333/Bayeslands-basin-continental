@@ -104,6 +104,8 @@ def problem_setup(problem = 1):
         print('elev_coords', elev_coords.shape)        
         elev_coords = np.array(elev_coords, dtype = 'int')
 
+        sea_level = []
+
     elif problem == 2: # Aus: 149 MILLION YEARS with INIT TOPO
 
         problemfolder = 'Examples/australia/'
@@ -120,6 +122,8 @@ def problem_setup(problem = 1):
         groundtruth_erodep_pts = np.loadtxt(problemfolder +'data/final_erdp_pts_.txt')
         groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated.txt')
         #groundtruth_elev_pts = np.loadtxt(problemfolder +'data/elev_pts_updated_mt.txt')
+
+        sea_level = np.loadtxt(problemfolder+ 'AUSP1307/Sea_level/Haq_87_Muller2018_M6.csv')  
 
         erodep_coords = np.loadtxt(problemfolder +"data/erdp_coords.txt", )   
         print('erdp_coords', erodep_coords.shape)
@@ -179,11 +183,21 @@ def problem_setup(problem = 1):
 
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
          
-        inittopo_minlimits = np.repeat( -25  , inittopo_gridlen*inittopo_gridwidth)
-        inittopo_maxlimits = np.repeat(50 , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( 0  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
+
+        sealevel_max = [0.2,0.2,0.4,0.4,0.6,0.6,0.8,0.8,1,1] 
+ 
+        sealevel_min = [0,0,0,0,0,0,0,0,0,0.1]
+
         #--------------------------------------------------------
-        minlimits_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
-        maxlimits_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
+
+        minlimits_vec = np.append( rain_minlimits,minlimits_others )#,inittopo_minlimits)
+        maxlimits_vec = np.append( rain_maxlimits,maxlimits_others )#,inittopo_maxlimits)
+
+
+        minlimits_vec = np.append( minlimits_vec, sealevel_min)#,inittopo_minlimits)
+        maxlimits_vec = np.append( maxlimits_vec, sealevel_max)#,inittopo_maxlimits)
 
         temp_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
         minlimits_vec = np.append(temp_vec, inittopo_minlimits)
@@ -200,7 +214,7 @@ def problem_setup(problem = 1):
         # print(vec_parameters, 'vec_parameters') 
 
 
-    return (problemfolder, xmlinput, simtime, resolu_factor, init_elev ,groundtruth_elev, groundtruth_erodep,
+    return (problemfolder, xmlinput, simtime, resolu_factor, sea_level, init_elev ,groundtruth_elev, groundtruth_erodep,
     groundtruth_erodep_pts, groundtruth_elev_pts,  res_summaryfile, inittopo_expertknow, len_grid, wid_grid, simtime, 
     resolu_factor, likelihood_sediment, rain_min, rain_max, rain_regiongrid, minlimits_others,
     maxlimits_others, stepsize_ratio, erodep_coords, elev_coords, inittopo_estimated, vec_parameters,minlimits_vec, maxlimits_vec)
