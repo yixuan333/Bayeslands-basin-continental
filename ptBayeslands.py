@@ -241,10 +241,7 @@ class ptReplica(multiprocessing.Process):
         return groundtruth_topo
  
     def computeCovariance(self, i, pos_v):
-        cov_mat = np.cov(pos_v[:i,].T)
-        # np.savetxt('%s/cov_mat_%s.txt' %(self.filename,self.temperature), cov_mat )
-        # print ('\n step ratio vec', self.stepratio_vec)
-        # print ('step size vec', self.stepsize_vec, '\n')
+        cov_mat = np.cov(pos_v[:i,].T) 
 
         cov_noise_old = (self.stepratio_vec * self.stepratio_vec)*np.identity(cov_mat.shape[0], dtype = float)
         cov_noise = self.stepsize_vec*np.identity(cov_mat.shape[0], dtype = float)
@@ -407,8 +404,7 @@ class ptReplica(multiprocessing.Process):
 
 
         sealevel_coeff = input_vector[rain_regiontime+10 : rain_regiontime+10+ num_sealevel_coef] 
-
-        print(input_vector[0:rain_regiontime+10], '  input_vector[0:rain_regiontime+10]')
+ 
 
 
 
@@ -452,7 +448,7 @@ class ptReplica(multiprocessing.Process):
 
         rmse_ocean = np.zeros(self.sim_interval.size)
 
-        '''i = 0
+        i = 0
 
         pred_elev_vec_ = pred_elev_vec.copy()
 
@@ -486,7 +482,7 @@ class ptReplica(multiprocessing.Process):
             tausq_ocean = np.sum(np.square(p_elev_ocean - r_elev_ocean))/self.real_elev.size  
             rmse_ocean[i] = tausq_ocean
             likelihood_elev_ocean  += np.sum(-0.5 * np.log(2 * math.pi * tausq_ocean) - 0.5 * np.square(p_elev_ocean - r_elev_ocean) /  tausq_ocean )
-            i = i+ 1'''
+            i = i+ 1
  
         tausq = np.sum(np.square(pred_elev_vec[self.simtime] - self.real_elev))/self.real_elev.size 
         likelihood_elev  = np.sum(-0.5 * np.log(2 * math.pi * tausq ) - 0.5 * np.square(pred_elev_vec[self.simtime] - self.real_elev) / tausq )  
@@ -502,18 +498,15 @@ class ptReplica(multiprocessing.Process):
             tau_elev = tausq
             tau_erodep = 1
 
-        likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) #+ (likelihood_elev_ocean/5) 
+        likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) + (likelihood_elev_ocean/5) 
+ 
 
-        likelihood_elev_ocean = 0
-
-        rmse_ocean = 0
+        #rmse_ocean = 0
          
         rmse_elev = np.sqrt(tausq)
-        rmse_elev_ocean = 0#np.average(rmse_ocean)
+        rmse_elev_ocean = np.average(rmse_ocean)
         rmse_erodep = np.sqrt(tau_erodep) 
-        rmse_elev_pts = np.sqrt(tau_elev)
-        avg_rmse_er = 0#np.average(rmse_erodep)
-        avg_rmse_el = 0#np.average(rmse_elev_pts)
+        rmse_elev_pts = np.sqrt(tau_elev) 
 
         likelihood = likelihood_*(1.0/self.adapttemp)
 
