@@ -169,6 +169,12 @@ class ptReplica(multiprocessing.Process):
 
         graph = plotly.offline.plot(fig, auto_open=False, output_type='file', filename= self.folder +  fname+ str(int(replica_id))+'.html', validate=False)
 
+
+
+
+
+
+
     def process_inittopo(self, inittopo_vec):
 
         length = self.real_elev.shape[0]
@@ -248,13 +254,82 @@ class ptReplica(multiprocessing.Process):
         self.cov_init = True
         # self.cov_counter += 1 
 
-    def process_sealevel(self):
+    def process_sealevel(self, coeff):
 
 
-        y = self.sealevel_data[:,1]
+        y = self.sealevel_data[:,1].copy()
+        timeframes = self.sealevel_data[:,0]
+
+        first = y[0:50] # sea leavel for 0 - 49 Ma to be untouched 
+        second = y[50:] # this will be changed by sea level coeefecients proposed by MCMC 
+
+        second_mat = np.reshape(second, (10, 10)) 
+
+        updated_mat = second_mat
+
+        print(coeff, ' coeff -----------------')
+
+        for l in range(0,second_mat.shape[0]):
+            for w in range(0,second_mat.shape[1]): 
+                updated_mat[l][w] =  (second_mat[l][w] * coeff[l]) +  second_mat[l][w]
+
+        #print(updated_mat, '   updated ----------------------------- ')
 
 
-        return y
+        reformed_sl = updated_mat.flatten()
+
+        combined_sl = np.concatenate([first, reformed_sl]) 
+
+
+
+
+        #print(proposed_sealevel, proposed_sealevel.shape,  '  proposed_sealevel  proposed_sealevel.shape            ----------------------------- ')
+
+        #https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter
+
+        yhat = self.smooth(combined_sl, 10)
+
+
+        fig, ax =  plt.subplots()  
+        fnameplot = self.folder +  '/recons_initialtopo/'+str(int(self.temperature*10))+'_sealevel_data.png' 
+        ax.plot(timeframes, self.sealevel_data[:,1], 'k--', label='original')
+        ax.plot(timeframes, combined_sl, label='perturbed')
+        ax.plot(timeframes, yhat, label='smoothened')
+        ax.legend()
+        plt.savefig(fnameplot)
+        plt.clf()    
+
+
+        proposed_sealevel = np.vstack([timeframes, yhat])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return proposed_sealevel
+
+
+
+    def smooth(self, y, box_pts):
+        #https://stackoverflow.com/questions/20618804/how-to-smooth-a-curve-in-the-right-way
+        #print(y.shape, y, ' ++ y ')
+        box = np.ones(box_pts)/box_pts
+        y_smooth = np.convolve(y, box, mode='same')
+        return y_smooth
+
 
 
 
@@ -272,6 +347,8 @@ class ptReplica(multiprocessing.Process):
 
         init = True
 
+        num_sealevel_coef = 10
+
         if init == True:
 
             geoparam  = num_sealevel_coef + rain_regiontime+11  # note 10 parameter space is for erod, c-marine etc etc, some extra space ( taking out time dependent rainfall)
@@ -288,8 +365,7 @@ class ptReplica(multiprocessing.Process):
             yi=int(np.shape(model.recGrid.rectY)[0]/model.recGrid.ny)
             #And put the demfile on a grid we can manipulate easily
             elev=np.reshape(model.recGrid.rectZ,(xi,yi)) 
-
-
+ 
 
             inittopo_estimate = self.process_inittopo(inittopo_vec)     #------------------------------------------
 
@@ -332,10 +408,12 @@ class ptReplica(multiprocessing.Process):
 
         sealevel_coeff = input_vector[rain_regiontime+10 : rain_regiontime+10+ num_sealevel_coef] 
 
+        print(input_vector[0:rain_regiontime+10], '  input_vector[0:rain_regiontime+10]')
 
 
 
-        #model.sea.curve = 
+
+        model.input.curve = self.process_sealevel(sealevel_coeff)
  
         elev_vec = collections.OrderedDict()
         erodep_vec = collections.OrderedDict()
@@ -469,6 +547,8 @@ class ptReplica(multiprocessing.Process):
 
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d') 
+
+            print(self.real_elev_pts.shape, '  self.real_elev_pts')
             fnameplot = self.folder +  '/recons_initialtopo/'+'scatter3d_elev_.png' 
             ax.scatter(self.elev_coords[:,0], self.elev_coords[:,1], self.real_elev_pts )
             plt.savefig(fnameplot)
@@ -904,10 +984,11 @@ class ParallelTempering:
     
     def initialize_chains (self,     minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed,   burn_in):
         self.burn_in = burn_in
-        self.vec_parameters =   np.random.uniform(minlimits_vec, maxlimits_vec) # will begin from diff position in each replica (comment if not needed)
+        
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
+            self.vec_parameters =   np.random.uniform(minlimits_vec, maxlimits_vec)  
             self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.sealevel_data, self.ocean_t, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords,self.elev_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
                                      
 

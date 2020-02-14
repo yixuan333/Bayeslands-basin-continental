@@ -186,9 +186,9 @@ def problem_setup(problem = 1):
         inittopo_minlimits = np.repeat( 0  , inittopo_gridlen*inittopo_gridwidth)
         inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
 
-        sealevel_max = [0.2,0.2,0.4,0.4,0.6,0.6,0.8,0.8,1,1] 
+        sealevel_max = [0.2,0.2,0.4,0.4,0.5,0.5,0.5,0.6,0.6,0.6] 
  
-        sealevel_min = [0,0,0,0,0,0,0,0,0,0.1]
+        sealevel_min = [-0.2,-0.2,-0.4,-0.4,-0.5,-0.5,-0.5,-0.6,-0.6,-0.6]
 
         #--------------------------------------------------------
 
@@ -199,11 +199,13 @@ def problem_setup(problem = 1):
         minlimits_vec = np.append( minlimits_vec, sealevel_min)#,inittopo_minlimits)
         maxlimits_vec = np.append( maxlimits_vec, sealevel_max)#,inittopo_maxlimits)
 
+        print(minlimits_vec, minlimits_vec.shape, ' minlimits_vec :::::::::::: ++++++++++++++++++++++++++++-------------------')
+
         temp_vec = np.append(rain_minlimits,minlimits_others)#,inittopo_minlimits)
-        minlimits_vec = np.append(temp_vec, inittopo_minlimits)
+        minlimits_vec = np.append(minlimits_vec, inittopo_minlimits)
 
         temp_vec = np.append(rain_maxlimits,maxlimits_others)#,inittopo_maxlimits)
-        maxlimits_vec = np.append(temp_vec, inittopo_maxlimits)
+        maxlimits_vec = np.append(maxlimits_vec, inittopo_maxlimits)
 
         vec_parameters = np.random.uniform(minlimits_vec, maxlimits_vec) #  draw intial values for each of the free parameters
         true_parameter_vec = vec_parameters # just as place value for now, true parameters is not used for plotting 
@@ -211,7 +213,7 @@ def problem_setup(problem = 1):
 
         stepratio_vec =  np.repeat(stepsize_ratio, vec_parameters.size) 
         num_param = vec_parameters.size
-        # print(vec_parameters, 'vec_parameters') 
+        print(vec_parameters.shape, 'vec_parameters:: -------') 
 
 
     return (problemfolder, xmlinput, simtime, resolu_factor, sea_level, init_elev ,groundtruth_elev, groundtruth_erodep,
