@@ -257,7 +257,7 @@ class ptReplica(multiprocessing.Process):
     def process_sealevel(self, coeff):
 
 
-        y = self.sealevel_data[:,1]
+        y = self.sealevel_data[:,1].copy()
         timeframes = self.sealevel_data[:,0]
 
         first = y[0:50] # sea leavel for 0 - 49 Ma to be untouched 
@@ -267,11 +267,11 @@ class ptReplica(multiprocessing.Process):
 
         updated_mat = second_mat
 
-        #print(coeff, ' coeff -----------------')
+        print(coeff, ' coeff -----------------')
 
         for l in range(0,second_mat.shape[0]):
             for w in range(0,second_mat.shape[1]): 
-                updated_mat[l][w] =  (second_mat[l][w] * coeff[w]) +  second_mat[l][w] 
+                updated_mat[l][w] =  (second_mat[l][w] * coeff[l]) +  second_mat[l][w]
 
         #print(updated_mat, '   updated ----------------------------- ')
 
@@ -287,14 +287,15 @@ class ptReplica(multiprocessing.Process):
 
         #https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter
 
-        yhat = self.smooth(combined_sl, 20)
+        yhat = self.smooth(combined_sl, 10)
 
 
         fig, ax =  plt.subplots()  
         fnameplot = self.folder +  '/recons_initialtopo/'+str(int(self.temperature*10))+'_sealevel_data.png' 
-        ax.plot(timeframes, y, 'k--', label='original')
+        ax.plot(timeframes, self.sealevel_data[:,1], 'k--', label='original')
         ax.plot(timeframes, combined_sl, label='perturbed')
         ax.plot(timeframes, yhat, label='smoothened')
+        ax.legend()
         plt.savefig(fnameplot)
         plt.clf()    
 
@@ -406,6 +407,8 @@ class ptReplica(multiprocessing.Process):
 
 
         sealevel_coeff = input_vector[rain_regiontime+10 : rain_regiontime+10+ num_sealevel_coef] 
+
+        print(input_vector[0:rain_regiontime+10], '  input_vector[0:rain_regiontime+10]')
 
 
 
@@ -981,10 +984,11 @@ class ParallelTempering:
     
     def initialize_chains (self,     minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed,   burn_in):
         self.burn_in = burn_in
-        self.vec_parameters =   np.random.uniform(minlimits_vec, maxlimits_vec) # will begin from diff position in each replica (comment if not needed)
+        
         self.assign_temperatures()
         
         for i in xrange(0, self.num_chains):
+            self.vec_parameters =   np.random.uniform(minlimits_vec, maxlimits_vec)  
             self.chains.append(ptReplica(  self.num_param, self.vec_parameters, self.sealevel_data, self.ocean_t, self.inittopo_expertknow, self.rain_region, self.rain_time, self.len_grid, self.wid_grid, minlimits_vec, maxlimits_vec, stepratio_vec,  check_likelihood_sed ,self.swap_interval, self.sim_interval,   self.simtime, self.NumSamples, self.init_elev, self.real_elev,   self.real_erodep_pts, self.real_elev_pts, self.erodep_coords,self.elev_coords, self.folder, self.xmlinput,  self.run_nb,self.temperatures[i], self.parameter_queue[i],self.event[i], self.wait_chain[i],burn_in, self.inittopo_estimated, self.covariance, self.Bayes_inittopoknowledge))
                                      
 
