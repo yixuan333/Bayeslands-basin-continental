@@ -8,25 +8,38 @@ import time
 
 
 
-x =  np.loadtxt('Examples/australia/results_3/recons_initialtopo/inittopo_smooth_10.txt')
+x =  np.loadtxt('Examples/australia/results_8/recons_initialtopo/inittopo_smooth_12.txt')
 
 
 
-y =  np.loadtxt('Examples/australia/results_3/recons_initialtopo/inittopo_smooth_17.txt')
+y =  np.loadtxt('Examples/australia/results_8/recons_initialtopo/inittopo_smooth_18.txt')
 
 
 z = x-y
+ 
 
-xxx'
+print(z)
+
+#z = np.random.rand(3,2)
+
 
 print(z)
 
-z = np.random.rand(3,2)
+im = plt.imshow(x, cmap='hot', interpolation='nearest')
+plt.colorbar(im)
+plt.savefig('fnameplotx.png')
+plt.clf()
 
 
-print(z)
+im = plt.imshow(y, cmap='hot', interpolation='nearest')
+plt.colorbar(im)
+plt.savefig('fnameploty.png')
+plt.clf()
+
 
 im = plt.imshow(z, cmap='hot', interpolation='nearest')
-plt.show()
-plt.savefig('fnameplot.png')
+plt.colorbar(im)
+plt.savefig('fnameplotz.png')
 plt.clf()
+
+
