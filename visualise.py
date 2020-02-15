@@ -1064,6 +1064,43 @@ def make_directory (directory):
         os.makedirs(directory)
 
 
+
+def process_sealevel(coeff):
+
+
+    y = self.sealevel_data[:,1].copy()
+    timeframes = self.sealevel_data[:,0]
+
+    first = y[0:50] # sea leavel for 0 - 49 Ma to be untouched 
+    second = y[50:] # this will be changed by sea level coeefecients proposed by MCMC 
+
+    second_mat = np.reshape(second, (10, 10)) 
+
+    updated_mat = second_mat
+
+    print(coeff, ' coeff -----------------')
+
+    for l in range(0,second_mat.shape[0]):
+        for w in range(0,second_mat.shape[1]): 
+            updated_mat[l][w] =  (second_mat[l][w] * coeff[l]) +  second_mat[l][w]
+ 
+
+
+    reformed_sl = updated_mat.flatten() 
+    combined_sl = np.concatenate([first, reformed_sl]) 
+ 
+
+    yhat = self.smooth(combined_sl, 10)
+
+
+    proposed_sealevel = np.vstack([timeframes, yhat])
+
+
+
+
+    return proposed_sealevel
+
+
 def main():
 
     random.seed(time.time()) 
@@ -1161,6 +1198,64 @@ def main():
     plt.clf()
 
     print(erodep_pts.shape, ' erodep_pts.shape -----------------------------------------------------------------------------')
+
+
+    mean_sl = pos_param[:,15:25].T
+
+    mean_coeff = mean_sl.mean(axis=0)
+
+    std_coeff = mean_sl.std(axis=0)
+
+    mean_sealevel = process_sealevel(mean_coeff)  
+    std_sealevel = process_sealevel(mean_coeff) 
+
+    timeframes = sea_level[:,0]
+
+
+
+    fig, ax =  plt.subplots()  
+    fnameplot = self.folder +  '/recons_initialtopo/'+str(int(self.temperature*10))+'_sealevel_data.png' 
+    ax.plot(timeframes, mean_sealevel[:,1],  label='mean prediction')
+    ax.plot(timeframes, std_sealevel[:,1], label='std')
+    ax.plot(timeframes, std_sealevel[:,1], label='std')
+    ax.legend()
+    plt.savefig(fnameplot)
+    plt.clf()    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     pred_erodep = np.zeros((  sim_interval.size, groundtruth_erodep_pts.shape[0])) # just to get the right size
 

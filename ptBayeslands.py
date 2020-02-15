@@ -299,21 +299,7 @@ class ptReplica(multiprocessing.Process):
 
         proposed_sealevel = np.vstack([timeframes, yhat])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
         return proposed_sealevel
@@ -405,9 +391,7 @@ class ptReplica(multiprocessing.Process):
 
         sealevel_coeff = input_vector[rain_regiontime+10 : rain_regiontime+10+ num_sealevel_coef] 
  
-
-
-
+ 
 
         model.input.curve = self.process_sealevel(sealevel_coeff)
  
@@ -448,13 +432,21 @@ class ptReplica(multiprocessing.Process):
 
         rmse_ocean = np.zeros(self.sim_interval.size)
 
+
+        pred_topo_presentday = pred_elev_vec[self.simtime]
+
+ 
+ 
+
         i = 0
 
-        pred_elev_vec_ = pred_elev_vec.copy()
+
+
+        pred_elev_vec_ = copy.deepcopy(pred_elev_vec) #pred_elev_vec.copy()
 
 
         for i, time in enumerate(self.sim_interval):
-            p_elev_ocean = pred_elev_vec_[time]
+            p_elev_ocean = pred_elev_vec_[time] 
             r_elev_ocean = self.ocean_t[i,:,:]
 
             # r_elev_ocean[r_elev_ocean<0] = 0 
@@ -511,7 +503,7 @@ class ptReplica(multiprocessing.Process):
         likelihood = likelihood_*(1.0/self.adapttemp)
 
         pred_topo_presentday = pred_elev_vec[self.simtime]
-        self.plot3d_plotly(pred_topo_presentday, '/pred_plots/pred_badlands_', self.temperature *10)
+        #self.plot3d_plotly(pred_topo_presentday, '/pred_plots/pred_badlands_', self.temperature *10)    # Problem exists here XXXXXXX
 
         print('LIKELIHOOD :--: Elev: ',likelihood_elev, '\tErdp: ', likelihood_erodep, '\tOcean:',likelihood_elev_ocean,'\tTotal: ', likelihood_, likelihood)
         print('RMSE :--: Elev ', rmse_elev, 'Erdp', rmse_erodep, 'Ocean', rmse_elev_ocean)
@@ -803,6 +795,13 @@ class ptReplica(multiprocessing.Process):
 
             with file(('%s/performance/rmse_ocean/stream_res_ocean%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile, np.array([rmse_elev_ocean]), fmt='%1.2f', newline='\n')
+
+
+            with file(('%s/performance/rmse_ocean/stream_res_ocean_t%s.txt' % (self.folder, self.temperature)),'a') as outfile:
+                np.savetxt(outfile, np.array([rmse_ocean]), fmt='%1.2f', newline='\n')
+
+
+
 
             temp = list_erodep_time[i+1,-1,:]  
             temp = np.reshape(temp, temp.shape[0]*1) 
