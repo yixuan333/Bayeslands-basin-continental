@@ -183,12 +183,12 @@ def problem_setup(problem = 1):
 
         print(len_grid, wid_grid, groundtruth_elev.shape[0], groundtruth_elev.shape[1] ,'  sub_gridlen, sub_gridwidth   ------------ ********')
          
-        inittopo_minlimits = np.repeat( 0  , inittopo_gridlen*inittopo_gridwidth)
+        inittopo_minlimits = np.repeat( -200  , inittopo_gridlen*inittopo_gridwidth)
         inittopo_maxlimits = np.repeat(200 , inittopo_gridlen*inittopo_gridwidth)
 
-        sealevel_max = [0.2,0.2,0.4,0.4,0.5,0.5,0.5,0.6,0.6,0.6] 
+        sealevel_max = [0.2,0.2,0.3,0.3,0.40,0.40,0.45,0.45,0.5,0.5] 
  
-        sealevel_min = [-0.2,-0.2,-0.4,-0.4,-0.5,-0.5,-0.5,-0.6,-0.6,-0.6]
+        sealevel_min = [-0.2,-0.2,-0.3,-0.3,-0.40,-0.40,-0.45,-0.45,-0.5,-0.5]
 
         #--------------------------------------------------------
 

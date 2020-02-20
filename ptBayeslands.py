@@ -187,12 +187,12 @@ class ptReplica(multiprocessing.Process):
         new_length =len_grid * sub_gridlen 
         new_width =wid_grid *  sub_gridwidth
 
-        if problem == 1:
+        '''if problem == 1:
             reconstructed_topo  = self.real_elev.copy()  # to define the size 
             groundtruth_topo = self.real_elev.copy() 
-        else:
-            reconstructed_topo  = self.init_elev.copy()  # to define the size 
-            groundtruth_topo = self.init_elev.copy()
+        else:'''
+        reconstructed_topo  = self.init_elev.copy()  # to define the size 
+        groundtruth_topo = self.init_elev.copy()
 
         if problem == 1:  
             inittopo_vec =  self.inittopo_expertknow.flatten()   +  inittopo_vec  
@@ -206,7 +206,8 @@ class ptReplica(multiprocessing.Process):
             for w in range(0,sub_gridwidth-1): 
                 for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):
-                        reconstructed_topo[m][n]  = (reconstructed_topo[m][n])  +  (v_[l][w]) 
+                        if(reconstructed_topo[m][n]> 300):
+                            reconstructed_topo[m][n]  = (reconstructed_topo[m][n])  +  (v_[l][w]) 
  
         width = reconstructed_topo.shape[0]
         length = reconstructed_topo.shape[1]
@@ -215,23 +216,24 @@ class ptReplica(multiprocessing.Process):
             w = sub_gridwidth-1
             for m in range(l * len_grid,(l+1) * len_grid):  
                     for n in range(w *  wid_grid,  length):
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])  +  (v_[l][w])    
-                        # groundtruth_topo[m][n]   +=  v_[l][w] 
+                        if(groundtruth_topo[m][n]> 300):
+                            groundtruth_topo[m][n] = (groundtruth_topo[m][n])  +  (v_[l][w])     
 
         for w in range(0,sub_gridwidth -1): 
 
             l = sub_gridlen-1  
             for m in range(l * len_grid,width):  
                     for n in range(w *  wid_grid, (w+1) * wid_grid):  
-                        # groundtruth_topo[m][n]   +=  v_[l][w]
-                        groundtruth_topo[m][n] = (groundtruth_topo[m][n])  +  (v_[l][w]) 
+                        if(groundtruth_topo[m][n]> 300): 
+                            groundtruth_topo[m][n] = (groundtruth_topo[m][n])  +  (v_[l][w]) 
 
 
         inside = reconstructed_topo[  0 : sub_gridlen-2 * len_grid,0:   (sub_gridwidth-2 *  wid_grid)  ] 
 
         for m in range(0 , inside.shape[0]):  
             for n in range(0 ,   inside.shape[1]):  
-                groundtruth_topo[m][n]   = inside[m][n]  
+                if(groundtruth_topo[m][n]> 300):
+                    groundtruth_topo[m][n]   = inside[m][n]  
  
         groundtruth_topo = gaussian_filter(reconstructed_topo, sigma=(1 ,1 )) # change sigma to higher values if needed 
 
@@ -269,6 +271,7 @@ class ptReplica(multiprocessing.Process):
         for l in range(0,second_mat.shape[0]):
             for w in range(0,second_mat.shape[1]): 
                 updated_mat[l][w] =  (second_mat[l][w] * coeff[l]) +  second_mat[l][w]
+
 
         #print(updated_mat, '   updated ----------------------------- ')
 
@@ -438,7 +441,7 @@ class ptReplica(multiprocessing.Process):
  
  
 
-        i = 0
+        i = 6
 
 
 
@@ -490,7 +493,7 @@ class ptReplica(multiprocessing.Process):
             tau_elev = tausq
             tau_erodep = 1
 
-        likelihood_ =  (likelihood_elev/4) +  (likelihood_erodep ) + (likelihood_elev_ocean/5) 
+        likelihood_ =  (likelihood_elev/8) +  (likelihood_erodep ) + (likelihood_elev_ocean/2) 
  
 
         #rmse_ocean = 0
