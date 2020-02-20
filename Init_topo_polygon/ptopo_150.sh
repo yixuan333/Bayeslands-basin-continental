@@ -1,0 +1,59 @@
+#!/bin/bash
+#Project: Converting paleogeography grid into paleotopography
+#Date: 26/07/2017
+#Author: Carmen Braz
+
+
+## Input files ---------
+
+version=P100
+# paleotopo=Paleotopo_data/Paleotopo_150_Ma_${version}.shp
+paleotopo=data/Paleotopo_${version}.shp
+
+
+# xy files
+# resol="_5km_xy"
+# resol="_25km"
+resol="_50km"
+
+input_latlon=data/LatLon${resol}.xy
+input_utm=data/UTM${resol}.xy
+
+region=85/179/-55/10
+
+## Output files -----------
+
+# Converted to gmt file
+out_gmt=Paleotopo_${version}.gmt
+# Paleotopography converted to grid
+ptopo_grid=ptopo_${version}.nc
+
+# Smoothing factor - increase from 3 for higher resolution models
+g_filter=3
+# Smoothed grid
+smooth_grid=ptopo_g${g_filter}${resol}.nc
+
+# grdtrack output 
+latlon_csv=topo_150Ma_latlon_g${g_filter}${resol}
+final=Paleotopo
+
+ogr2ogr -f "GMT" ${out_gmt} ${paleotopo}
+
+gmt grdmask ${out_gmt} -R${region} -I0.25 -Nz -aZ=ELEVATION -V -G${ptopo_grid}
+
+
+gmt grdfilter ${ptopo_grid} -G${smooth_grid} -D0 -I0.25 -V -Fg${g_filter}
+
+
+gmt grdtrack -G${smooth_grid} ${input_latlon} -V > ${latlon_csv}_${version}.csv
+
+
+paste ${input_utm} ${latlon_csv}_${version}.csv | awk -F" " '{ print $1 " " $2 " " $5 }' > ${final}_${version}.csv
+
+# Might need to use dos2unix on input utm and latlon
+
+# To change precision of output files for 5km resolution model
+awk -F" " '{ printf("%.2f,%.2f,%.2f\n",$1,$2,$3)}' ${final}_${version}.csv > temp.csv
+awk -F"," '{ print $1 " " $2 " " $3 }' temp.csv > ${final}_${version}${resol}_prec2.csv
+
+# cp ${final}_${version}${resol}_prec2.csv Parameters_maps${resol}/Paleotopo/${final}_${version}${resol}_prec2.csv
