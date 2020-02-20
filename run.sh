@@ -3,9 +3,9 @@
 echo Running all 	 
 
 problem=2
-replica=4
+replica=8
 
-samples=400
+samples=2000
 swapint=2
 maxtemp=2  
 burn=0.1
@@ -20,7 +20,7 @@ echo $problem
  
 for t in 1 #2 3 4
 	do  
-			#python ptBayeslands.py -p $problem -s $samples -r $replica -t $maxtemp -swap $swapint -b $burn -pt $pt_stage  -epsilon $initialtopoep -rain_intervals $raintimeint
+			python ptBayeslands.py -p $problem -s $samples -r $replica -t $maxtemp -swap $swapint -b $burn -pt $pt_stage  -epsilon $initialtopoep -rain_intervals $raintimeint
 			python visualise.py -p $problem -s $samples -r $replica -t $maxtemp -swap $swapint -b $burn -pt $pt_stage  -epsilon $initialtopoep -rain_intervals $raintimeint
  
 
