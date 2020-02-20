@@ -7,4 +7,8 @@ Bayeslands for basin and continental landscape evolution
 
 * follow this set of prerequisites (bashrc update etc) [Prerequisites](Prerequisites_BadlandsAug2019.txt) 
 
+*  https://mothergeo-py.readthedocs.io/en/latest/development/how-to/gdal-ubuntu-pkg.html?fbclid=IwAR0ye11pG8B_iXkt01pNfd44Gu5ZgWnZgrRuW-Z9MVMCHo6FrgVb5As5V1M
+* (Install GMT) sudo apt-get install gmt gmt-dcw gmt-gshhg
+* Install cartopy via conda (part of Bayeslands)
+
 
