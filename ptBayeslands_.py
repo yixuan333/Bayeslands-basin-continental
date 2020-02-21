@@ -51,6 +51,9 @@ from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 from scipy.ndimage import filters 
 from scipy.ndimage import gaussian_filter
 from problem_setup import problem_setup
+
+import subprocess
+
 #Initialise and parse inputs
 parser=argparse.ArgumentParser(description='PTBayeslands modelling')
 
@@ -172,12 +175,14 @@ class ptReplica(multiprocessing.Process):
 
     def process_inittopoGMT(self, inittopo_vec):
 
-        
+        bashcommand = 'sh ptopo_150.sh %s' %(self.temperature)
+
+        process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
+
+        output, error = process.communicate()
 
 
-
-
-
+        return
 
 
     def process_inittopo(self, inittopo_vec):
@@ -360,6 +365,7 @@ class ptReplica(multiprocessing.Process):
 
             inittopo_estimate = self.process_inittopo(inittopo_vec)     #------------------------------------------
 
+            self.process_inittopoGMT(inittopo_vec)
 
             inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  # bug fix but not good fix - temp @ 
 
@@ -807,9 +813,6 @@ class ptReplica(multiprocessing.Process):
 
             with file(('%s/performance/rmse_ocean/stream_res_ocean_t%s.txt' % (self.folder, self.temperature)),'a') as outfile:
                 np.savetxt(outfile, np.array([rmse_ocean]), fmt='%1.2f', newline='\n')
-
-
-
 
             temp = list_erodep_time[i+1,-1,:]  
             temp = np.reshape(temp, temp.shape[0]*1) 
