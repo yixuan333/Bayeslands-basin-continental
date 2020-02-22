@@ -8,7 +8,7 @@
 
 version=P100
 # paleotopo=Paleotopo_data/Paleotopo_150_Ma_${version}.shp
-paleotopo=Init_topo_polygon/data/Paleotopo_${version}.shp
+paleotopo=init_topo_polygon/data/Paleotopo_${version}.shp
 
 temperature=$1
 # xy files
@@ -16,26 +16,26 @@ temperature=$1
 # resol="_25km"
 resol="_50km"
 
-input_latlon=Init_topo_polygon/data/LatLon${resol}.xy
-input_utm=Init_topo_polygon/data/UTM${resol}.xy
+input_latlon=init_topo_polygon/data/LatLon${resol}.xy
+input_utm=init_topo_polygon/data/UTM${resol}.xy
 
 region=85/179/-55/10
 
 ## Output files -----------
 
 # Converted to gmt file
-out_gmt=Init_topo_polygon/Paleotopo_${version}.gmt
+out_gmt=init_topo_polygon/Paleotopo_${version}.gmt
 # Paleotopography converted to grid
-ptopo_grid=Init_topo_polygon/ptopo_${version}.nc
+ptopo_grid=init_topo_polygon/ptopo_${version}.nc
 
 # Smoothing factor - increase from 3 for higher resolution models
 g_filter=3
 # Smoothed grid
-smooth_grid=Init_topo_polygon/ptopo_g${g_filter}${resol}.nc
+smooth_grid=init_topo_polygon/ptopo_g${g_filter}${resol}.nc
 
 # grdtrack output 
-latlon_csv=Init_topo_polygon/topo_150Ma_latlon_g${g_filter}${resol}
-final=Init_topo_polygon/Paleotopo
+latlon_csv=init_topo_polygon/topo_150Ma_latlon_g${g_filter}${resol}
+final=init_topo_polygon/Paleotopo
 
 ogr2ogr -f "GMT" ${out_gmt} ${paleotopo}
 

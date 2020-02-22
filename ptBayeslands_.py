@@ -175,7 +175,7 @@ class ptReplica(multiprocessing.Process):
 
     def process_inittopoGMT(self, inittopo_vec):
 
-        bashcommand = 'sh ptopo_150.sh %s' %(self.temperature)
+        bashcommand = 'sh ptopo_150.sh %s' %(int(self.temperature*10))
 
         process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
 
@@ -363,17 +363,20 @@ class ptReplica(multiprocessing.Process):
             elev=np.reshape(model.recGrid.rectZ,(xi,yi)) 
  
 
-            inittopo_estimate = self.process_inittopo(inittopo_vec)     #------------------------------------------
+            #inittopo_estimate = self.process_inittopo(inittopo_vec)     #------------------------------------------
 
             self.process_inittopoGMT(inittopo_vec)
 
-            inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  # bug fix but not good fix - temp @ 
+            #inittopo_estimate = inittopo_estimate[0:  elev.shape[0], 0:  elev.shape[1]]  
 
             #Put it back into 'Badlands' format and then re-load the model
-            filename=problem_folder+str(self.run_nb)+'/demfile_'+ str(int(self.temperature*10)) +'_demfile.csv' 
+            #filename=problem_folder+str(self.run_nb)+'/demfile_'+ str(int(self.temperature*10)) +'_demfile.csv' 
 
-            elev_framex = np.vstack((model.recGrid.rectX,model.recGrid.rectY,inittopo_estimate.flatten()))
-            np.savetxt(filename, elev_framex.T, fmt='%1.2f' ) 
+
+            filename='init_topo_polygon/Paleotopo_P100_50km_prec2_'+ str(int(self.temperature*10)) +'_.csv' 
+
+            #elev_framex = np.vstack((model.recGrid.rectX,model.recGrid.rectY,inittopo_estimate.flatten()))
+            #np.savetxt(filename, elev_framex.T, fmt='%1.2f' ) 
             model.input.demfile=filename 
             model.build_mesh(model.input.demfile, verbose=False)
 
@@ -413,6 +416,16 @@ class ptReplica(multiprocessing.Process):
         erodep_vec = collections.OrderedDict()
         erodep_pts_vec = collections.OrderedDict()
         elev_pts_vec = collections.OrderedDict()
+
+
+
+
+        model.run_to_time(-1.48e08, muted=True)
+        elev_, erodep_ = interpolateArray(model.FVmesh.node_coords[:, :2], model.elevation, model.cumdiff) 
+
+        self.plot3d_plotly(elev_, '/pred_plots/GMTinit_', self.temperature *10)   
+
+
 
         for x in range(len(self.sim_interval)):
             self.simtime = self.sim_interval[x]
