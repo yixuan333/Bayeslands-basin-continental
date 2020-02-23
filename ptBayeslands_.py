@@ -52,6 +52,12 @@ from scipy.ndimage import filters
 from scipy.ndimage import gaussian_filter
 from problem_setup import problem_setup
 
+
+import re 
+import pandas as pd
+import h5py
+import json
+
 import subprocess
 
 #Initialise and parse inputs
@@ -175,12 +181,47 @@ class ptReplica(multiprocessing.Process):
 
     def process_inittopoGMT(self, inittopo_vec):
 
+
+        #self.replaceValuesGMT()
+
         bashcommand = 'sh ptopo_150.sh %s' %(int(self.temperature*10))
 
         process = subprocess.Popen(bashcommand.split(), stdout=subprocess.PIPE)
 
         output, error = process.communicate()
 
+
+        return
+
+
+ 
+
+    def replaceValuesGMT(self):
+ 
+
+        filename = 'init_topo_polygon/Paleotopo_P100.gmt' 
+
+        with open(filename) as f:
+            lines = [line.rstrip() for line in f]
+
+
+        print('Lines : ',len(lines))
+
+
+        pattern = r'(?<=\|)\d+'
+    
+        new_list = []
+        for l in lines:
+            new_list.append(re.sub(pattern,'1000',l))
+
+        outF = open("init_topo_polygon/Paleotopo_proposed_P100.gmt", "w")
+        for line in new_list:
+            # write line to output file
+            outF.write(line)
+            outF.write("\n")
+        outF.close()
+        # with open('ReplacedFile.txt','w') as file_out:
+        #   json.dump(new_list,file_out)
 
         return
 
@@ -373,7 +414,9 @@ class ptReplica(multiprocessing.Process):
             #filename=problem_folder+str(self.run_nb)+'/demfile_'+ str(int(self.temperature*10)) +'_demfile.csv' 
 
 
-            filename='init_topo_polygon/Paleotopo_P100_50km_prec2_'+ str(int(self.temperature*10)) +'_.csv' 
+            filename='init_topo_polygon/Paleotopo_P100_50km_prec2_'+ str(int(self.temperature*10)) +'.csv' 
+
+            #filename='init_topo_polygon/Paleotopo_P100_50km_prec2_20.csv' 
 
             #elev_framex = np.vstack((model.recGrid.rectX,model.recGrid.rectY,inittopo_estimate.flatten()))
             #np.savetxt(filename, elev_framex.T, fmt='%1.2f' ) 
