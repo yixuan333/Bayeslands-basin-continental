@@ -24,7 +24,7 @@ region=85/179/-55/10
 ## Output files -----------
 
 # Converted to gmt file
-out_gmt=init_topo_polygon/Paleotopo_${version}.gmt
+out_gmt=init_topo_polygon/Paleotopo_proposed${version}.gmt
 # Paleotopography converted to grid
 ptopo_grid=init_topo_polygon/ptopo_${version}.nc
 
